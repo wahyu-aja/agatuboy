@@ -299,6 +299,24 @@
             color: #666;
         }
 
+        .warning-text {
+            text-align: center;
+            background: rgba(255, 193, 7, 0.9);
+            color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 16px;
+            border: 2px solid #ffc107;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+
+        .warning-text .warning-emoji {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
         .admin-panel {
             position: fixed;
             bottom: 10px;
@@ -447,7 +465,7 @@
             </div>
 
             <div class="control-buttons">
-                <button class="btn reset-btn" onclick="resetValue()">Reset</button>
+                <button class="btn reset-btn" onclick="showResetWarning()">Reset</button>
                 <button class="btn finish-btn" onclick="showFinishModal()">Selesai</button>
             </div>
 
@@ -459,6 +477,11 @@
             <div class="history" id="history">
                 <strong>History:</strong>
                 <div id="historyList"></div>
+            </div>
+
+            <!-- Warning message added here -->
+            <div class="warning-text">
+                <span class="warning-emoji">⚠️</span>INGAT MODAL KAWAN
             </div>
         </div>
     </div>
@@ -492,6 +515,22 @@
             <p style="font-size: 12px; color: #666; margin-top: 10px;">
                 Nama akan disimpan untuk login otomatis di masa depan
             </p>
+        </div>
+    </div>
+
+    <!-- Modal untuk warning reset -->
+    <div class="modal" id="resetWarningModal" style="display: none;">
+        <div class="modal-content">
+            <h3>⚠️ Peringatan Reset</h3>
+            <p style="color: #d32f2f; font-weight: bold; margin: 15px 0;">
+                Anda akan mereset nilai kalkulator ke 0!<br>
+                Semua progress akan hilang.
+            </p>
+            <p>Apakah Anda yakin ingin melanjutkan?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn approve-btn" onclick="confirmReset()">Setuju</button>
+                <button class="modal-btn reject-btn" onclick="hideResetWarning()">Batal</button>
+            </div>
         </div>
     </div>
 
@@ -1053,6 +1092,22 @@
             });
         }
 
+        // Modified reset function with warning
+        function showResetWarning() {
+            const modal = document.getElementById('resetWarningModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function hideResetWarning() {
+            const modal = document.getElementById('resetWarningModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function confirmReset() {
+            hideResetWarning();
+            resetValue();
+        }
+
         function resetValue() {
             if (!gameState.currentRoom || !database) return;
             
@@ -1456,4 +1511,4 @@
         }, false);
     </script>
 </body>
-        </html>
+    </html>
