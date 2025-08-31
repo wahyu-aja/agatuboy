@@ -430,9 +430,9 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+    <!-- Firebase SDK v8 (Compatible) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
         // KONFIGURASI FIREBASE
@@ -452,6 +452,20 @@
             firebase.initializeApp(firebaseConfig);
             const database = firebase.database();
             console.log('✅ Firebase berhasil terhubung');
+            
+            // Test database connection immediately
+            database.ref('.info/connected').once('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    console.log('🟢 Database terhubung');
+                } else {
+                    console.log('🔴 Database tidak terhubung - pastikan Realtime Database aktif');
+                    alert('⚠️ PENTING: Aktifkan Realtime Database di Firebase Console terlebih dahulu!');
+                }
+            }).catch((error) => {
+                console.error('❌ Gagal tes koneksi database:', error);
+                alert('Database tidak aktif. Silakan aktifkan Realtime Database di Firebase Console.');
+            });
+            
         } catch (error) {
             console.error('❌ Firebase gagal terhubung:', error);
             alert('Gagal terhubung ke Firebase: ' + error.message);
