@@ -493,21 +493,8 @@
                 return;
             }
             
-            try {
-                // Test database connection
-                database.ref('.info/connected').on('value', (snapshot) => {
-                    if (snapshot.val() === true) {
-                        console.log('🟢 Terhubung ke Firebase');
-                        initializeRooms();
-                        listenToAllRooms();
-                    } else {
-                        console.log('🔴 Terputus dari Firebase');
-                    }
-                });
-            } catch (error) {
-                console.error('❌ Gagal menginisialisasi Firebase:', error);
-                alert('Gagal terhubung ke Firebase. Silakan:\\n1. Refresh halaman\\n2. Periksa koneksi internet\\n3. Pastikan Realtime Database aktif di Firebase Console');
-            }
+            // Initialize Firebase
+            initializeFirebase();
         });
 
         // Firebase functions
