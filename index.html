@@ -410,6 +410,21 @@
         </div>
     </div>
 
+    <!-- Modal login nama -->
+    <div class="modal" id="nameModal" style="display: none;">
+        <div class="modal-content">
+            <h3>Selamat Datang!</h3>
+            <p>Masukkan nama Anda untuk melanjutkan:</p>
+            <input type="text" id="nameInput" class="captcha-input" placeholder="Masukkan nama Anda" maxlength="20">
+            <div class="modal-buttons">
+                <button class="modal-btn approve-btn" onclick="saveName()">Lanjutkan</button>
+            </div>
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                Nama akan disimpan untuk login otomatis di masa depan
+            </p>
+        </div>
+    </div>
+
     <!-- Modal untuk persetujuan admin -->
     <div class="modal" id="approvalModal" style="display: none;">
         <div class="modal-content">
@@ -461,28 +476,38 @@
     <script>
         // Global variables
         let database;
+        let currentUserData = getUserId();
         let gameState = {
             currentRoom: null,
-            currentUser: getUserId(),
+            currentUser: currentUserData?.id || null,
+            userName: currentUserData?.name || null,
             isAdmin: false,
             pendingApproval: null,
             currentPendingUser: null
         };
 
-        // Generate or retrieve persistent user ID
+        // Generate or retrieve persistent user data
         function getUserId() {
-            let userId = localStorage.getItem('calculatorUserId');
-            if (!userId) {
-                userId = 'user_' + Math.random().toString(36).substring(7) + '_' + Date.now();
-                localStorage.setItem('calculatorUserId', userId);
+            let userData = localStorage.getItem('calculatorUserData');
+            if (userData) {
+                return JSON.parse(userData);
             }
-            return userId;
+            return null;
+        }
+
+        function saveUserData(name) {
+            const userData = {
+                id: 'user_' + Math.random().toString(36).substring(7) + '_' + Date.now(),
+                name: name,
+                created: Date.now()
+            };
+            localStorage.setItem('calculatorUserData', JSON.stringify(userData));
+            return userData;
         }
 
         // Clear user session (for testing purposes)
         function clearUserSession() {
-            localStorage.removeItem('calculatorUserId');
-            localStorage.removeItem('calculatorLastRoom');
+            localStorage.removeItem('calculatorUserData');
             location.reload();
         }
 
@@ -549,7 +574,15 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Aplikasi dimulai...');
-            console.log('👤 User ID:', gameState.currentUser);
+            
+            // Check if user has saved name
+            if (!gameState.userName) {
+                console.log('👤 User belum input nama, tampilkan modal');
+                showNameModal();
+                return;
+            }
+            
+            console.log('👤 User:', gameState.userName, 'ID:', gameState.currentUser);
             
             // Test koneksi Firebase
             if (typeof firebase === 'undefined') {
@@ -724,7 +757,8 @@
                         updates[`rooms/${roomId}/users/${gameState.currentUser}`] = {
                             joinTime: Date.now(),
                             lastSeen: Date.now(),
-                            isAdmin: true
+                            isAdmin: true,
+                            name: gameState.userName
                         };
                         updates[`rooms/${roomId}/startTime`] = Date.now();
                         updates[`rooms/${roomId}/active`] = true;
@@ -746,10 +780,11 @@
                         // Perlu persetujuan admin
                         gameState.pendingApproval = roomId;
                         
-                        // Tambahkan ke pending approvals
+                        // Tambahkan ke pending approvals dengan nama
                         database.ref(`rooms/${roomId}/pendingUsers/${gameState.currentUser}`).set({
                             requestTime: Date.now(),
-                            status: 'waiting'
+                            status: 'waiting',
+                            name: gameState.userName
                         }).then(() => {
                             console.log('✅ Permintaan approval terkirim');
                             showWaitingModal();
@@ -782,7 +817,8 @@
                     database.ref(`rooms/${roomId}/users/${gameState.currentUser}`).set({
                         joinTime: Date.now(),
                         lastSeen: Date.now(),
-                        isAdmin: false
+                        isAdmin: false,
+                        name: gameState.userName
                     });
                     
                     // Remove from pending
@@ -912,7 +948,7 @@
             
             if (displayEl) displayEl.textContent = (roomData.value || 0).toLocaleString();
             if (clickCountEl) clickCountEl.textContent = roomData.clickCount || 0;
-            if (userRoleEl) userRoleEl.textContent = `Status: ${gameState.isAdmin ? 'Admin' : 'User'}`;
+            if (userRoleEl) userRoleEl.textContent = `${gameState.userName} (${gameState.isAdmin ? 'Admin' : 'User'})`;
             if (roomInfoEl) roomInfoEl.textContent = `Kamar: ${gameState.currentRoom}`;
             
             const users = roomData.users || {};
@@ -1087,14 +1123,73 @@
         }
 
         function showApprovalModal(pendingUserId) {
-            const messageEl = document.getElementById('approvalMessage');
-            const modal = document.getElementById('approvalModal');
-            
-            if (messageEl) messageEl.textContent = `User ${pendingUserId} ingin bergabung ke kamar ini.`;
+            // Get user data to show name
+            if (gameState.currentRoom && database) {
+                database.ref(`rooms/${gameState.currentRoom}/pendingUsers/${pendingUserId}`).once('value', (snapshot) => {
+                    const pendingData = snapshot.val();
+                    const messageEl = document.getElementById('approvalMessage');
+                    const modal = document.getElementById('approvalModal');
+                    
+                    if (messageEl) {
+                        messageEl.textContent = `${pendingData?.name || pendingUserId} ingin bergabung ke kamar ini.`;
+                    }
+                    if (modal) modal.style.display = 'flex';
+                    
+                    // Store pending user for approval
+                    gameState.currentPendingUser = pendingUserId;
+                });
+            }
+        }
+
+        // Name modal functions
+        function showNameModal() {
+            const modal = document.getElementById('nameModal');
+            const input = document.getElementById('nameInput');
             if (modal) modal.style.display = 'flex';
+            if (input) {
+                input.focus();
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        saveName();
+                    }
+                });
+            }
+        }
+
+        function hideNameModal() {
+            const modal = document.getElementById('nameModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function saveName() {
+            const input = document.getElementById('nameInput');
+            if (!input) return;
             
-            // Store pending user for approval
-            gameState.currentPendingUser = pendingUserId;
+            const name = input.value.trim();
+            if (!name) {
+                showNotification('Error', 'Nama tidak boleh kosong!');
+                return;
+            }
+            
+            if (name.length < 2) {
+                showNotification('Error', 'Nama minimal 2 karakter!');
+                return;
+            }
+            
+            // Save user data
+            const userData = saveUserData(name);
+            gameState.currentUser = userData.id;
+            gameState.userName = userData.name;
+            
+            console.log('✅ User data saved:', userData);
+            hideNameModal();
+            
+            // Initialize Firebase now
+            if (typeof firebase !== 'undefined') {
+                initializeFirebase();
+            } else {
+                showNotification('Error', 'Firebase SDK tidak termuat. Silakan refresh halaman.');
+            }
         }
 
         function approveUser(approved) {
@@ -1122,4 +1217,4 @@
         }, false);
     </script>
 </body>
-    </html>
+</html>
