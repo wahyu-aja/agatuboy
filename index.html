@@ -463,11 +463,28 @@
         let database;
         let gameState = {
             currentRoom: null,
-            currentUser: 'user_' + Math.random().toString(36).substring(7),
+            currentUser: getUserId(),
             isAdmin: false,
             pendingApproval: null,
             currentPendingUser: null
         };
+
+        // Generate or retrieve persistent user ID
+        function getUserId() {
+            let userId = localStorage.getItem('calculatorUserId');
+            if (!userId) {
+                userId = 'user_' + Math.random().toString(36).substring(7) + '_' + Date.now();
+                localStorage.setItem('calculatorUserId', userId);
+            }
+            return userId;
+        }
+
+        // Clear user session (for testing purposes)
+        function clearUserSession() {
+            localStorage.removeItem('calculatorUserId');
+            localStorage.removeItem('calculatorLastRoom');
+            location.reload();
+        }
 
         let sessionTimer = null;
         let roomListeners = {};
@@ -532,6 +549,7 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Aplikasi dimulai...');
+            console.log('👤 User ID:', gameState.currentUser);
             
             // Test koneksi Firebase
             if (typeof firebase === 'undefined') {
@@ -587,6 +605,7 @@
             
             // Listen to all rooms for user count updates
             for (let i = 1; i <= 5; i++) {
+                // Listen to all rooms for user count updates
                 database.ref(`rooms/${i}/users`).on('value', (snapshot) => {
                     const users = snapshot.val() || {};
                     const userCount = Object.keys(users).length;
@@ -597,10 +616,25 @@
                     
                     const btn = document.querySelector(`.room-buttons .room-btn:nth-child(${i})`);
                     if (btn) {
+                        // Check if current user is in this room
+                        const isUserInRoom = users.hasOwnProperty(gameState.currentUser);
+                        const isUserAdmin = users[gameState.currentUser]?.isAdmin;
+                        
                         if (userCount === 0) {
                             btn.className = 'room-btn';
-                        } else if (gameState.currentRoom === i) {
+                        } else if (isUserInRoom) {
                             btn.className = 'room-btn active';
+                            // Auto-rejoin if user was in room before refresh
+                            if (!gameState.currentRoom) {
+                                console.log(`🔄 Auto-rejoining room ${i} as ${isUserAdmin ? 'admin' : 'user'}`);
+                                gameState.currentRoom = i;
+                                gameState.isAdmin = isUserAdmin;
+                                listenToRoom(i);
+                                showCalculator();
+                                if (isUserAdmin) {
+                                    startSessionTimer();
+                                }
+                            }
                         } else {
                             btn.className = 'room-btn occupied';
                         }
@@ -646,65 +680,92 @@
                 return;
             }
             
-            database.ref(`rooms/${roomId}`).once('value', (snapshot) => {
-                console.log(`📊 Data room ${roomId}:`, snapshot.val());
-                
-                const roomData = snapshot.val();
-                if (!roomData) {
-                    console.error(`❌ Room ${roomId} tidak ditemukan`);
-                    showNotification('Error', `Room ${roomId} tidak ditemukan. Silakan refresh halaman.`);
+            // Check if user is already in this room
+            database.ref(`rooms/${roomId}/users/${gameState.currentUser}`).once('value', (userSnapshot) => {
+                if (userSnapshot.exists()) {
+                    // User already in room, rejoin directly
+                    const userData = userSnapshot.val();
+                    console.log(`🔄 Rejoining room ${roomId} as existing user`);
+                    
+                    gameState.currentRoom = roomId;
+                    gameState.isAdmin = userData.isAdmin;
+                    
+                    // Update join time
+                    database.ref(`rooms/${roomId}/users/${gameState.currentUser}/lastSeen`).set(Date.now());
+                    
+                    listenToRoom(roomId);
+                    showCalculator();
+                    if (gameState.isAdmin) {
+                        startSessionTimer();
+                    }
                     return;
                 }
                 
-                const users = roomData.users || {};
-                const userCount = Object.keys(users).length;
-                console.log(`👥 Jumlah user di room ${roomId}: ${userCount}`);
-                
-                if (userCount === 0) {
-                    console.log(`👑 Menjadi admin room ${roomId}`);
-                    // User pertama jadi admin
-                    const updates = {};
-                    updates[`rooms/${roomId}/admin`] = gameState.currentUser;
-                    updates[`rooms/${roomId}/users/${gameState.currentUser}`] = {
-                        joinTime: Date.now(),
-                        isAdmin: true
-                    };
-                    updates[`rooms/${roomId}/startTime`] = Date.now();
-                    updates[`rooms/${roomId}/active`] = true;
+                // User not in room, proceed with normal join logic
+                database.ref(`rooms/${roomId}`).once('value', (snapshot) => {
+                    console.log(`📊 Data room ${roomId}:`, snapshot.val());
                     
-                    database.ref().update(updates).then(() => {
-                        console.log('✅ Berhasil menjadi admin');
-                        gameState.isAdmin = true;
-                        gameState.currentRoom = roomId;
-                        listenToRoom(roomId);
-                        showNotification('Selamat!', 'Anda adalah admin untuk kamar ini!');
-                        showCalculator();
-                        startSessionTimer();
-                    }).catch((error) => {
-                        console.error('❌ Gagal menjadi admin:', error);
-                        showNotification('Error', 'Gagal bergabung sebagai admin: ' + error.message);
-                    });
-                } else {
-                    console.log(`⏳ Meminta persetujuan admin room ${roomId}`);
-                    // Perlu persetujuan admin
-                    gameState.pendingApproval = roomId;
+                    const roomData = snapshot.val();
+                    if (!roomData) {
+                        console.error(`❌ Room ${roomId} tidak ditemukan`);
+                        showNotification('Error', `Room ${roomId} tidak ditemukan. Silakan refresh halaman.`);
+                        return;
+                    }
                     
-                    // Tambahkan ke pending approvals
-                    database.ref(`rooms/${roomId}/pendingUsers/${gameState.currentUser}`).set({
-                        requestTime: Date.now(),
-                        status: 'waiting'
-                    }).then(() => {
-                        console.log('✅ Permintaan approval terkirim');
-                        showWaitingModal();
-                        listenForApproval(roomId);
-                    }).catch((error) => {
-                        console.error('❌ Gagal mengirim permintaan:', error);
-                        showNotification('Error', 'Gagal mengirim permintaan: ' + error.message);
-                    });
-                }
+                    const users = roomData.users || {};
+                    const userCount = Object.keys(users).length;
+                    console.log(`👥 Jumlah user di room ${roomId}: ${userCount}`);
+                    
+                    if (userCount === 0) {
+                        console.log(`👑 Menjadi admin room ${roomId}`);
+                        // User pertama jadi admin
+                        const updates = {};
+                        updates[`rooms/${roomId}/admin`] = gameState.currentUser;
+                        updates[`rooms/${roomId}/users/${gameState.currentUser}`] = {
+                            joinTime: Date.now(),
+                            lastSeen: Date.now(),
+                            isAdmin: true
+                        };
+                        updates[`rooms/${roomId}/startTime`] = Date.now();
+                        updates[`rooms/${roomId}/active`] = true;
+                        
+                        database.ref().update(updates).then(() => {
+                            console.log('✅ Berhasil menjadi admin');
+                            gameState.isAdmin = true;
+                            gameState.currentRoom = roomId;
+                            listenToRoom(roomId);
+                            showNotification('Selamat!', 'Anda adalah admin untuk kamar ini!');
+                            showCalculator();
+                            startSessionTimer();
+                        }).catch((error) => {
+                            console.error('❌ Gagal menjadi admin:', error);
+                            showNotification('Error', 'Gagal bergabung sebagai admin: ' + error.message);
+                        });
+                    } else {
+                        console.log(`⏳ Meminta persetujuan admin room ${roomId}`);
+                        // Perlu persetujuan admin
+                        gameState.pendingApproval = roomId;
+                        
+                        // Tambahkan ke pending approvals
+                        database.ref(`rooms/${roomId}/pendingUsers/${gameState.currentUser}`).set({
+                            requestTime: Date.now(),
+                            status: 'waiting'
+                        }).then(() => {
+                            console.log('✅ Permintaan approval terkirim');
+                            showWaitingModal();
+                            listenForApproval(roomId);
+                        }).catch((error) => {
+                            console.error('❌ Gagal mengirim permintaan:', error);
+                            showNotification('Error', 'Gagal mengirim permintaan: ' + error.message);
+                        });
+                    }
+                }).catch((error) => {
+                    console.error(`❌ Gagal mengakses room ${roomId}:`, error);
+                    showNotification('Error', 'Gagal mengakses room: ' + error.message);
+                });
             }).catch((error) => {
-                console.error(`❌ Gagal mengakses room ${roomId}:`, error);
-                showNotification('Error', 'Gagal mengakses room: ' + error.message);
+                console.error('❌ Gagal cek user existence:', error);
+                showNotification('Error', 'Gagal mengecek status user: ' + error.message);
             });
         }
 
@@ -720,6 +781,7 @@
                     // Add user to room
                     database.ref(`rooms/${roomId}/users/${gameState.currentUser}`).set({
                         joinTime: Date.now(),
+                        lastSeen: Date.now(),
                         isAdmin: false
                     });
                     
@@ -1060,4 +1122,4 @@
         }, false);
     </script>
 </body>
-</html>
+    </html>
