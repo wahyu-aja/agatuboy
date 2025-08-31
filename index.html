@@ -435,21 +435,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
 
     <script>
-        // KONFIGURASI FIREBASE - GANTI DENGAN CONFIG ANDA SENDIRI
+        // KONFIGURASI FIREBASE
         const firebaseConfig = {
-  apiKey: "AIzaSyAa2eES4WwUxpttkVOgvwUd9EK3iCqR6Ao",
-  authDomain: "kalkulator2803.firebaseapp.com",
-  databaseURL: "https://kalkulator2803-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "kalkulator2803",
-  storageBucket: "kalkulator2803.firebasestorage.app",
-  messagingSenderId: "608669212250",
-  appId: "1:608669212250:web:3c20bc28c7df5bed1c4263",
-  measurementId: "G-XX80E4Z2VX"
-};
+            apiKey: "AIzaSyAa2eES4WwUxpttkVOgvwUd9EK3iCqR6Ao",
+            authDomain: "kalkulator2803.firebaseapp.com",
+            databaseURL: "https://kalkulator2803-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kalkulator2803",
+            storageBucket: "kalkulator2803.firebasestorage.app",
+            messagingSenderId: "608669212250",
+            appId: "1:608669212250:web:3c20bc28c7df5bed1c4263",
+            measurementId: "G-XX80E4Z2VX"
+        };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
+            console.log('✅ Firebase berhasil terhubung');
+        } catch (error) {
+            console.error('❌ Firebase gagal terhubung:', error);
+            alert('Gagal terhubung ke Firebase: ' + error.message);
+        }
 
         // State management
         let gameState = {
@@ -464,16 +470,40 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            initializeRooms();
-            listenToAllRooms();
+            console.log('🚀 Aplikasi dimulai...');
+            
+            // Test koneksi Firebase
+            if (typeof firebase === 'undefined') {
+                console.error('❌ Firebase SDK tidak termuat');
+                alert('Firebase SDK tidak termuat. Pastikan koneksi internet Anda stabil.');
+                return;
+            }
+            
+            try {
+                // Test database connection
+                database.ref('.info/connected').on('value', (snapshot) => {
+                    if (snapshot.val() === true) {
+                        console.log('🟢 Terhubung ke Firebase');
+                        initializeRooms();
+                        listenToAllRooms();
+                    } else {
+                        console.log('🔴 Terputus dari Firebase');
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Gagal menginisialisasi Firebase:', error);
+                alert('Gagal terhubung ke Firebase. Silakan:\\n1. Refresh halaman\\n2. Periksa koneksi internet\\n3. Pastikan Realtime Database aktif di Firebase Console');
+            }
         });
 
         // Firebase functions
         function initializeRooms() {
+            console.log('🔄 Menginisialisasi rooms...');
             // Initialize rooms in Firebase if they don't exist
             for (let i = 1; i <= 5; i++) {
                 database.ref(`rooms/${i}`).once('value', (snapshot) => {
                     if (!snapshot.exists()) {
+                        console.log(`📝 Membuat room ${i}...`);
                         database.ref(`rooms/${i}`).set({
                             value: 0,
                             users: {},
@@ -482,8 +512,16 @@
                             clickCount: 0,
                             startTime: null,
                             active: false
+                        }).then(() => {
+                            console.log(`✅ Room ${i} berhasil dibuat`);
+                        }).catch((error) => {
+                            console.error(`❌ Gagal membuat room ${i}:`, error);
                         });
+                    } else {
+                        console.log(`✅ Room ${i} sudah ada`);
                     }
+                }).catch((error) => {
+                    console.error(`❌ Gagal mengecek room ${i}:`, error);
                 });
             }
         }
@@ -531,12 +569,30 @@
 
         // Room management
         function joinRoom(roomId) {
+            console.log(`🚪 Mencoba masuk ke room ${roomId}...`);
+            
+            if (!database) {
+                console.error('❌ Database tidak tersedia');
+                alert('Database tidak terhubung. Silakan refresh halaman.');
+                return;
+            }
+            
             database.ref(`rooms/${roomId}`).once('value', (snapshot) => {
+                console.log(`📊 Data room ${roomId}:`, snapshot.val());
+                
                 const roomData = snapshot.val();
+                if (!roomData) {
+                    console.error(`❌ Room ${roomId} tidak ditemukan`);
+                    alert(`Room ${roomId} tidak ditemukan. Silakan refresh halaman.`);
+                    return;
+                }
+                
                 const users = roomData.users || {};
                 const userCount = Object.keys(users).length;
+                console.log(`👥 Jumlah user di room ${roomId}: ${userCount}`);
                 
                 if (userCount === 0) {
+                    console.log(`👑 Menjadi admin room ${roomId}`);
                     // User pertama jadi admin
                     const updates = {};
                     updates[`rooms/${roomId}/admin`] = gameState.currentUser;
@@ -548,14 +604,19 @@
                     updates[`rooms/${roomId}/active`] = true;
                     
                     database.ref().update(updates).then(() => {
+                        console.log('✅ Berhasil menjadi admin');
                         gameState.isAdmin = true;
                         gameState.currentRoom = roomId;
                         listenToRoom(roomId);
                         showNotification('Selamat!', 'Anda adalah admin untuk kamar ini!');
                         showCalculator();
                         startSessionTimer();
+                    }).catch((error) => {
+                        console.error('❌ Gagal menjadi admin:', error);
+                        alert('Gagal bergabung sebagai admin: ' + error.message);
                     });
                 } else {
+                    console.log(`⏳ Meminta persetujuan admin room ${roomId}`);
                     // Perlu persetujuan admin
                     gameState.pendingApproval = roomId;
                     
@@ -563,11 +624,18 @@
                     database.ref(`rooms/${roomId}/pendingUsers/${gameState.currentUser}`).set({
                         requestTime: Date.now(),
                         status: 'waiting'
+                    }).then(() => {
+                        console.log('✅ Permintaan approval terkirim');
+                        showWaitingModal();
+                        listenForApproval(roomId);
+                    }).catch((error) => {
+                        console.error('❌ Gagal mengirim permintaan:', error);
+                        alert('Gagal mengirim permintaan: ' + error.message);
                     });
-                    
-                    showWaitingModal();
-                    listenForApproval(roomId);
                 }
+            }).catch((error) => {
+                console.error(`❌ Gagal mengakses room ${roomId}:`, error);
+                alert('Gagal mengakses room: ' + error.message);
             });
         }
 
@@ -916,4 +984,4 @@
         }, false);
     </script>
 </body>
-  </html>
+</html>
