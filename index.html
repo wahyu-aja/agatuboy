@@ -291,6 +291,71 @@
             color: #666;
         }
 
+        .admin-panel {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 200px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            display: none;
+            z-index: 999;
+        }
+
+        .admin-panel.show {
+            display: block;
+        }
+
+        .admin-panel input {
+            width: 100%;
+            padding: 5px;
+            margin: 5px 0;
+            border: 1px solid #444;
+            background: #333;
+            color: white;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .admin-panel button {
+            width: 100%;
+            padding: 5px;
+            margin: 2px 0;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .admin-panel button:hover {
+            background: #c82333;
+        }
+
+        .admin-toggle {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: rgba(0,0,0,0.3);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            z-index: 998;
+        }
+
+        .whitelist-status {
+            font-size: 11px;
+            color: #28a745;
+            margin-top: 5px;
+        }
+
         .connection-status {
             text-align: center;
             padding: 10px;
@@ -395,7 +460,6 @@
             <div class="control-buttons">
                 <button class="btn reset-btn" onclick="resetValue()">Reset</button>
                 <button class="btn finish-btn" onclick="showFinishModal()">Selesai</button>
-                <button class="btn leave-btn" onclick="leaveRoom()">Keluar</button>
             </div>
 
             <div class="stats">
@@ -407,6 +471,23 @@
                 <strong>History:</strong>
                 <div id="historyList"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel Toggle -->
+    <button class="admin-toggle" onclick="toggleAdminPanel()">⚙</button>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <strong>Admin Panel</strong>
+        <input type="text" id="adminUser" placeholder="Username" value="">
+        <input type="password" id="adminPass" placeholder="Password" value="">
+        <button onclick="adminLogin()">Login</button>
+        <div id="adminControls" style="display: none;">
+            <button onclick="resetAllRooms()">Reset All Rooms</button>
+            <button onclick="clearAllUsers()">Clear All Users</button>
+            <button onclick="adminLogout()">Logout</button>
+            <div class="whitelist-status" id="whitelistStatus"></div>
         </div>
     </div>
 
@@ -483,7 +564,14 @@
             userName: currentUserData?.name || null,
             isAdmin: false,
             pendingApproval: null,
-            currentPendingUser: null
+            currentPendingUser: null,
+            isWhitelisted: false // Track if user is whitelisted
+        };
+
+        let adminLoggedIn = false;
+        const ADMIN_CREDENTIALS = {
+            username: 'wahyu',
+            password: '123'
         };
 
         // Generate or retrieve persistent user data
@@ -776,22 +864,53 @@
                             showNotification('Error', 'Gagal bergabung sebagai admin: ' + error.message);
                         });
                     } else {
-                        console.log(`⏳ Meminta persetujuan admin room ${roomId}`);
-                        // Perlu persetujuan admin
-                        gameState.pendingApproval = roomId;
+                        console.log(`⏳ Cek whitelist dan meminta persetujuan admin room ${roomId}`);
                         
-                        // Tambahkan ke pending approvals dengan nama
-                        database.ref(`rooms/${roomId}/pendingUsers/${gameState.currentUser}`).set({
-                            requestTime: Date.now(),
-                            status: 'waiting',
-                            name: gameState.userName
-                        }).then(() => {
-                            console.log('✅ Permintaan approval terkirim');
-                            showWaitingModal();
-                            listenForApproval(roomId);
+                        // Check if user is whitelisted in this room
+                        database.ref(`rooms/${roomId}/whitelist/${gameState.currentUser}`).once('value', (whitelistSnapshot) => {
+                            if (whitelistSnapshot.exists()) {
+                                // User is whitelisted, join directly
+                                console.log('✅ User whitelisted, join langsung');
+                                const updates = {};
+                                updates[`rooms/${roomId}/users/${gameState.currentUser}`] = {
+                                    joinTime: Date.now(),
+                                    lastSeen: Date.now(),
+                                    isAdmin: false,
+                                    name: gameState.userName
+                                };
+                                
+                                database.ref().update(updates).then(() => {
+                                    gameState.currentRoom = roomId;
+                                    gameState.isAdmin = false;
+                                    gameState.isWhitelisted = true;
+                                    listenToRoom(roomId);
+                                    showCalculator();
+                                    showNotification('Selamat!', 'Anda sudah terdaftar di kamar ini!');
+                                }).catch((error) => {
+                                    console.error('❌ Gagal join sebagai whitelisted user:', error);
+                                    showNotification('Error', 'Gagal bergabung: ' + error.message);
+                                });
+                            } else {
+                                // Perlu persetujuan admin
+                                gameState.pendingApproval = roomId;
+                                
+                                // Tambahkan ke pending approvals dengan nama
+                                database.ref(`rooms/${roomId}/pendingUsers/${gameState.currentUser}`).set({
+                                    requestTime: Date.now(),
+                                    status: 'waiting',
+                                    name: gameState.userName
+                                }).then(() => {
+                                    console.log('✅ Permintaan approval terkirim');
+                                    showWaitingModal();
+                                    listenForApproval(roomId);
+                                }).catch((error) => {
+                                    console.error('❌ Gagal mengirim permintaan:', error);
+                                    showNotification('Error', 'Gagal mengirim permintaan: ' + error.message);
+                                });
+                            }
                         }).catch((error) => {
-                            console.error('❌ Gagal mengirim permintaan:', error);
-                            showNotification('Error', 'Gagal mengirim permintaan: ' + error.message);
+                            console.error('❌ Gagal cek whitelist:', error);
+                            showNotification('Error', 'Gagal mengecek status: ' + error.message);
                         });
                     }
                 }).catch((error) => {
@@ -821,11 +940,19 @@
                         name: gameState.userName
                     });
                     
+                    // Add to whitelist for future auto-join
+                    database.ref(`rooms/${roomId}/whitelist/${gameState.currentUser}`).set({
+                        name: gameState.userName,
+                        approvedTime: Date.now(),
+                        approvedBy: roomData?.admin || 'unknown'
+                    });
+                    
                     // Remove from pending
                     database.ref(`rooms/${roomId}/pendingUsers/${gameState.currentUser}`).remove();
                     
                     gameState.currentRoom = roomId;
                     gameState.isAdmin = false;
+                    gameState.isWhitelisted = true;
                     gameState.pendingApproval = null;
                     
                     hideWaitingModal();
@@ -1141,6 +1268,109 @@
             }
         }
 
+        // Admin Panel Functions
+        function toggleAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            if (panel) {
+                panel.classList.toggle('show');
+            }
+        }
+
+        function adminLogin() {
+            const username = document.getElementById('adminUser').value;
+            const password = document.getElementById('adminPass').value;
+            
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                adminLoggedIn = true;
+                document.getElementById('adminControls').style.display = 'block';
+                showNotification('Admin Login', 'Login berhasil! Panel admin aktif.');
+                updateWhitelistStatus();
+            } else {
+                showNotification('Login Gagal', 'Username atau password salah!');
+            }
+        }
+
+        function adminLogout() {
+            adminLoggedIn = false;
+            document.getElementById('adminControls').style.display = 'none';
+            document.getElementById('adminUser').value = '';
+            document.getElementById('adminPass').value = '';
+            const panel = document.getElementById('adminPanel');
+            if (panel) panel.classList.remove('show');
+            showNotification('Admin Logout', 'Logout berhasil!');
+        }
+
+        function resetAllRooms() {
+            if (!adminLoggedIn) {
+                showNotification('Akses Ditolak', 'Harus login sebagai admin!');
+                return;
+            }
+            
+            if (!confirm('Yakin ingin reset semua room? Semua data akan hilang!')) {
+                return;
+            }
+            
+            if (!database) {
+                showNotification('Error', 'Database tidak terhubung!');
+                return;
+            }
+            
+            console.log('🔄 Admin: Mereset semua rooms...');
+            
+            for (let i = 1; i <= 5; i++) {
+                database.ref(`rooms/${i}`).set({
+                    value: 0,
+                    users: {},
+                    admin: null,
+                    history: {},
+                    clickCount: 0,
+                    startTime: null,
+                    active: false,
+                    pendingUsers: {},
+                    whitelist: {}
+                });
+            }
+            
+            // Reset current user state if in any room
+            if (gameState.currentRoom) {
+                gameState.currentRoom = null;
+                gameState.isAdmin = false;
+                gameState.isWhitelisted = false;
+                hideCalculator();
+                stopSessionTimer();
+            }
+            
+            showNotification('Reset Berhasil', 'Semua room telah direset!');
+        }
+
+        function clearAllUsers() {
+            if (!adminLoggedIn) {
+                showNotification('Akses Ditolak', 'Harus login sebagai admin!');
+                return;
+            }
+            
+            if (!confirm('Yakin ingin hapus semua data user? Data whitelist juga akan hilang!')) {
+                return;
+            }
+            
+            // Clear localStorage for all users (only affects current browser)
+            localStorage.clear();
+            
+            showNotification('Clear Berhasil', 'Data user lokal telah dihapus. User lain perlu refresh untuk logout.');
+        }
+
+        function updateWhitelistStatus() {
+            const statusEl = document.getElementById('whitelistStatus');
+            if (statusEl && gameState.currentRoom) {
+                if (gameState.isWhitelisted) {
+                    statusEl.textContent = `✓ Whitelisted di Room ${gameState.currentRoom}`;
+                } else if (gameState.isAdmin) {
+                    statusEl.textContent = `👑 Admin di Room ${gameState.currentRoom}`;
+                } else {
+                    statusEl.textContent = `⏳ Belum whitelisted`;
+                }
+            }
+        }
         // Name modal functions
         function showNameModal() {
             const modal = document.getElementById('nameModal');
@@ -1217,4 +1447,4 @@
         }, false);
     </script>
 </body>
-</html>
+    </html>
