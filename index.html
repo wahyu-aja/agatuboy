@@ -256,6 +256,113 @@
             border: 2px dashed #ccc;
         }
 
+        /* Price Container Styles */
+        .price-container {
+            margin: 20px 0;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .price-loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .price-display {
+            width: 100%;
+        }
+
+        /* Promotional Price Styles */
+        .price-promo {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            position: relative;
+        }
+
+        .original-price {
+            font-size: 16px;
+            text-decoration: line-through;
+            color: #ffcccb;
+            margin-bottom: 5px;
+        }
+
+        .final-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .discount-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            animation: pulse-badge 2s infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Regular Price Styles */
+        .regular-price {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(116, 185, 255, 0.3);
+        }
+
+        .regular-price .price {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Error States */
+        .price-not-found,
+        .price-error {
+            background: #f8f9fa;
+            color: #666;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+            font-size: 14px;
+        }
+
+        .price-error {
+            background: #fff5f5;
+            color: #e53e3e;
+            border-color: #fed7d7;
+        }
+
         .navigation {
             display: flex;
             justify-content: space-between;
@@ -729,10 +836,19 @@
                 // Create unique ID for this barcode
                 const barcodeId = `barcode-${barcode}-${Date.now()}`;
                 
+                // Price loading placeholder
+                const priceLoadingId = `price-loading-${barcode}-${Date.now()}`;
+                
                 card.innerHTML = `
                     <div class="plu">PLU: ${plu}</div>
                     <div class="product-name">${productName}</div>
                     ${product ? `<img class="product-image" src="${imageUrl}" alt="${productName}" onerror="this.style.display='none'">` : ''}
+                    <div class="price-container" id="${priceLoadingId}">
+                        <div class="price-loading">
+                            <div class="loading-spinner"></div>
+                            <span>Memuat harga...</span>
+                        </div>
+                    </div>
                     <div class="barcode-container">
                         <canvas id="${barcodeId}" class="barcode-canvas"></canvas>
                         <div class="barcode-fallback" id="fallback-${barcodeId}" style="display: none;">
@@ -749,7 +865,88 @@
                     this.generateBarcode(barcodeId, barcode);
                 }, 100);
                 
+                // Load price data if PLU is available
+                if (product && product.PLU) {
+                    this.loadProductPrice(product.PLU, priceLoadingId);
+                }
+                
                 return card;
+            }
+
+            async loadProductPrice(plu, priceContainerId) {
+                try {
+                    // Simulate API call to get price data (you would replace this with actual API call)
+                    const priceData = await this.fetchProductPrice(plu);
+                    const priceContainer = document.getElementById(priceContainerId);
+                    
+                    if (!priceContainer) return;
+                    
+                    if (priceData && (priceData.originalPrice || priceData.finalPrice)) {
+                        priceContainer.innerHTML = this.createPriceDisplay(priceData);
+                    } else {
+                        priceContainer.innerHTML = '<div class="price-not-found">Harga tidak tersedia</div>';
+                    }
+                } catch (error) {
+                    console.error('Error loading price:', error);
+                    const priceContainer = document.getElementById(priceContainerId);
+                    if (priceContainer) {
+                        priceContainer.innerHTML = '<div class="price-error">Gagal memuat harga</div>';
+                    }
+                }
+            }
+
+            async fetchProductPrice(plu) {
+                // This is a mock function - you would implement actual API call here
+                // Based on your provided function, you would use tryWithWget or similar
+                try {
+                    // Mock data for demonstration - replace with actual API call
+                    const mockPrices = {
+                        "20138844": { originalPrice: 19200, finalPrice: 13900, discountText: "28% OFF" },
+                        "10000019": { originalPrice: 15000, finalPrice: 12500, discountText: "17% OFF" },
+                        "10000020": { originalPrice: 16000, finalPrice: null, discountText: null },
+                        "10000021": { originalPrice: 14500, finalPrice: 11900, discountText: "18% OFF" }
+                    };
+                    
+                    // Simulate network delay
+                    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+                    
+                    return mockPrices[plu] || { originalPrice: Math.floor(Math.random() * 20000) + 10000, finalPrice: null, discountText: null };
+                } catch (error) {
+                    throw error;
+                }
+            }
+
+            createPriceDisplay(priceData) {
+                const { originalPrice, finalPrice, discountText } = priceData;
+                const hasDiscount = finalPrice && finalPrice < originalPrice;
+                
+                let priceHtml = '<div class="price-display">';
+                
+                if (hasDiscount) {
+                    // Promotional pricing with strikethrough
+                    priceHtml += `
+                        <div class="price-promo">
+                            <div class="original-price">Rp${this.formatPrice(originalPrice)}</div>
+                            <div class="final-price">Rp${this.formatPrice(finalPrice)}</div>
+                            ${discountText ? `<div class="discount-badge">${discountText}</div>` : ''}
+                        </div>
+                    `;
+                } else {
+                    // Regular pricing
+                    priceHtml += `
+                        <div class="regular-price">
+                            <div class="price">Rp${this.formatPrice(originalPrice)}</div>
+                        </div>
+                    `;
+                }
+                
+                priceHtml += '</div>';
+                return priceHtml;
+            }
+
+            formatPrice(price) {
+                if (!price) return '0';
+                return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             }
 
             generateBarcode(canvasId, barcode) {
@@ -879,4 +1076,4 @@
         });
     </script>
 </body>
-</html>
+    </html>
