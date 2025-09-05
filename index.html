@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barcode Scanner - WAHYU</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-qrcode-reader/5.5.3/VueQrcodeReader.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
     <style>
         * {
@@ -54,45 +55,130 @@
             backdrop-filter: blur(10px);
         }
 
-        #scanner-container {
+        .scanner-container {
             position: relative;
             width: 100%;
             max-width: 400px;
             margin: 0 auto;
-            border-radius: 10px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            background: #000;
         }
 
-        #interactive {
+        .qrcode-stream {
             width: 100%;
             height: 300px;
+            border-radius: 15px;
+        }
+
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .scan-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 150px;
+            border: 2px solid #00ff41;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        .scan-corners {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+        }
+
+        .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #00ff41;
+        }
+
+        .corner.top-left {
+            top: 0;
+            left: 0;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .corner.top-right {
+            top: 0;
+            right: 0;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .corner.bottom-left {
+            bottom: 0;
+            left: 0;
+            border-right: none;
+            border-top: none;
+        }
+
+        .corner.bottom-right {
+            bottom: 0;
+            right: 0;
+            border-left: none;
+            border-top: none;
         }
 
         .scan-line {
             position: absolute;
-            top: 50%;
-            left: 10%;
-            right: 10%;
+            top: 0;
+            left: 20px;
+            right: 20px;
             height: 2px;
-            background: linear-gradient(90deg, transparent, #ff4757, transparent);
-            animation: scan 2s infinite;
-            z-index: 10;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            animation: scanLine 2s infinite ease-in-out;
         }
 
-        @keyframes scan {
-            0%, 100% { transform: translateY(-50px); opacity: 0; }
-            50% { transform: translateY(0); opacity: 1; }
+        @keyframes scanLine {
+            0%, 100% { transform: translateY(0); opacity: 0.8; }
+            50% { transform: translateY(146px); opacity: 1; }
+        }
+
+        .scan-status {
+            text-align: center;
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .scan-status.active {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .scan-status.inactive {
+            background: #e2e8f0;
+            color: #4a5568;
         }
 
         .scan-counter {
-            text-align: center;
-            margin: 15px 0;
-            padding: 10px;
-            background: linear-gradient(45deg, #4CAF50, #45a049);
+            background: linear-gradient(45deg, #2196F3, #1976D2);
             color: white;
+            padding: 10px;
             border-radius: 8px;
-            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
         }
 
         .buttons {
@@ -100,6 +186,7 @@
             gap: 15px;
             justify-content: center;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -111,10 +198,25 @@
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
         }
 
         .btn-primary {
             background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #5a6268);
             color: white;
         }
 
@@ -128,7 +230,7 @@
             color: white;
         }
 
-        .btn:hover {
+        .btn:not(:disabled):hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
@@ -141,18 +243,16 @@
 
         .product-item {
             background: white;
-            border-radius: 12px;
+            border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             border-left: 5px solid #4CAF50;
-            animation: fadeInUp 0.5s ease;
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+            transform: translateY(30px);
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -169,7 +269,7 @@
         .plu {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
-            padding: 5px 15px;
+            padding: 8px 15px;
             border-radius: 20px;
             font-weight: bold;
             font-size: 14px;
@@ -178,9 +278,10 @@
         .scan-order {
             background: #e2e8f0;
             color: #4a5568;
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 15px;
             font-size: 12px;
+            font-weight: bold;
         }
 
         .product-name {
@@ -188,24 +289,54 @@
             font-weight: bold;
             color: #2d3748;
             margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .product-info {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 20px;
+            align-items: start;
         }
 
         .product-image {
             width: 100px;
             height: 100px;
             object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            border-radius: 10px;
             border: 2px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+
+        .product-image:hover {
+            transform: scale(1.05);
+        }
+
+        .image-placeholder {
+            width: 100px;
+            height: 100px;
+            background: #f7fafc;
+            border: 2px dashed #cbd5e0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #718096;
+            text-align: center;
+            padding: 10px;
         }
 
         .barcode-container {
             text-align: center;
             margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
         }
 
         .barcode-svg {
-            max-width: 200px;
+            max-width: 250px;
             height: auto;
         }
 
@@ -213,22 +344,26 @@
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 25px;
+            flex-wrap: wrap;
         }
 
         .page-btn {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
             background: white;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-weight: bold;
+            min-width: 40px;
         }
 
         .page-btn:hover, .page-btn.active {
             background: #4CAF50;
             color: white;
             border-color: #4CAF50;
+            transform: translateY(-2px);
         }
 
         .modal {
@@ -239,60 +374,106 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0,0,0,0.6);
             backdrop-filter: blur(5px);
         }
 
         .modal-content {
-            background-color: white;
-            margin: 15% auto;
+            background: white;
+            margin: 10% auto;
             padding: 30px;
-            border-radius: 15px;
+            border-radius: 20px;
             width: 90%;
-            max-width: 400px;
+            max-width: 450px;
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            animation: modalShow 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalShow 0.4s ease;
         }
 
         @keyframes modalShow {
             from {
                 opacity: 0;
-                transform: translateY(-50px);
+                transform: translateY(-100px) scale(0.8);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
 
         .modal h3 {
             color: #e53e3e;
             margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .modal p {
+            margin-bottom: 25px;
+            color: #666;
+            line-height: 1.5;
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 40px;
             color: #666;
+        }
+
+        .loading::before {
+            content: '🔄';
+            display: block;
+            font-size: 30px;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .error-message {
             background: #fed7d7;
             color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #2f855a;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            border-left: 4px solid #38a169;
+        }
+
+        .camera-info {
+            background: #ebf4ff;
+            color: #3182ce;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 8px;
             margin: 10px 0;
             text-align: center;
+            font-size: 14px;
         }
 
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
+                margin: 10px auto;
+            }
+            
+            .scanner-section, .results-section {
+                padding: 15px;
             }
             
             .buttons {
@@ -302,446 +483,695 @@
             
             .btn {
                 width: 100%;
-                max-width: 200px;
+                max-width: 250px;
+                justify-content: center;
             }
+
+            .product-info {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .scan-frame {
+                width: 200px;
+                height: 120px;
+            }
+        }
+
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.5s ease;
+        }
+
+        .fade-enter-from, .fade-leave-to {
+            opacity: 0;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🔍 Barcode Scanner</h1>
-        <p>Dibuat oleh WAHYU - Pengganti WDCP Toko untuk Cetak Harga Barang</p>
-    </div>
-
-    <div class="container">
-        <!-- Scanner Section -->
-        <div class="scanner-section">
-            <h2 style="text-align: center; margin-bottom: 20px; color: #4a5568;">📱 Scanner Barcode</h2>
-            <div id="scanner-container">
-                <div id="interactive"></div>
-                <div class="scan-line"></div>
-            </div>
-            
-            <div class="scan-counter">
-                <div>Total Produk Terscan: <span id="scan-count">0</span></div>
-                <div style="font-size: 12px; margin-top: 5px;">Scan otomatis dengan delay minimal</div>
-            </div>
-
-            <div class="buttons">
-                <button class="btn btn-primary" id="start-scan">🎥 Mulai Scan</button>
-                <button class="btn btn-primary" id="save-results">💾 Simpan Hasil</button>
-                <button class="btn btn-danger" id="cancel-scan">❌ Batal</button>
-                <button class="btn btn-info" id="show-results">📋 Tampilkan Barcode</button>
-            </div>
+    <div id="app">
+        <div class="header">
+            <h1>🔍 Barcode Scanner Pro</h1>
+            <p>Dibuat oleh WAHYU - Pengganti WDCP Toko untuk Cetak Harga Barang</p>
+            <p style="font-size: 12px; margin-top: 5px;">Powered by vue-qrcode-reader - Ultra Fast & Accurate</p>
         </div>
 
-        <!-- Results Section -->
-        <div class="results-section hidden" id="results-section">
-            <h2 style="text-align: center; margin-bottom: 20px; color: #4a5568;">📦 Hasil Scan Produk</h2>
-            <div id="product-list" class="product-list"></div>
-            <div id="pagination" class="pagination"></div>
-        </div>
-    </div>
+        <div class="container">
+            <!-- Scanner Section -->
+            <div class="scanner-section">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #4a5568;">
+                    📱 Scanner Barcode & QR Code
+                </h2>
+                
+                <div class="scanner-container" v-show="cameraActive">
+                    <qrcode-stream 
+                        :constraints="constraints"
+                        @detect="onDetect"
+                        @error="onError"
+                        @camera-on="onCameraReady"
+                        @camera-off="onCameraOff"
+                        class="qrcode-stream">
+                    </qrcode-stream>
+                    
+                    <div class="scan-overlay">
+                        <div class="scan-frame">
+                            <div class="scan-corners">
+                                <div class="corner top-left"></div>
+                                <div class="corner top-right"></div>
+                                <div class="corner bottom-left"></div>
+                                <div class="corner bottom-right"></div>
+                            </div>
+                            <div class="scan-line" v-show="isScanning"></div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Modal Konfirmasi Batal -->
-    <div id="cancel-modal" class="modal">
-        <div class="modal-content">
-            <h3>⚠️ Konfirmasi Pembatalan</h3>
-            <p>Apakah Anda yakin ingin membatalkan semua hasil scan? Data yang sudah terscan akan hilang!</p>
-            <div style="margin-top: 20px;">
-                <button class="btn btn-danger" id="confirm-cancel">Ya, Batalkan</button>
-                <button class="btn btn-primary" id="close-modal" style="margin-left: 10px;">Tidak</button>
+                <div class="camera-info" v-show="!cameraActive && !cameraError">
+                    📷 Kamera akan dimuat ketika mulai scan
+                </div>
+
+                <div class="scan-status" :class="{ active: isScanning, inactive: !isScanning }">
+                    <div v-if="isScanning">
+                        🎯 Scanner Aktif - Arahkan ke barcode/QR code
+                    </div>
+                    <div v-else>
+                        ⏸️ Scanner Tidak Aktif
+                    </div>
+                </div>
+
+                <div class="scan-counter">
+                    <div>📊 Total Produk Terscan: <strong>{{ scannedProducts.length }}</strong></div>
+                    <div style="font-size: 12px; margin-top: 5px;">
+                        ⚡ Response time ultra-fast dengan deteksi otomatis
+                    </div>
+                </div>
+
+                <div v-if="lastScannedProduct" class="success-message">
+                    ✅ Terakhir scan: <strong>{{ lastScannedProduct.name }}</strong>
+                    <br><small>PLU: {{ lastScannedProduct.plu }} | {{ lastScannedProduct.timestamp }}</small>
+                </div>
+
+                <div v-if="cameraError" class="error-message">
+                    ❌ {{ cameraError }}
+                </div>
+
+                <div class="buttons">
+                    <button 
+                        class="btn" 
+                        :class="isScanning ? 'btn-danger' : 'btn-primary'"
+                        @click="toggleScanner"
+                        :disabled="!!cameraError">
+                        {{ isScanning ? '🛑 Stop Scanner' : '🎥 Mulai Scanner' }}
+                    </button>
+                    
+                    <button 
+                        class="btn btn-primary" 
+                        @click="saveResults"
+                        :disabled="scannedProducts.length === 0">
+                        💾 Simpan Hasil ({{ scannedProducts.length }})
+                    </button>
+                    
+                    <button 
+                        class="btn btn-danger" 
+                        @click="showCancelModal"
+                        :disabled="scannedProducts.length === 0">
+                        ❌ Batal Semua
+                    </button>
+                    
+                    <button 
+                        class="btn btn-info" 
+                        @click="showResults"
+                        :disabled="scannedProducts.length === 0">
+                        📋 Lihat Hasil ({{ scannedProducts.length }})
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <transition name="fade">
+                <div class="results-section" v-show="showResultsSection">
+                    <h2 style="text-align: center; margin-bottom: 20px; color: #4a5568;">
+                        📦 Hasil Scan Produk
+                    </h2>
+                    
+                    <div class="loading" v-if="loadingResults">
+                        Memuat data produk...
+                    </div>
+                    
+                    <div v-else>
+                        <div class="product-list">
+                            <div 
+                                v-for="(product, index) in paginatedProducts" 
+                                :key="product.barcode + product.scanOrder"
+                                class="product-item"
+                                :style="{ 'animation-delay': (index * 0.1) + 's' }">
+                                
+                                <div class="product-header">
+                                    <div class="plu">PLU: {{ product.plu }}</div>
+                                    <div class="scan-order">Scan #{{ product.scanOrder }}</div>
+                                </div>
+                                
+                                <div class="product-name">{{ product.name }}</div>
+                                
+                                <div class="product-info">
+                                    <div>
+                                        <img 
+                                            :src="getImageUrl(product.plu)" 
+                                            :alt="product.name"
+                                            class="product-image" 
+                                            @error="handleImageError"
+                                            @load="handleImageLoad">
+                                        <div 
+                                            class="image-placeholder" 
+                                            style="display: none;"
+                                            :data-plu="product.plu">
+                                            📷 Gambar tidak tersedia
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <p><strong>Barcode:</strong> {{ product.barcode }}</p>
+                                        <p><strong>Waktu Scan:</strong> {{ product.timestamp }}</p>
+                                        <div class="barcode-container">
+                                            <svg :id="'barcode-' + product.scanOrder" class="barcode-svg"></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pagination" v-if="totalPages > 1">
+                            <button 
+                                class="page-btn" 
+                                @click="currentPage--"
+                                :disabled="currentPage === 1">
+                                ← Prev
+                            </button>
+                            
+                            <button 
+                                v-for="page in visiblePages" 
+                                :key="page"
+                                class="page-btn"
+                                :class="{ active: page === currentPage }"
+                                @click="currentPage = page">
+                                {{ page }}
+                            </button>
+                            
+                            <button 
+                                class="page-btn" 
+                                @click="currentPage++"
+                                :disabled="currentPage === totalPages">
+                                Next →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </div>
+
+        <!-- Modal Konfirmasi Batal -->
+        <div class="modal" :style="{ display: showModal ? 'block' : 'none' }">
+            <div class="modal-content">
+                <h3>⚠️ Konfirmasi Pembatalan</h3>
+                <p>Apakah Anda yakin ingin membatalkan semua hasil scan?</p>
+                <p><strong>{{ scannedProducts.length }} produk</strong> akan dihapus dan tidak dapat dikembalikan!</p>
+                <div style="margin-top: 25px;">
+                    <button class="btn btn-danger" @click="confirmCancel">
+                        🗑️ Ya, Hapus Semua
+                    </button>
+                    <button class="btn btn-secondary" @click="closeModal" style="margin-left: 15px;">
+                        ↩️ Batal
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        class BarcodeScanner {
-            constructor() {
-                this.scannedProducts = [];
-                this.productsData = {};
-                this.isScanning = false;
-                this.currentPage = 1;
-                this.itemsPerPage = 5;
-                this.scanDelay = 100; // Minimal delay 100ms untuk fast response
-                this.lastScanTime = 0;
-                
-                this.initializeElements();
-                this.loadProductsData();
-                this.bindEvents();
-            }
+        const { createApp } = Vue;
+        const { QrcodeStream } = VueQrcodeReader;
 
-            initializeElements() {
-                this.scanCountEl = document.getElementById('scan-count');
-                this.startScanBtn = document.getElementById('start-scan');
-                this.saveResultsBtn = document.getElementById('save-results');
-                this.cancelScanBtn = document.getElementById('cancel-scan');
-                this.showResultsBtn = document.getElementById('show-results');
-                this.resultsSection = document.getElementById('results-section');
-                this.productList = document.getElementById('product-list');
-                this.pagination = document.getElementById('pagination');
-                this.cancelModal = document.getElementById('cancel-modal');
-                this.confirmCancelBtn = document.getElementById('confirm-cancel');
-                this.closeModalBtn = document.getElementById('close-modal');
-            }
-
-            async loadProductsData() {
-                try {
-                    const response = await fetch('./bcd.json');
-                    if (!response.ok) {
-                        throw new Error('Tidak dapat memuat data produk');
+        createApp({
+            components: {
+                QrcodeStream
+            },
+            data() {
+                return {
+                    // Scanner state
+                    isScanning: false,
+                    cameraActive: false,
+                    cameraError: null,
+                    lastScanTime: 0,
+                    scanDelay: 500, // 500ms delay untuk mencegah duplikasi
+                    
+                    // Data
+                    scannedProducts: [],
+                    productsData: {},
+                    lastScannedProduct: null,
+                    
+                    // UI state
+                    showResultsSection: false,
+                    showModal: false,
+                    loadingResults: false,
+                    currentPage: 1,
+                    itemsPerPage: 5,
+                    
+                    // Camera constraints
+                    constraints: {
+                        facingMode: 'environment', // Kamera belakang
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
                     }
-                    const data = await response.json();
-                    
-                    // Convert array to object with barcode as key for fast lookup
-                    this.productsData = {};
-                    data.forEach(product => {
-                        this.productsData[product.BARCODE] = {
-                            plu: product.PLU,
-                            name: product.NAMA_PRODUK,
-                            barcode: product.BARCODE
-                        };
-                    });
-                    
-                    console.log(`✅ Data produk berhasil dimuat: ${data.length} produk`);
-                } catch (error) {
-                    console.error('❌ Error loading products data:', error);
-                    this.showError('Gagal memuat data produk. Pastikan file bcd.json tersedia.');
                 }
-            }
-
-            bindEvents() {
-                this.startScanBtn.addEventListener('click', () => this.startScanning());
-                this.saveResultsBtn.addEventListener('click', () => this.saveResults());
-                this.cancelScanBtn.addEventListener('click', () => this.showCancelModal());
-                this.showResultsBtn.addEventListener('click', () => this.showResults());
-                this.confirmCancelBtn.addEventListener('click', () => this.confirmCancel());
-                this.closeModalBtn.addEventListener('click', () => this.closeCancelModal());
-                
-                // Close modal when clicking outside
-                this.cancelModal.addEventListener('click', (e) => {
-                    if (e.target === this.cancelModal) {
-                        this.closeCancelModal();
+            },
+            computed: {
+                paginatedProducts() {
+                    const start = (this.currentPage - 1) * this.itemsPerPage;
+                    const end = start + this.itemsPerPage;
+                    return this.scannedProducts.slice(start, end);
+                },
+                totalPages() {
+                    return Math.ceil(this.scannedProducts.length / this.itemsPerPage);
+                },
+                visiblePages() {
+                    const pages = [];
+                    const maxVisible = 5;
+                    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+                    let end = Math.min(this.totalPages, start + maxVisible - 1);
+                    
+                    if (end - start + 1 < maxVisible) {
+                        start = Math.max(1, end - maxVisible + 1);
                     }
-                });
-            }
-
-            async startScanning() {
-                if (this.isScanning) {
-                    this.stopScanning();
-                    return;
-                }
-
-                try {
-                    this.isScanning = true;
-                    this.startScanBtn.textContent = '🛑 Stop Scan';
-                    this.startScanBtn.classList.remove('btn-primary');
-                    this.startScanBtn.classList.add('btn-danger');
-
-                    await Quagga.init({
-                        inputStream: {
-                            name: "Live",
-                            type: "LiveStream",
-                            target: document.querySelector('#interactive'),
-                            constraints: {
-                                width: 400,
-                                height: 300,
-                                facingMode: "environment"
-                            }
-                        },
-                        locator: {
-                            patchSize: "medium",
-                            halfSample: true
-                        },
-                        numOfWorkers: 2,
-                        frequency: 10,
-                        decoder: {
-                            readers: [
-                                "code_128_reader",
-                                "ean_reader",
-                                "ean_8_reader",
-                                "code_39_reader",
-                                "code_39_vin_reader",
-                                "codabar_reader",
-                                "upc_reader",
-                                "upc_e_reader",
-                                "i2of5_reader"
-                            ]
-                        },
-                        locate: true
-                    });
-
-                    Quagga.start();
                     
-                    Quagga.onDetected((result) => {
-                        const now = Date.now();
-                        if (now - this.lastScanTime < this.scanDelay) {
-                            return; // Skip if too soon (minimal delay for fast response)
+                    for (let i = start; i <= end; i++) {
+                        pages.push(i);
+                    }
+                    return pages;
+                }
+            },
+            watch: {
+                paginatedProducts: {
+                    handler() {
+                        this.$nextTick(() => {
+                            this.generateBarcodes();
+                        });
+                    },
+                    immediate: true
+                }
+            },
+            async mounted() {
+                await this.loadProductsData();
+                this.loadSavedData();
+                console.log('🚀 Vue Barcode Scanner Pro initialized by WAHYU');
+                console.log('📚 Using vue-qrcode-reader for ultra-fast detection');
+            },
+            methods: {
+                async loadProductsData() {
+                    try {
+                        const response = await fetch('./bcd.json');
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: Tidak dapat memuat data produk`);
                         }
                         
-                        this.lastScanTime = now;
-                        this.handleBarcodeDetected(result.codeResult.code);
-                    });
-
-                    console.log('🎥 Scanner dimulai');
-                } catch (error) {
-                    console.error('❌ Error starting scanner:', error);
-                    this.showError('Gagal memulai kamera. Pastikan izin kamera diberikan.');
-                    this.resetScanButton();
-                }
-            }
-
-            stopScanning() {
-                if (!this.isScanning) return;
-                
-                Quagga.stop();
-                this.isScanning = false;
-                this.resetScanButton();
-                console.log('🛑 Scanner dihentikan');
-            }
-
-            resetScanButton() {
-                this.startScanBtn.textContent = '🎥 Mulai Scan';
-                this.startScanBtn.classList.remove('btn-danger');
-                this.startScanBtn.classList.add('btn-primary');
-            }
-
-            handleBarcodeDetected(barcode) {
-                // Check if barcode already scanned
-                if (this.scannedProducts.some(p => p.barcode === barcode)) {
-                    console.log('⚠️ Barcode sudah terscan:', barcode);
-                    return;
-                }
-
-                const productData = this.productsData[barcode];
-                
-                const product = {
-                    barcode: barcode,
-                    plu: productData ? productData.plu : 'Unknown',
-                    name: productData ? productData.name : 'Produk Tidak Ditemukan',
-                    scanOrder: this.scannedProducts.length + 1,
-                    timestamp: new Date().toLocaleString('id-ID')
-                };
-
-                this.scannedProducts.push(product);
-                this.updateScanCount();
-                
-                console.log('✅ Produk terscan:', product);
-                
-                // Visual feedback
-                document.body.style.backgroundColor = '#4CAF50';
-                setTimeout(() => {
-                    document.body.style.backgroundColor = '';
-                }, 150);
-            }
-
-            updateScanCount() {
-                this.scanCountEl.textContent = this.scannedProducts.length;
-            }
-
-            saveResults() {
-                if (this.scannedProducts.length === 0) {
-                    this.showError('Tidak ada produk yang terscan untuk disimpan.');
-                    return;
-                }
-
-                this.stopScanning();
-                
-                // Save to localStorage for persistence
-                localStorage.setItem('scannedProducts', JSON.stringify(this.scannedProducts));
-                localStorage.setItem('savedAt', new Date().toLocaleString('id-ID'));
-                
-                alert(`✅ Hasil scan berhasil disimpan!\nTotal: ${this.scannedProducts.length} produk\nWaktu: ${new Date().toLocaleString('id-ID')}`);
-                
-                console.log('💾 Hasil scan disimpan:', this.scannedProducts);
-            }
-
-            showResults() {
-                if (this.scannedProducts.length === 0) {
-                    this.showError('Tidak ada hasil scan untuk ditampilkan.');
-                    return;
-                }
-
-                this.resultsSection.classList.remove('hidden');
-                this.displayProducts();
-            }
-
-            displayProducts() {
-                const start = (this.currentPage - 1) * this.itemsPerPage;
-                const end = start + this.itemsPerPage;
-                const pageProducts = this.scannedProducts.slice(start, end);
-
-                this.productList.innerHTML = '';
-
-                pageProducts.forEach((product, index) => {
-                    const productEl = this.createProductElement(product, start + index);
-                    this.productList.appendChild(productEl);
-                });
-
-                this.createPagination();
-            }
-
-            createProductElement(product, globalIndex) {
-                const div = document.createElement('div');
-                div.className = 'product-item';
-                div.style.animationDelay = `${globalIndex * 0.1}s`;
-
-                const imageUrl = `https://cdn-klik.klikindomaret.com/klik-catalog/product/${product.plu}_1.jpg`;
-
-                div.innerHTML = `
-                    <div class="product-header">
-                        <div class="plu">PLU: ${product.plu}</div>
-                        <div class="scan-order">Scan #${product.scanOrder}</div>
-                    </div>
-                    <div class="product-name">${product.name}</div>
-                    <img src="${imageUrl}" alt="Gambar Produk" class="product-image" 
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <div style="display: none; padding: 20px; background: #f7fafc; border-radius: 8px; text-align: center; color: #718096;">
-                        📷 Gambar tidak tersedia
-                    </div>
-                    <div class="barcode-container">
-                        <svg class="barcode-svg" id="barcode-${globalIndex}"></svg>
-                    </div>
-                `;
-
-                // Generate barcode after element is added to DOM
-                setTimeout(() => {
-                    try {
-                        JsBarcode(`#barcode-${globalIndex}`, product.barcode, {
-                            format: "CODE128",
-                            width: 2,
-                            height: 50,
-                            displayValue: true,
-                            fontSize: 14,
-                            textMargin: 5
+                        const data = await response.json();
+                        
+                        // Convert to lookup object untuk performa yang lebih baik
+                        this.productsData = {};
+                        data.forEach(product => {
+                            this.productsData[product.BARCODE] = {
+                                plu: product.PLU,
+                                name: product.NAMA_PRODUK,
+                                barcode: product.BARCODE
+                            };
                         });
+                        
+                        console.log(`✅ Data produk berhasil dimuat: ${data.length} produk`);
                     } catch (error) {
-                        console.error('Error generating barcode:', error);
-                        document.querySelector(`#barcode-${globalIndex}`).innerHTML = 
-                            `<text x="50%" y="50%" text-anchor="middle" fill="#666">Error generating barcode</text>`;
+                        console.error('❌ Error loading products data:', error);
+                        this.showError('Gagal memuat data produk. Pastikan file bcd.json tersedia di server.');
                     }
-                }, 100);
+                },
 
-                return div;
-            }
-
-            createPagination() {
-                const totalPages = Math.ceil(this.scannedProducts.length / this.itemsPerPage);
-                this.pagination.innerHTML = '';
-
-                if (totalPages <= 1) return;
-
-                // Previous button
-                if (this.currentPage > 1) {
-                    const prevBtn = this.createPageButton('← Prev', this.currentPage - 1);
-                    this.pagination.appendChild(prevBtn);
-                }
-
-                // Page numbers
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageBtn = this.createPageButton(i, i);
-                    if (i === this.currentPage) {
-                        pageBtn.classList.add('active');
+                toggleScanner() {
+                    if (this.isScanning) {
+                        this.stopScanner();
+                    } else {
+                        this.startScanner();
                     }
-                    this.pagination.appendChild(pageBtn);
-                }
+                },
 
-                // Next button
-                if (this.currentPage < totalPages) {
-                    const nextBtn = this.createPageButton('Next →', this.currentPage + 1);
-                    this.pagination.appendChild(nextBtn);
-                }
-            }
+                startScanner() {
+                    this.isScanning = true;
+                    this.cameraActive = true;
+                    this.cameraError = null;
+                    console.log('🎥 Scanner dimulai');
+                },
 
-            createPageButton(text, page) {
-                const button = document.createElement('button');
-                button.className = 'page-btn';
-                button.textContent = text;
-                button.addEventListener('click', () => {
-                    this.currentPage = page;
-                    this.displayProducts();
-                });
-                return button;
-            }
+                stopScanner() {
+                    this.isScanning = false;
+                    this.cameraActive = false;
+                    console.log('🛑 Scanner dihentikan');
+                },
 
-            showCancelModal() {
-                if (this.scannedProducts.length === 0) {
-                    this.showError('Tidak ada data untuk dibatalkan.');
-                    return;
-                }
-                this.cancelModal.style.display = 'block';
-            }
+                onDetect(detectedCodes) {
+                    if (!this.isScanning || detectedCodes.length === 0) return;
+                    
+                    const now = Date.now();
+                    if (now - this.lastScanTime < this.scanDelay) {
+                        return; // Prevent rapid duplicate scans
+                    }
+                    
+                    const barcode = detectedCodes[0].rawValue;
+                    this.handleBarcodeDetected(barcode);
+                    this.lastScanTime = now;
+                },
 
-            closeCancelModal() {
-                this.cancelModal.style.display = 'none';
-            }
+                handleBarcodeDetected(barcode) {
+                    // Cek duplikasi
+                    if (this.scannedProducts.some(p => p.barcode === barcode)) {
+                        console.log('⚠️ Barcode sudah terscan:', barcode);
+                        return;
+                    }
 
-            confirmCancel() {
-                this.stopScanning();
-                this.scannedProducts = [];
-                this.currentPage = 1;
-                this.updateScanCount();
-                this.resultsSection.classList.add('hidden');
-                this.closeCancelModal();
-                
-                // Clear localStorage
-                localStorage.removeItem('scannedProducts');
-                localStorage.removeItem('savedAt');
-                
-                console.log('🗑️ Semua data scan dibersihkan');
-                alert('✅ Semua data scan telah dibersihkan!');
-            }
+                    const productData = this.productsData[barcode];
+                    
+                    const product = {
+                        barcode: barcode,
+                        plu: productData ? productData.plu : 'Unknown',
+                        name: productData ? productData.name : `Produk Tidak Ditemukan (${barcode})`,
+                        scanOrder: this.scannedProducts.length + 1,
+                        timestamp: new Date().toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        })
+                    };
 
-            showError(message) {
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.textContent = message;
-                
-                const container = document.querySelector('.scanner-section');
-                container.insertBefore(errorDiv, container.firstChild);
-                
-                setTimeout(() => {
-                    errorDiv.remove();
-                }, 5000);
-            }
+                    this.scannedProducts.push(product);
+                    this.lastScannedProduct = product;
+                    
+                    console.log('✅ Produk terscan:', product);
+                    
+                    // Visual feedback
+                    this.flashSuccess();
+                },
 
-            // Load saved data on page refresh
-            loadSavedData() {
-                const savedData = localStorage.getItem('scannedProducts');
-                if (savedData) {
+                flashSuccess() {
+                    document.body.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+                    setTimeout(() => {
+                        document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    }, 200);
+                },
+
+                onError(error) {
+                    console.error('❌ Camera error:', error);
+                    if (error.name === 'NotAllowedError') {
+                        this.cameraError = 'Akses kamera ditolak. Mohon berikan izin kamera dan refresh halaman.';
+                    } else if (error.name === 'NotFoundError') {
+                        this.cameraError = 'Kamera tidak ditemukan. Pastikan device memiliki kamera.';
+                    } else if (error.name === 'NotSupportedError') {
+                        this.cameraError = 'Browser tidak mendukung akses kamera.';
+                    } else {
+                        this.cameraError = `Error kamera: ${error.message}`;
+                    }
+                    this.isScanning = false;
+                    this.cameraActive = false;
+                },
+
+                onCameraReady() {
+                    console.log('📷 Kamera siap');
+                    this.cameraError = null;
+                },
+
+                onCameraOff() {
+                    console.log('📷 Kamera dimatikan');
+                },
+
+                saveResults() {
+                    if (this.scannedProducts.length === 0) {
+                        this.showError('Tidak ada produk yang terscan untuk disimpan.');
+                        return;
+                    }
+
+                    this.stopScanner();
+                    
+                    // Save to localStorage
+                    const saveData = {
+                        products: this.scannedProducts,
+                        savedAt: new Date().toLocaleString('id-ID'),
+                        total: this.scannedProducts.length
+                    };
+                    
+                    localStorage.setItem('wahyuBarcodeScanner', JSON.stringify(saveData));
+                    
+                    this.showSuccess(`✅ Hasil scan berhasil disimpan!\nTotal: ${this.scannedProducts.length} produk\nWaktu: ${saveData.savedAt}`);
+                    console.log('💾 Hasil scan disimpan:', saveData);
+                },
+
+                showResults() {
+                    if (this.scannedProducts.length === 0) {
+                        this.showError('Tidak ada hasil scan untuk ditampilkan.');
+                        return;
+                    }
+
+                    this.loadingResults = true;
+                    this.showResultsSection = true;
+                    this.currentPage = 1;
+                    
+                    // Simulate loading untuk better UX
+                    setTimeout(() => {
+                        this.loadingResults = false;
+                        this.$nextTick(() => {
+                            this.generateBarcodes();
+                        });
+                    }, 500);
+                },
+
+                showCancelModal() {
+                    if (this.scannedProducts.length === 0) {
+                        this.showError('Tidak ada data untuk dibatalkan.');
+                        return;
+                    }
+                    this.showModal = true;
+                },
+
+                closeModal() {
+                    this.showModal = false;
+                },
+
+                confirmCancel() {
+                    this.stopScanner();
+                    this.scannedProducts = [];
+                    this.lastScannedProduct = null;
+                    this.currentPage = 1;
+                    this.showResultsSection = false;
+                    this.closeModal();
+                    
+                    // Clear localStorage
+                    localStorage.removeItem('wahyuBarcodeScanner');
+                    
+                    this.showSuccess('🗑️ Semua data scan telah dibersihkan!');
+                    console.log('🗑️ Semua data scan dibersihkan');
+                },
+
+                loadSavedData() {
                     try {
-                        this.scannedProducts = JSON.parse(savedData);
-                        this.updateScanCount();
-                        const savedAt = localStorage.getItem('savedAt');
-                        if (savedAt) {
-                            console.log(`📋 Data tersimpan dimuat: ${this.scannedProducts.length} produk (disimpan: ${savedAt})`);
+                        const savedData = localStorage.getItem('wahyuBarcodeScanner');
+                        if (savedData) {
+                            const data = JSON.parse(savedData);
+                            this.scannedProducts = data.products || [];
+                            console.log(`📋 Data tersimpan dimuat: ${this.scannedProducts.length} produk (disimpan: ${data.savedAt})`);
+                            
+                            if (this.scannedProducts.length > 0) {
+                                this.showSuccess(`📋 Data sebelumnya dimuat: ${this.scannedProducts.length} produk`);
+                            }
                         }
                     } catch (error) {
-                        console.error('Error loading saved data:', error);
-                        localStorage.removeItem('scannedProducts');
+                        console.error('❌ Error loading saved data:', error);
+                        localStorage.removeItem('wahyuBarcodeScanner');
                     }
+                },
+
+                getImageUrl(plu) {
+                    return `https://cdn-klik.klikindomaret.com/klik-catalog/product/${plu}_1.jpg`;
+                },
+
+                handleImageError(event) {
+                    const img = event.target;
+                    const placeholder = img.nextElementSibling;
+                    img.style.display = 'none';
+                    if (placeholder) {
+                        placeholder.style.display = 'flex';
+                    }
+                },
+
+                handleImageLoad(event) {
+                    const img = event.target;
+                    const placeholder = img.nextElementSibling;
+                    img.style.display = 'block';
+                    if (placeholder) {
+                        placeholder.style.display = 'none';
+                    }
+                },
+
+                generateBarcodes() {
+                    this.$nextTick(() => {
+                        this.paginatedProducts.forEach((product) => {
+                            const elementId = `barcode-${product.scanOrder}`;
+                            const element = document.getElementById(elementId);
+                            
+                            if (element && !element.hasChildNodes()) {
+                                try {
+                                    JsBarcode(element, product.barcode, {
+                                        format: "CODE128",
+                                        width: 2,
+                                        height: 60,
+                                        displayValue: true,
+                                        fontSize: 14,
+                                        textMargin: 8,
+                                        margin: 10,
+                                        background: "#ffffff",
+                                        lineColor: "#000000"
+                                    });
+                                } catch (error) {
+                                    console.error('Error generating barcode for:', product.barcode, error);
+                                    element.innerHTML = `
+                                        <text x="50%" y="50%" text-anchor="middle" fill="#666" font-size="12">
+                                            Error: Invalid barcode format
+                                        </text>
+                                    `;
+                                }
+                            }
+                        });
+                    });
+                },
+
+                showError(message) {
+                    // Create temporary error message
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.textContent = message;
+                    errorDiv.style.position = 'fixed';
+                    errorDiv.style.top = '20px';
+                    errorDiv.style.left = '50%';
+                    errorDiv.style.transform = 'translateX(-50%)';
+                    errorDiv.style.zIndex = '9999';
+                    errorDiv.style.maxWidth = '90%';
+                    
+                    document.body.appendChild(errorDiv);
+                    
+                    setTimeout(() => {
+                        if (errorDiv.parentNode) {
+                            errorDiv.parentNode.removeChild(errorDiv);
+                        }
+                    }, 4000);
+                },
+
+                showSuccess(message) {
+                    // Create temporary success message
+                    const successDiv = document.createElement('div');
+                    successDiv.className = 'success-message';
+                    successDiv.textContent = message;
+                    successDiv.style.position = 'fixed';
+                    successDiv.style.top = '20px';
+                    successDiv.style.left = '50%';
+                    successDiv.style.transform = 'translateX(-50%)';
+                    successDiv.style.zIndex = '9999';
+                    successDiv.style.maxWidth = '90%';
+                    
+                    document.body.appendChild(successDiv);
+                    
+                    setTimeout(() => {
+                        if (successDiv.parentNode) {
+                            successDiv.parentNode.removeChild(successDiv);
+                        }
+                    }, 4000);
                 }
             }
-        }
+        }).mount('#app');
 
-        // Initialize scanner when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            const scanner = new BarcodeScanner();
-            scanner.loadSavedData(); // Load any previously saved data
-            
-            console.log('🚀 Barcode Scanner App initialized by WAHYU');
-            console.log('📝 Tujuan: Pengganti WDCP Toko untuk Cetak Harga Barang');
-            console.log('⚠️ Catatan: Masih perlu scan manual di program pricetag');
-        });
-
-        // Service Worker for PWA capabilities (optional)
+        // Service Worker Registration untuk PWA
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(() => console.log('📱 PWA Service Worker registered'))
-                    .catch(() => console.log('❌ PWA Service Worker registration failed'));
+            window.addEventListener('load', async () => {
+                try {
+                    // Create minimal service worker untuk caching basic files
+                    const swCode = `
+                        const CACHE_NAME = 'wahyu-barcode-scanner-v1';
+                        const urlsToCache = [
+                            '/',
+                            './bcd.json'
+                        ];
+
+                        self.addEventListener('install', event => {
+                            event.waitUntil(
+                                caches.open(CACHE_NAME)
+                                    .then(cache => cache.addAll(urlsToCache))
+                            );
+                        });
+
+                        self.addEventListener('fetch', event => {
+                            event.respondWith(
+                                caches.match(event.request)
+                                    .then(response => {
+                                        if (response) {
+                                            return response;
+                                        }
+                                        return fetch(event.request);
+                                    })
+                            );
+                        });
+                    `;
+                    
+                    const blob = new Blob([swCode], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(blob);
+                    
+                    await navigator.serviceWorker.register(swUrl);
+                    console.log('📱 PWA Service Worker registered');
+                } catch (error) {
+                    console.log('❌ PWA Service Worker registration failed:', error);
+                }
             });
         }
+
+        // Prevent zoom on double tap untuk mobile experience yang lebih baik
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Ctrl/Cmd + S untuk save
+            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                event.preventDefault();
+                const app = document.querySelector('#app').__vueParentComponent?.ctx;
+                if (app && app.saveResults) {
+                    app.saveResults();
+                }
+            }
+            
+            // Spacebar untuk toggle scanner
+            if (event.key === ' ' && !event.target.matches('input, textarea, button')) {
+                event.preventDefault();
+                const app = document.querySelector('#app').__vueParentComponent?.ctx;
+                if (app && app.toggleScanner) {
+                    app.toggleScanner();
+                }
+            }
+        });
+
+        console.log('🎯 Barcode Scanner Pro - Ready to use!');
+        console.log('⌨️  Keyboard shortcuts:');
+        console.log('   - Ctrl+S: Save results');
+        console.log('   - Spacebar: Toggle scanner');
+        console.log('📱 Mobile optimized with PWA support');
+        console.log('🚀 Built with Vue 3 + vue-qrcode-reader');
     </script>
 </body>
 </html>
