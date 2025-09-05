@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .scanner-container {
+            position: relative;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #scanner {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .scanner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 100px;
+            border: 3px solid #00ff00;
+            border-radius: 10px;
+            box-shadow: 0 0 0 99999px rgba(0,0,0,0.3);
+        }
+
+        .scanner-overlay::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border: 2px solid rgba(0,255,0,0.5);
+            border-radius: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .scanned-count {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .scanned-count .count {
+            color: #4CAF50;
+            font-size: 24px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .results-container {
+            display: none;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .plu {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .product-name {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .product-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 2px solid #eee;
+        }
+
+        .barcode-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .barcode-svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .back-to-scanner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Barcode Scanner by W.A.H.Y.U</h1>
+            <p>Setelah di scan semua pergi scan satu persatu di Program PriceTag Komputer</p>
+        </div>
+
+        <!-- Scanner Section -->
+        <div id="scanner-section" class="card">
+            <div class="scanner-container">
+                <div id="scanner"></div>
+                <div class="scanner-overlay"></div>
+            </div>
+            
+            <div class="status-message" id="status-message" style="display: none;"></div>
+            
+            <div class="scanned-count">
+                Barang terscan: <span class="count" id="scanned-count">0</span>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="start-scanner">
+                    🎥 Mulai Scan
+                </button>
+                <button class="btn btn-secondary" id="stop-scanner" disabled>
+                    ⏹️ Stop Scan
+                </button>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-info" id="save-results" disabled>
+                    💾 Simpan Hasil
+                </button>
+                <button class="btn btn-secondary" id="cancel-scan">
+                    ❌ Batal
+                </button>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-info" id="show-results" style="display: none;">
+                    📋 Tampilkan Hasil
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section" class="results-container">
+            <div class="navigation">
+                <button class="nav-btn" id="prev-page" disabled>‹ Sebelumnya</button>
+                <span class="page-info" id="page-info">1 / 1</span>
+                <button class="nav-btn" id="next-page" disabled>Selanjutnya ›</button>
+            </div>
+            
+            <div id="products-container"></div>
+            
+            <div class="navigation">
+                <button class="nav-btn" id="prev-page-bottom" disabled>‹ Sebelumnya</button>
+                <span class="page-info" id="page-info-bottom">1 / 1</span>
+                <button class="nav-btn" id="next-page-bottom" disabled>Selanjutnya ›</button>
+            </div>
+        </div>
+
+        <button class="back-to-scanner" id="back-to-scanner" style="display: none;">
+            🔙
+        </button>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3>⚠️ Konfirmasi</h3>
+            <p>Apakah Anda yakin ingin membatalkan semua scan?</p>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" id="confirm-cancel">Ya, Batal</button>
+                <button class="btn btn-primary" id="keep-scanning">Tidak</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class BarcodeScanner {
+            constructor() {
+                this.scannedBarcodes = [];
+                this.products = [];
+                this.currentPage = 0;
+                this.productsPerPage = 1;
+                this.isScanning = false;
+                this.scanCooldown = false;
+                
+                this.init();
+                this.loadProductData();
+            }
+
+            init() {
+                this.bindEvents();
+            }
+
+            async loadProductData() {
+                try {
+                    this.showMessage('Memuat data produk...', 'success');
+                    
+                    const response = await fetch('./bcd.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    this.products = await response.json();
+                    
+                    // Validasi data
+                    if (!Array.isArray(this.products)) {
+                        throw new Error('Format data JSON tidak valid');
+                    }
+                    
+                    // Buat index barcode untuk pencarian cepat
+                    this.barcodeIndex = {};
+                    this.products.forEach(product => {
+                        if (product.BARCODE) {
+                            this.barcodeIndex[product.BARCODE] = product;
+                        }
+                    });
+                    
+                    this.showMessage(`Data produk berhasil dimuat: ${this.products.length} item`, 'success');
+                    console.log(`Loaded ${this.products.length} products from bcd.json`);
+                    
+                } catch (error) {
+                    console.error('Error loading product data:', error);
+                    this.showMessage(`Gagal memuat bcd.json: ${error.message}`, 'error');
+                    
+                    // Fallback ke data sample jika file tidak ditemukan
+                    this.products = [
+                        {"PLU": "10000019", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS PUTIH 370g KLG", "BARCODE": "8992702000018"},
+                        {"PLU": "10000020", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS CHOCOLATE 370g KLG", "BARCODE": "8992702000063"},
+                        {"PLU": "10000021", "NAMA_PRODUK": "CAP ENAK,KENTAL MANIS PUTIH 370g KLG", "BARCODE": "8992702000025"}
+                    ];
+                    
+                    this.barcodeIndex = {};
+                    this.products.forEach(product => {
+                        if (product.BARCODE) {
+                            this.barcodeIndex[product.BARCODE] = product;
+                        }
+                    });
+                    
+                    this.showMessage('Menggunakan data sample karena bcd.json tidak ditemukan', 'error');
+                }
+            }
+
+            bindEvents() {
+                document.getElementById('start-scanner').addEventListener('click', () => this.startScanner());
+                document.getElementById('stop-scanner').addEventListener('click', () => this.stopScanner());
+                document.getElementById('save-results').addEventListener('click', () => this.saveResults());
+                document.getElementById('cancel-scan').addEventListener('click', () => this.showCancelModal());
+                document.getElementById('show-results').addEventListener('click', () => this.showResults());
+                document.getElementById('back-to-scanner').addEventListener('click', () => this.backToScanner());
+                
+                document.getElementById('confirm-cancel').addEventListener('click', () => this.confirmCancel());
+                document.getElementById('keep-scanning').addEventListener('click', () => this.hideCancelModal());
+                
+                document.getElementById('prev-page').addEventListener('click', () => this.prevPage());
+                document.getElementById('next-page').addEventListener('click', () => this.nextPage());
+                document.getElementById('prev-page-bottom').addEventListener('click', () => this.prevPage());
+                document.getElementById('next-page-bottom').addEventListener('click', () => this.nextPage());
+                
+                document.getElementById('modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'modal') this.hideCancelModal();
+                });
+            }
+
+            async startScanner() {
+                try {
+                    await Quagga.init({
+                        inputStream: {
+                            name: "Live",
+                            type: "LiveStream",
+                            target: document.querySelector('#scanner'),
+                            constraints: {
+                                width: 450,
+                                height: 300,
+                                facingMode: "environment"
+                            }
+                        },
+                        locator: {
+                            patchSize: "medium",
+                            halfSample: true
+                        },
+                        numOfWorkers: 4,
+                        decoder: {
+                            readers: [
+                                "code_128_reader",
+                                "ean_reader",
+                                "ean_8_reader",
+                                "code_39_reader",
+                                "code_39_vin_reader",
+                                "codabar_reader",
+                                "upc_reader",
+                                "upc_e_reader",
+                                "i2of5_reader"
+                            ]
+                        },
+                        locate: true
+                    });
+
+                    Quagga.start();
+                    this.isScanning = true;
+                    
+                    document.getElementById('start-scanner').disabled = true;
+                    document.getElementById('stop-scanner').disabled = false;
+                    
+                    this.showMessage('Scanner aktif - Arahkan kamera ke barcode', 'success');
+                    
+                    Quagga.onDetected((data) => this.onBarcodeDetected(data));
+                    
+                } catch (error) {
+                    console.error('Error starting scanner:', error);
+                    this.showMessage('Gagal memulai scanner. Pastikan kamera dapat diakses.', 'error');
+                }
+            }
+
+            stopScanner() {
+                if (this.isScanning) {
+                    Quagga.stop();
+                    this.isScanning = false;
+                    
+                    document.getElementById('start-scanner').disabled = false;
+                    document.getElementById('stop-scanner').disabled = true;
+                    
+                    this.showMessage('Scanner berhenti', 'error');
+                }
+            }
+
+            onBarcodeDetected(data) {
+                if (this.scanCooldown) return;
+                
+                const barcode = data.codeResult.code;
+                
+                // Cooldown 2 detik untuk mencegah scan berulang
+                this.scanCooldown = true;
+                setTimeout(() => {
+                    this.scanCooldown = false;
+                }, 2000);
+                
+                // Cek apakah barcode sudah pernah discan
+                if (!this.scannedBarcodes.includes(barcode)) {
+                    this.scannedBarcodes.push(barcode);
+                    this.updateScannedCount();
+                    this.showMessage(`Barcode berhasil discan: ${barcode}`, 'success');
+                    
+                    // Getaran ringan jika tersedia
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(200);
+                    }
+                } else {
+                    this.showMessage(`Barcode ${barcode} sudah pernah discan`, 'error');
+                }
+            }
+
+            updateScannedCount() {
+                document.getElementById('scanned-count').textContent = this.scannedBarcodes.length;
+                document.getElementById('save-results').disabled = this.scannedBarcodes.length === 0;
+            }
+
+            saveResults() {
+                if (this.scannedBarcodes.length === 0) {
+                    this.showMessage('Tidak ada barcode yang discan', 'error');
+                    return;
+                }
+                
+                this.stopScanner();
+                document.getElementById('show-results').style.display = 'block';
+                this.showMessage(`${this.scannedBarcodes.length} barcode berhasil disimpan`, 'success');
+            }
+
+            showCancelModal() {
+                document.getElementById('modal').style.display = 'block';
+            }
+
+            hideCancelModal() {
+                document.getElementById('modal').style.display = 'none';
+            }
+
+            confirmCancel() {
+                this.scannedBarcodes = [];
+                this.updateScannedCount();
+                this.stopScanner();
+                document.getElementById('show-results').style.display = 'none';
+                this.hideCancelModal();
+                this.showMessage('Semua scan dibatalkan', 'error');
+            }
+
+            showResults() {
+                if (this.scannedBarcodes.length === 0) {
+                    this.showMessage('Tidak ada hasil untuk ditampilkan', 'error');
+                    return;
+                }
+                
+                document.getElementById('scanner-section').style.display = 'none';
+                document.getElementById('results-section').style.display = 'block';
+                document.getElementById('back-to-scanner').style.display = 'block';
+                
+                this.currentPage = 0;
+                this.renderResults();
+            }
+
+            backToScanner() {
+                document.getElementById('scanner-section').style.display = 'block';
+                document.getElementById('results-section').style.display = 'none';
+                document.getElementById('back-to-scanner').style.display = 'none';
+            }
+
+            renderResults() {
+                const container = document.getElementById('products-container');
+                const startIndex = this.currentPage * this.productsPerPage;
+                const endIndex = Math.min(startIndex + this.productsPerPage, this.scannedBarcodes.length);
+                
+                container.innerHTML = '';
+                
+                for (let i = startIndex; i < endIndex; i++) {
+                    const barcode = this.scannedBarcodes[i];
+                    const product = this.barcodeIndex[barcode]; // Gunakan index untuk pencarian cepat
+                    
+                    const productCard = this.createProductCard(barcode, product);
+                    container.appendChild(productCard);
+                }
+                
+                this.updatePagination();
+            }
+
+            createProductCard(barcode, product) {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                
+                // Gunakan index untuk pencarian cepat
+                if (!product) {
+                    product = this.barcodeIndex[barcode];
+                }
+                
+                const plu = product ? product.PLU : 'Tidak ditemukan';
+                const productName = product ? product.NAMA_PRODUK : `Produk dengan barcode ${barcode} tidak ditemukan dalam database`;
+                const imageUrl = product ? `https://cdn-klik.klikindomaret.com/klik-catalog/product/${product.PLU}_1.jpg` : '';
+                
+                card.innerHTML = `
+                    <div class="plu">PLU: ${plu}</div>
+                    <div class="product-name">${productName}</div>
+                    ${product ? `<img class="product-image" src="${imageUrl}" alt="${productName}" onerror="this.style.display='none'">` : ''}
+                    <div class="barcode-container">
+                        <svg class="barcode-svg" id="barcode-${barcode}"></svg>
+                    </div>
+                `;
+                
+                // Generate barcode setelah elemen ditambahkan ke DOM
+                setTimeout(() => {
+                    try {
+                        JsBarcode(`#barcode-${barcode}`, barcode, {
+                            format: "EAN13",
+                            width: 2,
+                            height: 60,
+                            displayValue: true,
+                            fontSize: 14,
+                            margin: 10
+                        });
+                    } catch (error) {
+                        // Jika EAN13 gagal, coba format lain
+                        try {
+                            JsBarcode(`#barcode-${barcode}`, barcode, {
+                                format: "CODE128",
+                                width: 2,
+                                height: 60,
+                                displayValue: true,
+                                fontSize: 14,
+                                margin: 10
+                            });
+                        } catch (error2) {
+                            document.querySelector(`#barcode-${barcode}`).innerHTML = `<text>Barcode: ${barcode}</text>`;
+                        }
+                    }
+                }, 100);
+                
+                return card;
+            }
+
+            updatePagination() {
+                const totalPages = Math.max(1, Math.ceil(this.scannedBarcodes.length / this.productsPerPage));
+                const currentPage = this.currentPage + 1;
+                
+                document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
+                document.getElementById('page-info-bottom').textContent = `${currentPage} / ${totalPages}`;
+                
+                document.getElementById('prev-page').disabled = this.currentPage === 0;
+                document.getElementById('next-page').disabled = this.currentPage >= totalPages - 1;
+                document.getElementById('prev-page-bottom').disabled = this.currentPage === 0;
+                document.getElementById('next-page-bottom').disabled = this.currentPage >= totalPages - 1;
+            }
+
+            prevPage() {
+                if (this.currentPage > 0) {
+                    this.currentPage--;
+                    this.renderResults();
+                }
+            }
+
+            nextPage() {
+                const totalPages = Math.ceil(this.scannedBarcodes.length / this.productsPerPage);
+                if (this.currentPage < totalPages - 1) {
+                    this.currentPage++;
+                    this.renderResults();
+                }
+            }
+
+            showMessage(message, type) {
+                const statusElement = document.getElementById('status-message');
+                statusElement.textContent = message;
+                statusElement.className = `status-message ${type}`;
+                statusElement.style.display = 'block';
+                
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new BarcodeScanner();
+        });
+    </script>
+</body>
+</html>
