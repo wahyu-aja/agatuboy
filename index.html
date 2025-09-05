@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Ultra-Fast Barcode Scanner</title>
+    <title>⚡ Lightning Scanner</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.20.0/index.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
@@ -15,50 +15,35 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
+            padding: 10px;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 400px;
             margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
         }
 
         .header {
             text-align: center;
             color: white;
-            margin-bottom: 30px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
         }
 
-        .performance-badge {
-            background: linear-gradient(45deg, #ff6b6b, #feca57);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 10px;
-            animation: pulse 2s infinite;
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .card {
+        .scanner-card {
             background: white;
             border-radius: 15px;
-            padding: 25px;
+            padding: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .scanner-container {
@@ -66,145 +51,202 @@
             background: #000;
             border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            height: 300px;
         }
 
         #scanner {
             width: 100%;
-            height: 350px;
+            height: 100%;
             object-fit: cover;
-            background: #000;
         }
 
-        .scanner-overlay {
+        .scan-box {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 300px;
-            height: 150px;
+            width: 200px;
+            height: 80px;
             border: 3px solid #00ff00;
-            border-radius: 15px;
-            box-shadow: 0 0 0 99999px rgba(0,0,0,0.5);
-            animation: scannerPulse 1.5s infinite;
+            border-radius: 8px;
+            box-shadow: 
+                0 0 0 2px rgba(0,255,0,0.3),
+                0 0 0 99999px rgba(0,0,0,0.6);
         }
 
-        .scanner-overlay::before {
-            content: '';
-            position: absolute;
-            top: -3px;
-            left: -3px;
-            right: -3px;
-            bottom: -3px;
-            border: 2px solid rgba(0,255,0,0.6);
-            border-radius: 15px;
-            animation: scannerGlow 2s infinite;
-        }
-
-        .scanner-line {
+        .scan-line {
             position: absolute;
             top: 50%;
-            left: 5%;
-            right: 5%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #00ff00, #00ff88, #00ff00, transparent);
-            animation: scanLine 1.5s linear infinite;
-            box-shadow: 0 0 10px #00ff00;
+            left: 10px;
+            right: 10px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            animation: scanMove 1.5s linear infinite;
         }
 
-        @keyframes scannerPulse {
-            0%, 100% { 
-                border-color: #00ff00;
-                box-shadow: 0 0 0 99999px rgba(0,0,0,0.5), 0 0 30px #00ff00;
-            }
-            50% { 
-                border-color: #00ff88;
-                box-shadow: 0 0 0 99999px rgba(0,0,0,0.4), 0 0 40px #00ff88;
-            }
+        @keyframes scanMove {
+            0% { transform: translateY(-40px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(40px); opacity: 0; }
         }
 
-        @keyframes scannerGlow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        .stats {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 12px;
         }
 
-        @keyframes scanLine {
-            0% { transform: translateY(-75px); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(75px); opacity: 0; }
+        .stat {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-weight: bold;
+            font-size: 16px;
+            color: #4CAF50;
         }
 
         .controls {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 15px;
         }
 
         .btn {
             flex: 1;
-            padding: 15px;
+            padding: 12px;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 14px;
+            transition: all 0.2s;
         }
 
-        .btn-primary {
+        .btn-start {
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
         }
 
-        .btn-secondary {
+        .btn-stop {
             background: linear-gradient(135deg, #ff6b6b, #ee5a52);
             color: white;
         }
 
-        .btn-info {
+        .btn-action {
             background: linear-gradient(135deg, #74b9ff, #0984e3);
             color: white;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        .btn:hover:not(:disabled) {
+            transform: translateY(-1px);
         }
 
         .btn:disabled {
-            background: #ccc;
+            background: #ccc !important;
             cursor: not-allowed;
             transform: none;
         }
 
-        .performance-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
+        .status {
             text-align: center;
-        }
-
-        .stat-box {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .stat-number {
-            font-size: 24px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: bold;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+
+        .results-section {
+            display: none;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
+        }
+
+        .plu {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .product-name {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .product-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin: 10px auto;
             display: block;
         }
 
-        .stat-label {
+        .barcode-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .nav-btn {
+            padding: 8px 15px;
+            background: #74b9ff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
             font-size: 12px;
-            opacity: 0.9;
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #4CAF50;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: none;
         }
 
         .modal {
@@ -216,7 +258,6 @@
             height: 100%;
             background: rgba(0,0,0,0.8);
             z-index: 1000;
-            animation: fadeIn 0.3s ease;
         }
 
         .modal-content {
@@ -225,756 +266,469 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 30px;
-            border-radius: 15px;
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
-            max-width: 350px;
+            max-width: 300px;
             width: 90%;
         }
 
         .modal-buttons {
             display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .results-container {
-            display: none;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            border-left: 5px solid #4CAF50;
-        }
-
-        .plu {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4CAF50;
-            margin-bottom: 10px;
-        }
-
-        .product-name {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .product-image {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 10px;
-            margin: 15px 0;
-            border: 2px solid #eee;
-        }
-
-        .barcode-container {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 15px 0;
-        }
-
-        .barcode-svg {
-            max-width: 100%;
-            height: auto;
-        }
-
-        .navigation {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 20px 0;
-        }
-
-        .nav-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .nav-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .page-info {
-            font-weight: bold;
-            color: #666;
-        }
-
-        .back-to-scanner {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            z-index: 100;
-        }
-
-        .status-message {
-            text-align: center;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 10px;
-            font-weight: bold;
-            animation: slideIn 0.3s ease;
-        }
-
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            gap: 10px;
+            margin-top: 15px;
         }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-            
-            .modal-buttons {
-                flex-direction: column;
-            }
-
-            .performance-stats {
-                grid-template-columns: 1fr;
-            }
+            .container { padding: 5px; }
+            .scan-box { width: 180px; height: 70px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="performance-badge">⚡ ULTRA-FAST SCANNER v2.0</div>
-            <h1>📱 Lightning Barcode Scanner</h1>
-            <p>Deteksi instan dengan teknologi terdepan</p>
+            <h1>⚡ Lightning Scanner</h1>
+            <p>Instant barcode detection</p>
         </div>
 
         <!-- Scanner Section -->
-        <div id="scanner-section" class="card">
-            <div class="performance-stats">
-                <div class="stat-box">
-                    <span class="stat-number" id="scan-speed">0</span>
-                    <span class="stat-label">ms/scan</span>
+        <div id="scanner-section">
+            <div class="scanner-card">
+                <div class="scanner-container">
+                    <video id="scanner" autoplay playsinline muted></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <div class="scan-box">
+                        <div class="scan-line"></div>
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <span class="stat-number" id="scanned-count">0</span>
-                    <span class="stat-label">terscan</span>
+                
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-num" id="count">0</div>
+                        <div>Scanned</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-num" id="speed">0</div>
+                        <div>ms</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-num" id="fps">0</div>
+                        <div>FPS</div>
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <span class="stat-number" id="fps-counter">0</span>
-                    <span class="stat-label">FPS</span>
+                
+                <div class="status" id="status"></div>
+                
+                <div class="controls">
+                    <button class="btn btn-start" id="start">🚀 START</button>
+                    <button class="btn btn-stop" id="stop" disabled>⏹️ STOP</button>
                 </div>
-            </div>
-
-            <div class="scanner-container">
-                <video id="scanner" autoplay playsinline muted></video>
-                <canvas id="scanner-canvas" style="display: none;"></canvas>
-                <div class="scanner-overlay">
-                    <div class="scanner-line"></div>
+                
+                <div class="controls">
+                    <button class="btn btn-action" id="save" disabled>💾 Save</button>
+                    <button class="btn btn-stop" id="reset">🔄 Reset</button>
                 </div>
-            </div>
-            
-            <div class="status-message" id="status-message" style="display: none;"></div>
-
-            <div class="controls">
-                <button class="btn btn-primary" id="start-scanner">
-                    🚀 START LIGHTNING SCAN
-                </button>
-                <button class="btn btn-secondary" id="stop-scanner" disabled>
-                    ⏹️ STOP
-                </button>
-            </div>
-
-            <div class="controls">
-                <button class="btn btn-info" id="save-results" disabled>
-                    💾 Simpan Hasil
-                </button>
-                <button class="btn btn-secondary" id="cancel-scan">
-                    ❌ Reset
-                </button>
-            </div>
-
-            <div class="controls">
-                <button class="btn btn-info" id="show-results" style="display: none;">
-                    📋 Lihat Hasil
-                </button>
+                
+                <div class="controls" style="display: none;" id="show-results-btn">
+                    <button class="btn btn-action" id="show-results">📋 Results</button>
+                </div>
             </div>
         </div>
 
         <!-- Results Section -->
-        <div id="results-section" class="results-container">
+        <div id="results-section" class="results-section">
             <div class="navigation">
-                <button class="nav-btn" id="prev-page" disabled>‹ Prev</button>
-                <span class="page-info" id="page-info">1 / 1</span>
-                <button class="nav-btn" id="next-page" disabled>Next ›</button>
+                <button class="nav-btn" id="prev">‹ Prev</button>
+                <span id="page-info">1 / 1</span>
+                <button class="nav-btn" id="next">Next ›</button>
             </div>
             
-            <div id="products-container"></div>
+            <div id="products"></div>
             
             <div class="navigation">
-                <button class="nav-btn" id="prev-page-bottom" disabled>‹ Prev</button>
-                <span class="page-info" id="page-info-bottom">1 / 1</span>
-                <button class="nav-btn" id="next-page-bottom" disabled>Next ›</button>
+                <button class="nav-btn" id="prev2">‹ Prev</button>
+                <span id="page-info2">1 / 1</span>
+                <button class="nav-btn" id="next2">Next ›</button>
             </div>
         </div>
 
-        <button class="back-to-scanner" id="back-to-scanner" style="display: none;">
-            🔙
-        </button>
+        <button class="back-btn" id="back">🔙</button>
     </div>
 
     <!-- Modal -->
     <div id="modal" class="modal">
         <div class="modal-content">
-            <h3>⚠️ Konfirmasi</h3>
-            <p>Reset semua hasil scan?</p>
+            <h3>Reset All?</h3>
+            <p>Clear all scanned barcodes?</p>
             <div class="modal-buttons">
-                <button class="btn btn-secondary" id="confirm-cancel">Ya, Reset</button>
-                <button class="btn btn-primary" id="keep-scanning">Batal</button>
+                <button class="btn btn-stop" id="confirm-reset">Yes</button>
+                <button class="btn btn-action" id="cancel-reset">Cancel</button>
             </div>
         </div>
     </div>
 
     <script>
-        class UltraFastBarcodeScanner {
+        class LightningScanner {
             constructor() {
                 this.scannedBarcodes = [];
-                this.products = [];
+                this.products = new Map();
                 this.currentPage = 0;
-                this.productsPerPage = 1;
                 this.isScanning = false;
                 this.scanCooldown = false;
                 this.stream = null;
-                this.animationFrame = null;
+                this.animFrame = null;
                 this.codeReader = null;
                 
-                // Performance tracking
-                this.lastScanTime = 0;
                 this.frameCount = 0;
-                this.lastFPSUpdate = performance.now();
+                this.lastFPSTime = Date.now();
                 
                 this.init();
-                this.loadProductData();
             }
 
             init() {
                 this.bindEvents();
-                this.initializeZXing();
-                this.startPerformanceMonitoring();
+                this.loadProducts();
+                this.initZXing();
             }
 
-            initializeZXing() {
+            initZXing() {
                 try {
                     if (typeof ZXing !== 'undefined') {
                         this.codeReader = new ZXing.BrowserMultiFormatReader();
-                        // Optimize ZXing performance
-                        this.codeReader.timeBetweenDecodingAttempts = 100; // Faster attempts
-                        console.log('⚡ ZXing Ultra Mode: ACTIVATED');
+                        this.codeReader.timeBetweenDecodingAttempts = 50;
+                        console.log('⚡ ZXing ready');
                     }
-                } catch (error) {
-                    console.warn('ZXing not available');
+                } catch (e) {
+                    console.warn('ZXing failed');
                 }
             }
 
-            startPerformanceMonitoring() {
-                setInterval(() => {
-                    if (this.isScanning) {
-                        this.updateFPS();
-                    }
-                }, 1000);
-            }
-
-            updateFPS() {
-                const now = performance.now();
-                const elapsed = now - this.lastFPSUpdate;
-                if (elapsed >= 1000) {
-                    const fps = Math.round((this.frameCount * 1000) / elapsed);
-                    document.getElementById('fps-counter').textContent = fps;
-                    this.frameCount = 0;
-                    this.lastFPSUpdate = now;
-                }
-            }
-
-            async loadProductData() {
+            async loadProducts() {
                 try {
-                    this.showMessage('⚡ Loading database...', 'warning');
-                    
                     const response = await fetch('./bcd.json');
-                    if (!response.ok) {
-                        throw new Error('HTTP error! status: ' + response.status);
-                    }
+                    const data = await response.json();
                     
-                    this.products = await response.json();
-                    
-                    if (!Array.isArray(this.products)) {
-                        throw new Error('Invalid JSON format');
-                    }
-                    
-                    // Create optimized hash map for ultra-fast lookups
-                    this.barcodeIndex = new Map();
-                    this.products.forEach(product => {
-                        if (product.BARCODE) {
-                            this.barcodeIndex.set(product.BARCODE, product);
+                    data.forEach(item => {
+                        if (item.BARCODE) {
+                            this.products.set(item.BARCODE, item);
                         }
                     });
                     
-                    this.showMessage(`🚀 Database loaded: ${this.products.length} products`, 'success');
-                    console.log(`⚡ Ultra-fast index created: ${this.products.length} products`);
+                    this.showStatus(`📦 ${data.length} products loaded`, 'success');
+                } catch (e) {
+                    this.showStatus('Using sample data', 'warning');
                     
-                } catch (error) {
-                    console.error('Database error:', error);
-                    this.showMessage('Using sample data - upload bcd.json for full database', 'warning');
-                    
-                    // Fallback sample data
-                    this.products = [
+                    const sampleData = [
                         {"PLU": "10000019", "NAMA_PRODUK": "INDOMILK SUSU KENTAL MANIS PUTIH 370g", "BARCODE": "8992702000018"},
-                        {"PLU": "10000020", "NAMA_PRODUK": "INDOMILK SUSU KENTAL MANIS COKLAT 370g", "BARCODE": "8992702000063"},
-                        {"PLU": "10000021", "NAMA_PRODUK": "CAP ENAK KENTAL MANIS PUTIH 370g", "BARCODE": "8992702000025"}
+                        {"PLU": "10000020", "NAMA_PRODUK": "INDOMILK SUSU KENTAL MANIS COKLAT 370g", "BARCODE": "8992702000063"}
                     ];
                     
-                    this.barcodeIndex = new Map();
-                    this.products.forEach(product => {
-                        if (product.BARCODE) {
-                            this.barcodeIndex.set(product.BARCODE, product);
-                        }
+                    sampleData.forEach(item => {
+                        this.products.set(item.BARCODE, item);
                     });
                 }
             }
 
             bindEvents() {
-                document.getElementById('start-scanner').addEventListener('click', () => this.startScanner());
-                document.getElementById('stop-scanner').addEventListener('click', () => this.stopScanner());
-                document.getElementById('save-results').addEventListener('click', () => this.saveResults());
-                document.getElementById('cancel-scan').addEventListener('click', () => this.showCancelModal());
-                document.getElementById('show-results').addEventListener('click', () => this.showResults());
-                document.getElementById('back-to-scanner').addEventListener('click', () => this.backToScanner());
+                document.getElementById('start').onclick = () => this.startScanner();
+                document.getElementById('stop').onclick = () => this.stopScanner();
+                document.getElementById('save').onclick = () => this.saveResults();
+                document.getElementById('reset').onclick = () => this.showResetModal();
+                document.getElementById('show-results').onclick = () => this.showResults();
+                document.getElementById('back').onclick = () => this.backToScanner();
                 
-                document.getElementById('confirm-cancel').addEventListener('click', () => this.confirmCancel());
-                document.getElementById('keep-scanning').addEventListener('click', () => this.hideCancelModal());
+                document.getElementById('confirm-reset').onclick = () => this.confirmReset();
+                document.getElementById('cancel-reset').onclick = () => this.hideModal();
                 
-                document.getElementById('prev-page').addEventListener('click', () => this.prevPage());
-                document.getElementById('next-page').addEventListener('click', () => this.nextPage());
-                document.getElementById('prev-page-bottom').addEventListener('click', () => this.prevPage());
-                document.getElementById('next-page-bottom').addEventListener('click', () => this.nextPage());
+                document.getElementById('prev').onclick = () => this.prevPage();
+                document.getElementById('next').onclick = () => this.nextPage();
+                document.getElementById('prev2').onclick = () => this.prevPage();
+                document.getElementById('next2').onclick = () => this.nextPage();
                 
-                document.getElementById('modal').addEventListener('click', (e) => {
-                    if (e.target.id === 'modal') this.hideCancelModal();
-                });
+                document.getElementById('modal').onclick = (e) => {
+                    if (e.target.id === 'modal') this.hideModal();
+                };
             }
 
             async startScanner() {
                 try {
                     const video = document.getElementById('scanner');
-                    const canvas = document.getElementById('scanner-canvas');
-                    const context = canvas.getContext('2d');
+                    const canvas = document.getElementById('canvas');
+                    const ctx = canvas.getContext('2d');
 
-                    // Ultra-high performance camera settings
                     this.stream = await navigator.mediaDevices.getUserMedia({
                         video: {
                             facingMode: { ideal: 'environment' },
-                            width: { ideal: 1920, min: 1280 },
-                            height: { ideal: 1080, min: 720 },
-                            frameRate: { ideal: 60, min: 30 },
-                            focusMode: { ideal: 'continuous' },
-                            exposureMode: { ideal: 'continuous' },
-                            whiteBalanceMode: { ideal: 'continuous' }
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                            frameRate: { ideal: 30 }
                         }
                     });
 
                     video.srcObject = this.stream;
                     await video.play();
 
-                    canvas.width = video.videoWidth || 1280;
-                    canvas.height = video.videoHeight || 720;
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
 
                     this.isScanning = true;
+                    document.getElementById('start').disabled = true;
+                    document.getElementById('stop').disabled = false;
                     
-                    document.getElementById('start-scanner').disabled = true;
-                    document.getElementById('stop-scanner').disabled = false;
+                    this.showStatus('🚀 SCANNING ACTIVE', 'success');
+                    this.startScanLoop(video, canvas, ctx);
                     
-                    this.showMessage('🚀 ULTRA-FAST MODE: ACTIVE!', 'success');
-
-                    // Start optimized scanning loop
-                    this.startUltraFastScanLoop(video, canvas, context);
-                    
-                } catch (error) {
-                    console.error('Camera error:', error);
-                    this.showMessage('❌ Camera access failed! Check permissions.', 'error');
+                } catch (e) {
+                    this.showStatus('❌ Camera access failed', 'error');
                 }
             }
 
-            startUltraFastScanLoop(video, canvas, context) {
-                let lastScanAttempt = 0;
-                const minScanInterval = 50; // Max 20 scans per second
+            startScanLoop(video, canvas, ctx) {
+                let lastScan = 0;
                 
-                const scanLoop = (timestamp) => {
+                const loop = (time) => {
                     if (!this.isScanning) return;
                     
                     this.frameCount++;
+                    this.updateFPS();
                     
-                    // Ultra-fast scanning with throttling
-                    if (timestamp - lastScanAttempt >= minScanInterval) {
-                        this.performUltraFastScan(video, canvas, context);
-                        lastScanAttempt = timestamp;
+                    // Scan 20 times per second max
+                    if (time - lastScan > 50) {
+                        this.performScan(video, canvas, ctx);
+                        lastScan = time;
                     }
                     
-                    this.animationFrame = requestAnimationFrame(scanLoop);
+                    this.animFrame = requestAnimationFrame(loop);
                 };
                 
-                this.animationFrame = requestAnimationFrame(scanLoop);
+                this.animFrame = requestAnimationFrame(loop);
             }
 
-            performUltraFastScan(video, canvas, context) {
+            performScan(video, canvas, ctx) {
                 if (this.scanCooldown) return;
                 
-                try {
-                    const startTime = performance.now();
-                    
-                    // Draw current frame to canvas
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    // Extract optimized region of interest (center 80% of frame)
-                    const roiWidth = Math.floor(canvas.width * 0.8);
-                    const roiHeight = Math.floor(canvas.height * 0.6);
-                    const roiX = Math.floor((canvas.width - roiWidth) / 2);
-                    const roiY = Math.floor((canvas.height - roiHeight) / 2);
-                    
-                    const imageData = context.getImageData(roiX, roiY, roiWidth, roiHeight);
-                    
-                    // Lightning-fast barcode detection
-                    this.ultraFastBarcodeDetection(imageData, canvas);
-                    
-                    // Update scan time
-                    const scanTime = Math.round(performance.now() - startTime);
-                    document.getElementById('scan-speed').textContent = scanTime;
-                    
-                } catch (error) {
-                    console.warn('Scan error:', error);
+                const startTime = performance.now();
+                
+                // Draw only the scan area (200x80 center box)
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const scanWidth = 200;
+                const scanHeight = 80;
+                
+                const sourceX = centerX - scanWidth / 2;
+                const sourceY = centerY - scanHeight / 2;
+                
+                ctx.drawImage(video, sourceX, sourceY, scanWidth, scanHeight, 0, 0, scanWidth, scanHeight);
+                const imageData = ctx.getImageData(0, 0, scanWidth, scanHeight);
+                
+                // Quick barcode pattern check first
+                if (this.hasBarcodePattern(imageData)) {
+                    this.scanWithZXing(imageData);
                 }
+                
+                const scanTime = Math.round(performance.now() - startTime);
+                document.getElementById('speed').textContent = scanTime;
             }
 
-            ultraFastBarcodeDetection(imageData, canvas) {
-                // Quick pattern detection for barcode presence
-                if (this.quickBarcodePatternCheck(imageData)) {
-                    // If pattern detected, use ZXing for precise reading
-                    if (this.codeReader) {
-                        this.codeReader.decodeFromImageData(imageData)
-                            .then(result => {
-                                if (result && result.text) {
-                                    this.onBarcodeDetected(result.text);
-                                }
-                            })
-                            .catch(() => {
-                                // Fallback to Quagga if ZXing fails
-                                this.fallbackQuaggaScan(canvas);
-                            });
-                    } else {
-                        this.fallbackQuaggaScan(canvas);
-                    }
-                }
-            }
-
-            quickBarcodePatternCheck(imageData) {
+            hasBarcodePattern(imageData) {
                 const data = imageData.data;
                 const width = imageData.width;
                 const height = imageData.height;
                 
-                // Check multiple horizontal lines for barcode patterns
-                const sampleLines = 5;
-                let barcodePatterns = 0;
+                // Check center line for barcode pattern
+                const y = Math.floor(height / 2);
+                const lineStart = y * width * 4;
                 
-                for (let line = 0; line < sampleLines; line++) {
-                    const y = Math.floor(height * (0.3 + (line * 0.4 / sampleLines)));
-                    const lineStart = y * width * 4;
+                let transitions = 0;
+                let lastIsLight = false;
+                
+                for (let x = 0; x < width; x += 2) {
+                    const pixelIndex = lineStart + (x * 4);
+                    const brightness = (data[pixelIndex] + data[pixelIndex + 1] + data[pixelIndex + 2]) / 3;
+                    const isLight = brightness > 128;
                     
-                    let transitions = 0;
-                    let lastBrightness = 0;
-                    
-                    // Sample every 4th pixel for speed
-                    for (let x = 0; x < width; x += 4) {
-                        const pixelIndex = lineStart + (x * 4);
-                        const brightness = (data[pixelIndex] + data[pixelIndex + 1] + data[pixelIndex + 2]) / 3;
-                        const isLight = brightness > 128;
-                        
-                        if (isLight !== lastBrightness) {
-                            transitions++;
-                        }
-                        lastBrightness = isLight;
+                    if (isLight !== lastIsLight) {
+                        transitions++;
                     }
-                    
-                    // Barcode should have many transitions (bars and spaces)
-                    if (transitions > 10 && transitions < 100) {
-                        barcodePatterns++;
-                    }
+                    lastIsLight = isLight;
                 }
                 
-                return barcodePatterns >= 2;
+                return transitions > 8 && transitions < 50;
             }
 
-            fallbackQuaggaScan(canvas) {
+            scanWithZXing(imageData) {
+                if (!this.codeReader) return;
+                
+                this.codeReader.decodeFromImageData(imageData)
+                    .then(result => {
+                        if (result && result.text) {
+                            this.onBarcodeFound(result.text);
+                        }
+                    })
+                    .catch(() => {
+                        // Silent fail - try Quagga fallback if needed
+                        this.fallbackQuagga(imageData);
+                    });
+            }
+
+            fallbackQuagga(imageData) {
                 if (typeof Quagga === 'undefined') return;
                 
-                const imageData = canvas.toDataURL('image/jpeg', 0.7);
+                const canvas = document.createElement('canvas');
+                canvas.width = imageData.width;
+                canvas.height = imageData.height;
+                const ctx = canvas.getContext('2d');
+                ctx.putImageData(imageData, 0, 0);
                 
                 Quagga.decodeSingle({
-                    src: imageData,
+                    src: canvas.toDataURL(),
                     numOfWorkers: 0,
                     decoder: {
-                        readers: [
-                            "ean_reader",
-                            "ean_8_reader", 
-                            "code_128_reader",
-                            "upc_reader",
-                            "upc_e_reader"
-                        ]
-                    },
-                    locate: true
+                        readers: ["ean_reader", "code_128_reader", "upc_reader"]
+                    }
                 }, (result) => {
-                    if (result && result.codeResult && result.codeResult.code) {
-                        this.onBarcodeDetected(result.codeResult.code);
+                    if (result && result.codeResult) {
+                        this.onBarcodeFound(result.codeResult.code);
                     }
                 });
             }
 
-            onBarcodeDetected(barcode) {
+            onBarcodeFound(barcode) {
                 if (this.scanCooldown) return;
                 
-                // Validate barcode
-                if (!barcode || barcode.length < 8 || barcode.length > 20) return;
-                
-                // Remove invalid characters
                 barcode = barcode.replace(/[^0-9]/g, '');
                 if (barcode.length < 8) return;
                 
                 this.scanCooldown = true;
-                setTimeout(() => {
-                    this.scanCooldown = false;
-                }, 500); // Reduced cooldown for faster scanning
+                setTimeout(() => this.scanCooldown = false, 300);
                 
                 if (!this.scannedBarcodes.includes(barcode)) {
                     this.scannedBarcodes.push(barcode);
-                    this.updateScannedCount();
-                    
+                    this.updateCount();
                     this.successFeedback(barcode);
-                    console.log('⚡ LIGHTNING SCAN: ' + barcode);
-                    
                 } else {
-                    this.showMessage(`⚠️ ${barcode} sudah discan`, 'warning');
-                    this.duplicateFeedback();
+                    this.showStatus(`⚠️ ${barcode} already scanned`, 'warning');
+                    this.errorFeedback();
                 }
             }
 
             successFeedback(barcode) {
-                const product = this.barcodeIndex.get(barcode);
-                const productName = product ? product.NAMA_PRODUK.substring(0, 30) + '...' : 'Unknown Product';
+                const product = this.products.get(barcode);
+                const name = product ? product.NAMA_PRODUK.substring(0, 25) + '...' : 'Unknown';
                 
-                this.showMessage(`✅ SCANNED: ${productName}`, 'success');
-                
-                // Enhanced visual feedback
-                const overlay = document.querySelector('.scanner-overlay');
-                overlay.style.borderColor = '#00ff00';
-                overlay.style.boxShadow = '0 0 0 99999px rgba(0,255,0,0.3), 0 0 60px #00ff00';
-                overlay.style.animation = 'none';
-                
-                setTimeout(() => {
-                    overlay.style.borderColor = '#00ff00';
-                    overlay.style.boxShadow = '0 0 0 99999px rgba(0,0,0,0.5), 0 0 30px #00ff00';
-                    overlay.style.animation = 'scannerPulse 1.5s infinite';
-                }, 400);
-                
-                // Multi-sensory feedback
-                this.playSuccessSound();
-                this.vibrateSuccess();
+                this.showStatus(`✅ ${name}`, 'success');
+                this.flashScanBox('#00ff00');
+                this.playBeep(800, 0.2);
+                this.vibrate([100, 50, 100]);
             }
 
-            duplicateFeedback() {
-                const overlay = document.querySelector('.scanner-overlay');
-                overlay.style.borderColor = '#ff6b6b';
-                overlay.style.boxShadow = '0 0 0 99999px rgba(255,107,107,0.3), 0 0 40px #ff6b6b';
-                
-                setTimeout(() => {
-                    overlay.style.borderColor = '#00ff00';
-                    overlay.style.boxShadow = '0 0 0 99999px rgba(0,0,0,0.5), 0 0 30px #00ff00';
-                }, 300);
-                
-                this.vibrateError();
+            errorFeedback() {
+                this.flashScanBox('#ff6b6b');
+                this.vibrate([50, 30, 50]);
             }
 
-            playSuccessSound() {
+            flashScanBox(color) {
+                const box = document.querySelector('.scan-box');
+                box.style.borderColor = color;
+                box.style.boxShadow = `0 0 0 2px ${color}33, 0 0 0 99999px rgba(0,0,0,0.6)`;
+                
+                setTimeout(() => {
+                    box.style.borderColor = '#00ff00';
+                    box.style.boxShadow = '0 0 0 2px rgba(0,255,0,0.3), 0 0 0 99999px rgba(0,0,0,0.6)';
+                }, 200);
+            }
+
+            playBeep(freq, duration) {
                 try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
                     
-                    // Create a more pleasant success sound
-                    const oscillator1 = audioContext.createOscillator();
-                    const oscillator2 = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
                     
-                    oscillator1.connect(gainNode);
-                    oscillator2.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
                     
-                    oscillator1.frequency.value = 800;
-                    oscillator2.frequency.value = 1000;
-                    oscillator1.type = 'sine';
-                    oscillator2.type = 'sine';
-                    
-                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                    
-                    oscillator1.start(audioContext.currentTime);
-                    oscillator2.start(audioContext.currentTime + 0.1);
-                    oscillator1.stop(audioContext.currentTime + 0.3);
-                    oscillator2.stop(audioContext.currentTime + 0.3);
-                    
-                } catch (error) {
-                    console.warn('Audio feedback not supported');
+                    osc.start();
+                    osc.stop(ctx.currentTime + duration);
+                } catch (e) {}
+            }
+
+            vibrate(pattern) {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(pattern);
                 }
             }
 
-            vibrateSuccess() {
-                if ('vibrate' in navigator) {
-                    navigator.vibrate([100, 50, 100]);
+            updateFPS() {
+                const now = Date.now();
+                if (now - this.lastFPSTime >= 1000) {
+                    const fps = Math.round((this.frameCount * 1000) / (now - this.lastFPSTime));
+                    document.getElementById('fps').textContent = fps;
+                    this.frameCount = 0;
+                    this.lastFPSTime = now;
                 }
             }
 
-            vibrateError() {
-                if ('vibrate' in navigator) {
-                    navigator.vibrate([50, 30, 50, 30, 50]);
-                }
+            updateCount() {
+                document.getElementById('count').textContent = this.scannedBarcodes.length;
+                document.getElementById('save').disabled = this.scannedBarcodes.length === 0;
             }
 
             stopScanner() {
-                if (this.isScanning) {
-                    this.isScanning = false;
-                    
-                    // Stop animation frame
-                    if (this.animationFrame) {
-                        cancelAnimationFrame(this.animationFrame);
-                        this.animationFrame = null;
-                    }
-                    
-                    // Stop camera stream
-                    if (this.stream) {
-                        this.stream.getTracks().forEach(track => track.stop());
-                        this.stream = null;
-                    }
-                    
-                    // Reset ZXing
-                    if (this.codeReader) {
-                        this.codeReader.reset();
-                    }
-                    
-                    // Stop Quagga
-                    try {
-                        if (typeof Quagga !== 'undefined') {
-                            Quagga.stop();
-                        }
-                    } catch (error) {
-                        console.warn('Quagga stop error:', error);
-                    }
-                    
-                    document.getElementById('start-scanner').disabled = false;
-                    document.getElementById('stop-scanner').disabled = true;
-                    
-                    const video = document.getElementById('scanner');
-                    video.srcObject = null;
-                    
-                    // Reset performance counters
-                    document.getElementById('fps-counter').textContent = '0';
-                    document.getElementById('scan-speed').textContent = '0';
-                    
-                    this.showMessage('🛑 Scanner stopped', 'error');
+                this.isScanning = false;
+                
+                if (this.animFrame) {
+                    cancelAnimationFrame(this.animFrame);
                 }
-            }
-
-            updateScannedCount() {
-                document.getElementById('scanned-count').textContent = this.scannedBarcodes.length;
-                document.getElementById('save-results').disabled = this.scannedBarcodes.length === 0;
+                
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                }
+                
+                if (this.codeReader) {
+                    this.codeReader.reset();
+                }
+                
+                document.getElementById('start').disabled = false;
+                document.getElementById('stop').disabled = true;
+                document.getElementById('scanner').srcObject = null;
+                
+                this.showStatus('🛑 Scanner stopped', 'error');
             }
 
             saveResults() {
-                if (this.scannedBarcodes.length === 0) {
-                    this.showMessage('❌ No barcodes scanned', 'error');
-                    return;
-                }
+                if (this.scannedBarcodes.length === 0) return;
                 
                 this.stopScanner();
-                document.getElementById('show-results').style.display = 'block';
-                this.showMessage(`💾 ${this.scannedBarcodes.length} barcode(s) saved successfully`, 'success');
+                document.getElementById('show-results-btn').style.display = 'block';
+                this.showStatus(`💾 ${this.scannedBarcodes.length} items saved`, 'success');
             }
 
-            showCancelModal() {
+            showResetModal() {
                 document.getElementById('modal').style.display = 'block';
             }
 
-            hideCancelModal() {
+            hideModal() {
                 document.getElementById('modal').style.display = 'none';
             }
 
-            confirmCancel() {
+            confirmReset() {
                 this.scannedBarcodes = [];
-                this.updateScannedCount();
+                this.updateCount();
                 this.stopScanner();
-                document.getElementById('show-results').style.display = 'none';
-                this.hideCancelModal();
-                this.showMessage('🔄 All scans reset', 'warning');
+                document.getElementById('show-results-btn').style.display = 'none';
+                this.hideModal();
+                this.showStatus('🔄 Reset complete', 'warning');
             }
 
             showResults() {
-                if (this.scannedBarcodes.length === 0) {
-                    this.showMessage('❌ No results to display', 'error');
-                    return;
-                }
-                
                 document.getElementById('scanner-section').style.display = 'none';
                 document.getElementById('results-section').style.display = 'block';
-                document.getElementById('back-to-scanner').style.display = 'block';
-                
+                document.getElementById('back').style.display = 'block';
                 this.currentPage = 0;
                 this.renderResults();
             }
@@ -982,95 +736,75 @@
             backToScanner() {
                 document.getElementById('scanner-section').style.display = 'block';
                 document.getElementById('results-section').style.display = 'none';
-                document.getElementById('back-to-scanner').style.display = 'none';
+                document.getElementById('back').style.display = 'none';
             }
 
             renderResults() {
-                const container = document.getElementById('products-container');
-                const startIndex = this.currentPage * this.productsPerPage;
-                const endIndex = Math.min(startIndex + this.productsPerPage, this.scannedBarcodes.length);
-                
+                const container = document.getElementById('products');
                 container.innerHTML = '';
                 
-                for (let i = startIndex; i < endIndex; i++) {
-                    const barcode = this.scannedBarcodes[i];
-                    const product = this.barcodeIndex.get(barcode);
-                    
-                    const productCard = this.createProductCard(barcode, product);
-                    container.appendChild(productCard);
-                }
+                if (this.scannedBarcodes.length === 0) return;
                 
-                this.updatePagination();
-            }
-
-            createProductCard(barcode, product) {
+                const barcode = this.scannedBarcodes[this.currentPage];
+                const product = this.products.get(barcode);
+                
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 
                 const plu = product ? product.PLU : 'Not Found';
-                const productName = product ? product.NAMA_PRODUK : `Product with barcode ${barcode} not found in database`;
-                const imageUrl = product ? `https://cdn-klik.klikindomaret.com/klik-catalog/product/${product.PLU}_1.jpg` : '';
+                const name = product ? product.NAMA_PRODUK : `Product ${barcode} not in database`;
+                const imgUrl = product ? `https://cdn-klik.klikindomaret.com/klik-catalog/product/${product.PLU}_1.jpg` : '';
                 
                 card.innerHTML = `
                     <div class="plu">PLU: ${plu}</div>
-                    <div class="product-name">${productName}</div>
-                    ${product ? `<img class="product-image" src="${imageUrl}" alt="${productName}" onerror="this.style.display='none'">` : ''}
-                    <div class="barcode-container">
-                        <svg class="barcode-svg" id="barcode-${barcode}"></svg>
+                    <div class="product-name">${name}</div>
+                    ${product ? `<img class="product-image" src="${imgUrl}" onerror="this.style.display='none'">` : ''}
+                    <div class="barcode-display">
+                        <svg id="barcode-${barcode}" width="100%" height="60"></svg>
                     </div>
                 `;
                 
-                // Generate barcode with optimized timing
-                setTimeout(() => {
-                    this.generateBarcode(barcode);
-                }, 50);
+                container.appendChild(card);
                 
-                return card;
-            }
-
-            generateBarcode(barcode) {
-                try {
-                    if (typeof JsBarcode !== 'undefined') {
-                        const formats = ['EAN13', 'EAN8', 'UPC', 'CODE128'];
-                        
-                        for (const format of formats) {
-                            try {
-                                JsBarcode(`#barcode-${barcode}`, barcode, {
-                                    format: format,
-                                    width: 2,
-                                    height: 60,
-                                    displayValue: true,
-                                    fontSize: 14,
-                                    margin: 10,
-                                    background: '#ffffff',
-                                    lineColor: '#000000'
-                                });
-                                break;
-                            } catch (formatError) {
-                                continue;
-                            }
+                setTimeout(() => {
+                    try {
+                        JsBarcode(`#barcode-${barcode}`, barcode, {
+                            format: "EAN13",
+                            width: 1.5,
+                            height: 50,
+                            displayValue: true,
+                            fontSize: 12
+                        });
+                    } catch (e) {
+                        try {
+                            JsBarcode(`#barcode-${barcode}`, barcode, {
+                                format: "CODE128",
+                                width: 1.5,
+                                height: 50,
+                                displayValue: true,
+                                fontSize: 12
+                            });
+                        } catch (e2) {
+                            document.querySelector(`#barcode-${barcode}`).innerHTML = 
+                                `<text x="50%" y="30" text-anchor="middle">${barcode}</text>`;
                         }
                     }
-                } catch (error) {
-                    // Fallback to text display
-                    const element = document.querySelector(`#barcode-${barcode}`);
-                    if (element) {
-                        element.innerHTML = `<text x="50%" y="50%" text-anchor="middle" dy=".35em">Barcode: ${barcode}</text>`;
-                    }
-                }
+                }, 100);
+                
+                this.updatePagination();
             }
 
             updatePagination() {
-                const totalPages = Math.max(1, Math.ceil(this.scannedBarcodes.length / this.productsPerPage));
-                const currentPage = this.currentPage + 1;
+                const total = this.scannedBarcodes.length;
+                const current = this.currentPage + 1;
                 
-                document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
-                document.getElementById('page-info-bottom').textContent = `${currentPage} / ${totalPages}`;
+                document.getElementById('page-info').textContent = `${current} / ${total}`;
+                document.getElementById('page-info2').textContent = `${current} / ${total}`;
                 
-                document.getElementById('prev-page').disabled = this.currentPage === 0;
-                document.getElementById('next-page').disabled = this.currentPage >= totalPages - 1;
-                document.getElementById('prev-page-bottom').disabled = this.currentPage === 0;
-                document.getElementById('next-page-bottom').disabled = this.currentPage >= totalPages - 1;
+                document.getElementById('prev').disabled = this.currentPage === 0;
+                document.getElementById('next').disabled = this.currentPage >= total - 1;
+                document.getElementById('prev2').disabled = this.currentPage === 0;
+                document.getElementById('next2').disabled = this.currentPage >= total - 1;
             }
 
             prevPage() {
@@ -1081,40 +815,27 @@
             }
 
             nextPage() {
-                const totalPages = Math.ceil(this.scannedBarcodes.length / this.productsPerPage);
-                if (this.currentPage < totalPages - 1) {
+                if (this.currentPage < this.scannedBarcodes.length - 1) {
                     this.currentPage++;
                     this.renderResults();
                 }
             }
 
-            showMessage(message, type) {
-                const statusElement = document.getElementById('status-message');
-                statusElement.textContent = message;
-                statusElement.className = `status-message ${type}`;
-                statusElement.style.display = 'block';
+            showStatus(message, type) {
+                const status = document.getElementById('status');
+                status.textContent = message;
+                status.className = `status ${type}`;
+                status.style.display = 'block';
                 
                 setTimeout(() => {
-                    statusElement.style.display = 'none';
-                }, 4000);
+                    status.style.display = 'none';
+                }, 3000);
             }
         }
 
-        // Initialize Ultra-Fast Scanner when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('⚡ Initializing Ultra-Fast Barcode Scanner...');
-            new UltraFastBarcodeScanner();
+            new LightningScanner();
         });
-
-        // Performance optimization: Preload critical resources
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('data:text/javascript,');
-        }
-
-        // Optimize for mobile performance
-        if ('virtualKeyboard' in navigator) {
-            navigator.virtualKeyboard.overlaysContent = true;
-        }
     </script>
 </body>
-    </html>
+</html>
