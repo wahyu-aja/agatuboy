@@ -431,6 +431,9 @@
                 this.productsPerPage = 1;
                 this.isScanning = false;
                 this.scanCooldown = false;
+                this.stream = null;
+                this.scanInterval = null;
+                this.codeReader = null;
                 
                 this.init();
                 this.loadProductData();
@@ -438,6 +441,17 @@
 
             init() {
                 this.bindEvents();
+                this.initializeZXing();
+            }
+
+            initializeZXing() {
+                try {
+                    // Initialize ZXing CodeReader untuk performa maksimal
+                    this.codeReader = new ZXing.BrowserMultiFormatReader();
+                    console.log('ZXing initialized successfully');
+                } catch (error) {
+                    console.warn('ZXing not available, using Quagga fallback');
+                }
             }
 
             async loadProductData() {
@@ -512,61 +526,285 @@
 
             async startScanner() {
                 try {
-                    await Quagga.init({
-                        inputStream: {
-                            name: "Live",
-                            type: "LiveStream",
-                            target: document.querySelector('#scanner'),
-                            constraints: {
-                                width: 450,
-                                height: 300,
-                                facingMode: "environment"
-                            }
-                        },
-                        locator: {
-                            patchSize: "medium",
-                            halfSample: true
-                        },
-                        numOfWorkers: 4,
-                        decoder: {
-                            readers: [
-                                "code_128_reader",
-                                "ean_reader",
-                                "ean_8_reader",
-                                "code_39_reader",
-                                "code_39_vin_reader",
-                                "codabar_reader",
-                                "upc_reader",
-                                "upc_e_reader",
-                                "i2of5_reader"
-                            ]
-                        },
-                        locate: true
+                    const video = document.getElementById('scanner');
+                    const canvas = document.getElementById('scanner-canvas');
+                    const context = canvas.getContext('2d');
+
+                    // Request camera dengan constraint optimal untuk barcode scanning
+                    this.stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: { ideal: 'environment' },
+                            width: { ideal: 1280, min: 640 },
+                            height: { ideal: 720, min: 480 },
+                            frameRate: { ideal: 30, min: 15 }
+                        }
                     });
 
-                    Quagga.start();
+                    video.srcObject = this.stream;
+                    await video.play();
+
+                    // Set canvas size
+                    canvas.width = video.videoWidth || 640;
+                    canvas.height = video.videoHeight || 480;
+
                     this.isScanning = true;
                     
                     document.getElementById('start-scanner').disabled = true;
                     document.getElementById('stop-scanner').disabled = false;
                     
-                    this.showMessage('Scanner aktif - Arahkan kamera ke barcode', 'success');
-                    
-                    Quagga.onDetected((data) => this.onBarcodeDetected(data));
+                    this.showMessage('🔥 SUPER FAST SCANNER AKTIF! 🚀', 'success');
+
+                    // Multiple scanning methods untuk speed maksimal
+                    this.startMultipleScanners(video, canvas, context);
                     
                 } catch (error) {
                     console.error('Error starting scanner:', error);
-                    this.showMessage('Gagal memulai scanner. Pastikan kamera dapat diakses.', 'error');
+                    this.showMessage('Gagal mengakses kamera. Pastikan permission diberikan!', 'error');
                 }
+            }
+
+            startMultipleScanners(video, canvas, context) {
+                // Method 1: ZXing Scanner (Super Fast) - 60 FPS
+                if (this.codeReader) {
+                    this.startZXingScanner();
+                }
+
+                // Method 2: Canvas Analysis (Ultra Fast) - 30 FPS
+                this.scanInterval = setInterval(() => {
+                    if (!this.isScanning || video.paused) return;
+                    
+                    try {
+                        // Capture frame
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                        
+                        // Quick scan dengan multiple format
+                        this.quickScanImageData(imageData);
+                        
+                    } catch (error) {
+                        console.warn('Canvas scan error:', error);
+                    }
+                }, 33); // ~30 FPS
+
+                // Method 3: Quagga Backup Scanner
+                this.startQuaggaBackup();
+            }
+
+            startZXingScanner() {
+                if (!this.codeReader) return;
+
+                const video = document.getElementById('scanner');
+                
+                const scanLoop = () => {
+                    if (!this.isScanning) return;
+                    
+                    this.codeReader.decodeFromVideoElement(video)
+                        .then(result => {
+                            if (result) {
+                                this.onBarcodeDetected({ codeResult: { code: result.text } });
+                            }
+                        })
+                        .catch(() => {
+                            // Silent catch untuk continuous scanning
+                        })
+                        .finally(() => {
+                            if (this.isScanning) {
+                                setTimeout(scanLoop, 16); // ~60 FPS
+                            }
+                        });
+                };
+                
+                scanLoop();
+            }
+
+            quickScanImageData(imageData) {
+                // Implementasi quick scan untuk pattern recognition
+                // Fokus pada area tengah dimana barcode biasanya berada
+                const centerX = Math.floor(imageData.width / 2);
+                const centerY = Math.floor(imageData.height / 2);
+                const scanWidth = Math.floor(imageData.width * 0.8);
+                const scanHeight = Math.floor(imageData.height * 0.6);
+                
+                // Extract region of interest
+                const roi = this.extractROI(imageData, centerX - scanWidth/2, centerY - scanHeight/2, scanWidth, scanHeight);
+                
+                // Quick barcode pattern detection
+                this.detectBarcodePattern(roi);
+            }
+
+            extractROI(imageData, x, y, width, height) {
+                const roi = {
+                    data: new Uint8ClampedArray(width * height * 4),
+                    width: width,
+                    height: height
+                };
+                
+                for (let row = 0; row < height; row++) {
+                    for (let col = 0; col < width; col++) {
+                        const srcIndex = ((y + row) * imageData.width + (x + col)) * 4;
+                        const dstIndex = (row * width + col) * 4;
+                        
+                        roi.data[dstIndex] = imageData.data[srcIndex];     // R
+                        roi.data[dstIndex + 1] = imageData.data[srcIndex + 1]; // G
+                        roi.data[dstIndex + 2] = imageData.data[srcIndex + 2]; // B
+                        roi.data[dstIndex + 3] = 255; // A
+                    }
+                }
+                
+                return roi;
+            }
+
+            detectBarcodePattern(roi) {
+                // Quick edge detection untuk barcode pattern
+                const threshold = 128;
+                const edges = [];
+                
+                // Horizontal scan lines
+                for (let y = Math.floor(roi.height * 0.3); y < Math.floor(roi.height * 0.7); y += 5) {
+                    let edgeCount = 0;
+                    let lastPixel = 0;
+                    
+                    for (let x = 0; x < roi.width; x += 2) {
+                        const index = (y * roi.width + x) * 4;
+                        const gray = (roi.data[index] + roi.data[index + 1] + roi.data[index + 2]) / 3;
+                        const pixel = gray > threshold ? 1 : 0;
+                        
+                        if (pixel !== lastPixel) {
+                            edgeCount++;
+                        }
+                        lastPixel = pixel;
+                    }
+                    
+                    // Barcode biasanya punya 20-60 edge transitions
+                    if (edgeCount > 15 && edgeCount < 80) {
+                        edges.push(edgeCount);
+                    }
+                }
+                
+                // Jika detect pattern, trigger detailed scan
+                if (edges.length > 3) {
+                    this.triggerDetailedScan();
+                }
+            }
+
+            triggerDetailedScan() {
+                // Trigger Quagga untuk detailed analysis
+                if (!this.scanCooldown && this.isScanning) {
+                    const video = document.getElementById('scanner');
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0);
+                    
+                    // Convert to format yang bisa dibaca Quagga
+                    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+                    this.processWithQuagga(imageData);
+                }
+            }
+
+            processWithQuagga(imageData) {
+                Quagga.decodeSingle({
+                    src: imageData,
+                    numOfWorkers: 0,
+                    decoder: {
+                        readers: [
+                            "code_128_reader",
+                            "ean_reader", 
+                            "ean_8_reader",
+                            "code_39_reader",
+                            "upc_reader",
+                            "upc_e_reader",
+                            "i2of5_reader",
+                            "2of5_reader",
+                            "codabar_reader"
+                        ]
+                    },
+                    locate: true
+                }, (result) => {
+                    if (result && result.codeResult) {
+                        this.onBarcodeDetected(result);
+                    }
+                });
+            }
+
+            startQuaggaBackup() {
+                // Quagga sebagai backup dengan config optimal
+                setTimeout(() => {
+                    if (!this.isScanning) return;
+                    
+                    try {
+                        Quagga.init({
+                            inputStream: {
+                                name: "Live",
+                                type: "LiveStream", 
+                                target: document.querySelector('#scanner'),
+                                constraints: {
+                                    width: 1280,
+                                    height: 720,
+                                    facingMode: "environment"
+                                }
+                            },
+                            locator: {
+                                patchSize: "large",
+                                halfSample: false
+                            },
+                            numOfWorkers: 4,
+                            frequency: 10, // Scan setiap 10 frames
+                            decoder: {
+                                readers: [
+                                    "code_128_reader",
+                                    "ean_reader",
+                                    "ean_8_reader", 
+                                    "code_39_reader",
+                                    "upc_reader",
+                                    "upc_e_reader",
+                                    "i2of5_reader"
+                                ]
+                            },
+                            locate: true
+                        });
+
+                        Quagga.start();
+                        Quagga.onDetected((data) => this.onBarcodeDetected(data));
+                        
+                    } catch (error) {
+                        console.warn('Quagga backup failed:', error);
+                    }
+                }, 1000);
             }
 
             stopScanner() {
                 if (this.isScanning) {
-                    Quagga.stop();
                     this.isScanning = false;
+                    
+                    // Stop all scanning methods
+                    if (this.stream) {
+                        this.stream.getTracks().forEach(track => track.stop());
+                        this.stream = null;
+                    }
+                    
+                    if (this.scanInterval) {
+                        clearInterval(this.scanInterval);
+                        this.scanInterval = null;
+                    }
+                    
+                    if (this.codeReader) {
+                        this.codeReader.reset();
+                    }
+                    
+                    try {
+                        Quagga.stop();
+                    } catch (error) {
+                        console.warn('Quagga stop error:', error);
+                    }
                     
                     document.getElementById('start-scanner').disabled = false;
                     document.getElementById('stop-scanner').disabled = true;
+                    
+                    const video = document.getElementById('scanner');
+                    video.srcObject = null;
                     
                     this.showMessage('Scanner berhenti', 'error');
                 }
@@ -577,181 +815,86 @@
                 
                 const barcode = data.codeResult.code;
                 
-                // Cooldown 2 detik untuk mencegah scan berulang
+                // Validasi barcode (minimal 8 digit)
+                if (!barcode || barcode.length < 8) return;
+                
+                // Cooldown 800ms untuk performa optimal  
                 this.scanCooldown = true;
                 setTimeout(() => {
                     this.scanCooldown = false;
-                }, 2000);
+                }, 800);
                 
                 // Cek apakah barcode sudah pernah discan
                 if (!this.scannedBarcodes.includes(barcode)) {
                     this.scannedBarcodes.push(barcode);
                     this.updateScannedCount();
-                    this.showMessage(`Barcode berhasil discan: ${barcode}`, 'success');
                     
-            updateScannedCount() {
-                document.getElementById('scanned-count').textContent = this.scannedBarcodes.length;
-                document.getElementById('save-results').disabled = this.scannedBarcodes.length === 0;
-            }
-
-            saveResults() {
-                if (this.scannedBarcodes.length === 0) {
-                    this.showMessage('Tidak ada barcode yang discan', 'error');
-                    return;
-                }
-                
-                this.stopScanner();
-                document.getElementById('show-results').style.display = 'block';
-                this.showMessage(`${this.scannedBarcodes.length} barcode berhasil disimpan`, 'success');
-            }
-
-            showCancelModal() {
-                document.getElementById('modal').style.display = 'block';
-            }
-
-            hideCancelModal() {
-                document.getElementById('modal').style.display = 'none';
-            }
-
-            confirmCancel() {
-                this.scannedBarcodes = [];
-                this.updateScannedCount();
-                this.stopScanner();
-                document.getElementById('show-results').style.display = 'none';
-                this.hideCancelModal();
-                this.showMessage('Semua scan dibatalkan', 'error');
-            }
-
-            showResults() {
-                if (this.scannedBarcodes.length === 0) {
-                    this.showMessage('Tidak ada hasil untuk ditampilkan', 'error');
-                    return;
-                }
-                
-                document.getElementById('scanner-section').style.display = 'none';
-                document.getElementById('results-section').style.display = 'block';
-                document.getElementById('back-to-scanner').style.display = 'block';
-                
-                this.currentPage = 0;
-                this.renderResults();
-            }
-
-            backToScanner() {
-                document.getElementById('scanner-section').style.display = 'block';
-                document.getElementById('results-section').style.display = 'none';
-                document.getElementById('back-to-scanner').style.display = 'none';
-            }
-
-            renderResults() {
-                const container = document.getElementById('products-container');
-                const startIndex = this.currentPage * this.productsPerPage;
-                const endIndex = Math.min(startIndex + this.productsPerPage, this.scannedBarcodes.length);
-                
-                container.innerHTML = '';
-                
-                for (let i = startIndex; i < endIndex; i++) {
-                    const barcode = this.scannedBarcodes[i];
-                    const product = this.barcodeIndex[barcode]; // Gunakan index untuk pencarian cepat
+                    // Feedback sukses dengan vibration dan sound
+                    this.successFeedback(barcode);
                     
-                    const productCard = this.createProductCard(barcode, product);
-                    container.appendChild(productCard);
-                }
-                
-                this.updatePagination();
-            }
-
-            createProductCard(barcode, product) {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                
-                // Gunakan index untuk pencarian cepat
-                if (!product) {
-                    product = this.barcodeIndex[barcode];
-                }
-                
-                const plu = product ? product.PLU : 'Tidak ditemukan';
-                const productName = product ? product.NAMA_PRODUK : `Produk dengan barcode ${barcode} tidak ditemukan dalam database`;
-                const imageUrl = product ? `https://cdn-klik.klikindomaret.com/klik-catalog/product/${product.PLU}_1.jpg` : '';
-                
-                card.innerHTML = `
-                    <div class="plu">PLU: ${plu}</div>
-                    <div class="product-name">${productName}</div>
-                    ${product ? `<img class="product-image" src="${imageUrl}" alt="${productName}" onerror="this.style.display='none'">` : ''}
-                    <div class="barcode-container">
-                        <svg class="barcode-svg" id="barcode-${barcode}"></svg>
-                    </div>
-                `;
-                
-                // Generate barcode setelah elemen ditambahkan ke DOM
-                setTimeout(() => {
-                    try {
-                        JsBarcode(`#barcode-${barcode}`, barcode, {
-                            format: "EAN13",
-                            width: 2,
-                            height: 60,
-                            displayValue: true,
-                            fontSize: 14,
-                            margin: 10
-                        });
-                    } catch (error) {
-                        // Jika EAN13 gagal, coba format lain
-                        try {
-                            JsBarcode(`#barcode-${barcode}`, barcode, {
-                                format: "CODE128",
-                                width: 2,
-                                height: 60,
-                                displayValue: true,
-                                fontSize: 14,
-                                margin: 10
-                            });
-                        } catch (error2) {
-                            document.querySelector(`#barcode-${barcode}`).innerHTML = `<text>Barcode: ${barcode}</text>`;
-                        }
+                    console.log(`🚀 SUPER FAST SCAN: ${barcode}`);
+                    
+                } else {
+                    this.showMessage(`⚠️ ${barcode} sudah discan`, 'error');
+                    
+                    // Light vibration untuk duplicate
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate([50, 50, 50]);
                     }
-                }, 100);
-                
-                return card;
-            }
-
-            updatePagination() {
-                const totalPages = Math.max(1, Math.ceil(this.scannedBarcodes.length / this.productsPerPage));
-                const currentPage = this.currentPage + 1;
-                
-                document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
-                document.getElementById('page-info-bottom').textContent = `${currentPage} / ${totalPages}`;
-                
-                document.getElementById('prev-page').disabled = this.currentPage === 0;
-                document.getElementById('next-page').disabled = this.currentPage >= totalPages - 1;
-                document.getElementById('prev-page-bottom').disabled = this.currentPage === 0;
-                document.getElementById('next-page-bottom').disabled = this.currentPage >= totalPages - 1;
-            }
-
-            prevPage() {
-                if (this.currentPage > 0) {
-                    this.currentPage--;
-                    this.renderResults();
                 }
             }
 
-            nextPage() {
-                const totalPages = Math.ceil(this.scannedBarcodes.length / this.productsPerPage);
-                if (this.currentPage < totalPages - 1) {
-                    this.currentPage++;
-                    this.renderResults();
+            successFeedback(barcode) {
+                // Visual feedback
+                this.showMessage(`✅ SCAN SUCCESS: ${barcode}`, 'success');
+                
+                // Haptic feedback
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([200, 100, 200]);
                 }
-            }
-
-            showMessage(message, type) {
-                const statusElement = document.getElementById('status-message');
-                statusElement.textContent = message;
-                statusElement.className = `status-message ${type}`;
-                statusElement.style.display = 'block';
+                
+                // Flash effect
+                const overlay = document.querySelector('.scanner-overlay');
+                overlay.style.borderColor = '#00ff00';
+                overlay.style.boxShadow = '0 0 0 99999px rgba(0,255,0,0.2), 0 0 50px #00ff00';
                 
                 setTimeout(() => {
-                    statusElement.style.display = 'none';
-                }, 3000);
+                    overlay.style.borderColor = '#00ff00';
+                    overlay.style.boxShadow = '0 0 0 99999px rgba(0,0,0,0.4), 0 0 20px #00ff00';
+                }, 300);
+                
+                // Audio feedback (if possible)
+                this.playBeepSound();
             }
-        }
+
+            playBeepSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    
+                } catch (error) {
+                    console.warn('Audio feedback not supported');
+                }
+            } navigator) {
+                        navigator.vibrate(200);
+                    }
+                } else {
+                    this.showMessage(`Barcode ${barcode} sudah pernah discan`, 'error');
+                }
+            }
 
             updateScannedCount() {
                 document.getElementById('scanned-count').textContent = this.scannedBarcodes.length;
