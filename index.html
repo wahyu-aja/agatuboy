@@ -241,6 +241,21 @@
             height: auto;
         }
 
+        .barcode-canvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        .barcode-fallback {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #ccc;
+        }
+
         .navigation {
             display: flex;
             justify-content: space-between;
@@ -711,43 +726,111 @@
                 const productName = product ? product.NAMA_PRODUK : `Produk dengan barcode ${barcode} tidak ditemukan dalam database`;
                 const imageUrl = product ? `https://cdn-klik.klikindomaret.com/klik-catalog/product/${product.PLU}_1.jpg` : '';
                 
+                // Create unique ID for this barcode
+                const barcodeId = `barcode-${barcode}-${Date.now()}`;
+                
                 card.innerHTML = `
                     <div class="plu">PLU: ${plu}</div>
                     <div class="product-name">${productName}</div>
                     ${product ? `<img class="product-image" src="${imageUrl}" alt="${productName}" onerror="this.style.display='none'">` : ''}
                     <div class="barcode-container">
-                        <svg class="barcode-svg" id="barcode-${barcode}"></svg>
+                        <canvas id="${barcodeId}" class="barcode-canvas"></canvas>
+                        <div class="barcode-fallback" id="fallback-${barcodeId}" style="display: none;">
+                            <div style="font-family: 'Courier New', monospace; font-size: 24px; letter-spacing: 2px; margin: 20px 0; padding: 10px; background: #f0f0f0; border: 1px solid #ccc;">
+                                ${barcode}
+                            </div>
+                            <div style="font-size: 14px; color: #666;">Barcode: ${barcode}</div>
+                        </div>
                     </div>
                 `;
                 
                 // Generate barcode after element is added to DOM
                 setTimeout(() => {
-                    try {
-                        JsBarcode(`#barcode-${barcode}`, barcode, {
-                            format: "EAN13",
-                            width: 2,
-                            height: 60,
-                            displayValue: true,
-                            fontSize: 14,
-                            margin: 10
-                        });
-                    } catch (error) {
-                        try {
-                            JsBarcode(`#barcode-${barcode}`, barcode, {
-                                format: "CODE128",
-                                width: 2,
-                                height: 60,
-                                displayValue: true,
-                                fontSize: 14,
-                                margin: 10
-                            });
-                        } catch (error2) {
-                            document.querySelector(`#barcode-${barcode}`).innerHTML = `<text>Barcode: ${barcode}</text>`;
-                        }
-                    }
+                    this.generateBarcode(barcodeId, barcode);
                 }, 100);
                 
                 return card;
+            }
+
+            generateBarcode(canvasId, barcode) {
+                try {
+                    const canvas = document.getElementById(canvasId);
+                    const fallback = document.getElementById(`fallback-${canvasId}`);
+                    
+                    if (!canvas) {
+                        console.error('Canvas element not found:', canvasId);
+                        return;
+                    }
+
+                    // First try EAN13
+                    try {
+                        JsBarcode(canvas, barcode, {
+                            format: "EAN13",
+                            width: 2,
+                            height: 80,
+                            displayValue: true,
+                            fontSize: 16,
+                            margin: 10,
+                            background: "#ffffff",
+                            lineColor: "#000000"
+                        });
+                        canvas.style.display = 'block';
+                        if (fallback) fallback.style.display = 'none';
+                        return;
+                    } catch (error) {
+                        console.log('EAN13 failed, trying CODE128:', error);
+                    }
+
+                    // Then try CODE128
+                    try {
+                        JsBarcode(canvas, barcode, {
+                            format: "CODE128",
+                            width: 2,
+                            height: 80,
+                            displayValue: true,
+                            fontSize: 16,
+                            margin: 10,
+                            background: "#ffffff",
+                            lineColor: "#000000"
+                        });
+                        canvas.style.display = 'block';
+                        if (fallback) fallback.style.display = 'none';
+                        return;
+                    } catch (error) {
+                        console.log('CODE128 failed, trying AUTO:', error);
+                    }
+
+                    // Finally try AUTO format
+                    try {
+                        JsBarcode(canvas, barcode, {
+                            width: 2,
+                            height: 80,
+                            displayValue: true,
+                            fontSize: 16,
+                            margin: 10,
+                            background: "#ffffff",
+                            lineColor: "#000000"
+                        });
+                        canvas.style.display = 'block';
+                        if (fallback) fallback.style.display = 'none';
+                        return;
+                    } catch (error) {
+                        console.log('All barcode formats failed, showing fallback:', error);
+                    }
+
+                    // If all fails, show fallback
+                    canvas.style.display = 'none';
+                    if (fallback) {
+                        fallback.style.display = 'block';
+                    }
+
+                } catch (error) {
+                    console.error('Error generating barcode:', error);
+                    const fallback = document.getElementById(`fallback-${canvasId}`);
+                    if (fallback) {
+                        fallback.style.display = 'block';
+                    }
+                }
             }
 
             updatePagination() {
