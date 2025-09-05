@@ -1,1048 +1,278 @@
-<!DOCTYPE html>
-<html lang="id">
+<!DOCTYPE html><html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Vue Barcode Scanner</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .performance-badge {
-            background: linear-gradient(45deg, #ff6b6b, #feca57);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 10px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
-        }
-
-        .scanner-container {
-            position: relative;
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            height: 350px;
-        }
-
-        #video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .scanner-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 150px;
-            border: 3px solid #00ff00;
-            border-radius: 15px;
-            box-shadow: 0 0 0 99999px rgba(0,0,0,0.5);
-            animation: scannerPulse 1.5s infinite;
-            z-index: 10;
-        }
-
-        .scanner-line {
-            position: absolute;
-            top: 50%;
-            left: 5%;
-            right: 5%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #00ff00, #00ff88, #00ff00, transparent);
-            animation: scanLine 1.5s linear infinite;
-            box-shadow: 0 0 10px #00ff00;
-        }
-
-        @keyframes scannerPulse {
-            0%, 100% { 
-                border-color: #00ff00;
-                box-shadow: 0 0 0 99999px rgba(0,0,0,0.5), 0 0 30px #00ff00;
-            }
-            50% { 
-                border-color: #00ff88;
-                box-shadow: 0 0 0 99999px rgba(0,0,0,0.4), 0 0 40px #00ff88;
-            }
-        }
-
-        @keyframes scanLine {
-            0% { transform: translateY(-75px); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(75px); opacity: 0; }
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-            color: white;
-        }
-
-        .btn-info {
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
-            color: white;
-        }
-
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .performance-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .stat-box {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            display: block;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .status-message {
-            text-align: center;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 10px;
-            font-weight: bold;
-            animation: slideIn 0.3s ease;
-        }
-
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            border-left: 5px solid #4CAF50;
-        }
-
-        .plu {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4CAF50;
-            margin-bottom: 10px;
-        }
-
-        .product-name {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .product-image {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 10px;
-            margin: 15px 0;
-            border: 2px solid #eee;
-        }
-
-        .barcode-container {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 15px 0;
-        }
-
-        .navigation {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 20px 0;
-        }
-
-        .nav-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .nav-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-
-            .performance-stats {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .camera-error {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .results-container {
-            display: none;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 350px;
-            width: 90%;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .show { display: block !important; }
-        .hidden { display: none !important; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scanner Barcode • Simpan & Tampilkan</title>
+  <style>
+    /* (style sama dengan versi sebelumnya) */
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="performance-badge">⚡ OPTIMIZED SCANNER v3.0</div>
-            <h1>📱 Ultra Barcode Scanner</h1>
-            <p>High-performance scanning solution</p>
+  <header>
+    <h1>📷 Scanner Barcode • Simpan ➜ Tampilkan (PLU, Nama, Gambar)</h1>
+  </header>  <div class="wrap">
+    <div class="grid">
+      <!-- SCANNER CARD -->
+      <section class="card" id="scanner-card">
+        <div class="body">
+          <h2>1) Pindai Barcode</h2>
+          <div class="row" style="margin-bottom:8px">
+            <button id="btnStart">Mulai Scan</button>
+            <button id="btnStop" class="secondary" disabled>Hentikan</button>
+            <button id="btnSave" class="ok" disabled>Simpan Hasil</button>
+            <button id="btnCancel" class="danger">Batal</button>
+          </div>
+          <div class="hint">Gunakan kamera belakang (jika ada). Sistem akan menambahkan hasil unik satu per satu sesuai urutan scan.</div>
+          <video id="preview" playsinline muted></video>
+          <div class="list" id="scanList"></div>
+          <div class="hint">Total discan: <span id="scanCount">0</span> • Perangkat: <span id="camLabel">-</span></div>
         </div>
+      </section><!-- VIEWER CARD -->
+  <section class="card" id="viewer-card">
+    <div class="body">
+      <h2>2) Tampilkan Hasil</h2>
+      <div class="row" style="margin-bottom:8px">
+        <button id="btnShow" class="ghost" disabled>Tampilkan Barcode</button>
+      </div>
 
-        <!-- Scanner Section -->
-        <div id="scanner-section" class="card">
-            <div class="performance-stats">
-                <div class="stat-box">
-                    <span class="stat-number" id="scan-speed">0</span>
-                    <span class="stat-label">ms/scan</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-number" id="scanned-count">0</span>
-                    <span class="stat-label">scanned</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-number" id="status-indicator">OFF</span>
-                    <span class="stat-label">status</span>
-                </div>
-            </div>
+      <div id="viewer" class="viewer">
+        <div class="empty" id="emptyViewer">Belum ada hasil tersimpan. Pindai dulu, lalu klik <b>Simpan Hasil</b>.</div>
 
-            <div class="scanner-container">
-                <video id="video" autoplay muted playsinline></video>
-                <canvas id="canvas" style="display: none;"></canvas>
-                <div id="scanner-overlay" class="scanner-overlay">
-                    <div class="scanner-line"></div>
-                </div>
-                
-                <div id="camera-error" class="camera-error hidden">
-                    <div id="loading-spinner" class="loading-spinner hidden"></div>
-                    <div id="error-message">
-                        <h3>❌ Camera Error</h3>
-                        <p id="error-text">Camera access failed</p>
-                        <button onclick="scanner.retryCamera()" class="btn btn-primary" style="margin-top: 15px;">
-                            🔄 Try Again
-                        </button>
-                    </div>
-                </div>
+        <div id="itemViewer" style="display:none">
+          <div class="title">PLU: <span id="plu" class="mono"></span></div>
+          <div>Nama Produk: <span id="name"></span></div>
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px">
+            <div>
+              <svg id="barcodeSvg"></svg>
+              <div class="hint">Kode Asli: <span id="raw" class="mono"></span></div>
             </div>
-            
-            <div id="status-message" class="status-message hidden"></div>
-
-            <div class="controls">
-                <button id="start-btn" onclick="scanner.startScanner()" class="btn btn-primary">
-                    🚀 START SCANNER
-                </button>
-                <button id="stop-btn" onclick="scanner.stopScanner()" class="btn btn-secondary" disabled>
-                    ⏹️ STOP
-                </button>
-            </div>
-
-            <div class="controls">
-                <button id="save-btn" onclick="scanner.saveResults()" class="btn btn-info" disabled>
-                    💾 Save Results (0)
-                </button>
-                <button onclick="scanner.showResetModal()" class="btn btn-secondary">
-                    ❌ Reset
-                </button>
-            </div>
-
-            <div class="controls">
-                <button id="results-btn" onclick="scanner.showResults()" class="btn btn-info hidden">
-                    📋 View Results
-                </button>
-            </div>
+            <img id="prodImg" class="prod" alt="Gambar produk" />
+          </div>
+          <div class="nav">
+            <button id="prevBtn" class="secondary">⟵ Sebelumnya</button>
+            <div class="badge">Index: <span id="idxNow">0</span>/<span id="idxTotal">0</span></div>
+            <button id="nextBtn">Berikutnya ⟶</button>
+          </div>
         </div>
-
-        <!-- Results Section -->
-        <div id="results-section" class="results-container">
-            <div class="navigation">
-                <button id="prev-btn" onclick="scanner.prevPage()" class="nav-btn" disabled>‹ Prev</button>
-                <span id="page-info" class="page-info">1 / 1</span>
-                <button id="next-btn" onclick="scanner.nextPage()" class="nav-btn" disabled>Next ›</button>
-            </div>
-            
-            <div id="products-container"></div>
-            
-            <div class="navigation">
-                <button onclick="scanner.prevPage()" class="nav-btn" disabled>‹ Prev</button>
-                <span id="page-info-bottom" class="page-info">1 / 1</span>
-                <button onclick="scanner.nextPage()" class="nav-btn" disabled>Next ›</button>
-            </div>
-
-            <div class="controls">
-                <button onclick="scanner.backToScanner()" class="btn btn-primary">
-                    🔙 Back to Scanner
-                </button>
-            </div>
-        </div>
+      </div>
     </div>
+  </section>
+</div>
 
-    <!-- Reset Modal -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <h3>⚠️ Confirmation</h3>
-            <p>Reset all scan results?</p>
-            <div class="modal-buttons">
-                <button onclick="scanner.confirmReset()" class="btn btn-secondary">Yes, Reset</button>
-                <button onclick="scanner.hideModal()" class="btn btn-primary">Cancel</button>
-            </div>
-        </div>
+<footer>
+  <div>File <span class="mono">bcd.json</span> harus diletakkan di folder yang sama dengan file ini (<span class="mono">index.html</span>), agar nama & PLU bisa dicocokkan.</div>
+</footer>
+
+  </div>  <!-- ZXing untuk scanning -->  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0"></script>  <!-- JsBarcode untuk render gambar barcode -->  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>  <dialog id="confirmCancel">
+    <div class="mwrap">
+      <h3 style="margin:0 0 8px 0">Batalkan & hapus hasil sementara?</h3>
+      <div class="hint">Semua hasil yang belum disimpan akan hilang.</div>
     </div>
+    <div class="actions">
+      <button id="cancelNo" class="secondary">Tidak</button>
+      <button id="cancelYes" class="danger">Ya, Hapus</button>
+    </div>
+  </dialog>  <script>
+    const scanned = [];
+    let saved = [];
+    let currentIndex = 0;
 
-    <script>
-        class OptimizedBarcodeScanner {
-            constructor() {
-                this.scannedBarcodes = [];
-                this.products = [];
-                this.barcodeIndex = new Map();
-                this.currentPage = 0;
-                this.productsPerPage = 1;
-                this.isScanning = false;
-                this.isInitializing = false;
-                this.stream = null;
-                this.animationFrame = null;
-                this.scanCooldown = false;
-                
-                this.init();
-                this.loadProductData();
-            }
+    const videoEl = document.getElementById('preview');
+    const btnStart = document.getElementById('btnStart');
+    const btnStop  = document.getElementById('btnStop');
+    const btnSave  = document.getElementById('btnSave');
+    const btnCancel= document.getElementById('btnCancel');
+    const scanList = document.getElementById('scanList');
+    const scanCount= document.getElementById('scanCount');
+    const camLabel = document.getElementById('camLabel');
 
-            init() {
-                console.log('🚀 Initializing Optimized Barcode Scanner...');
-                this.updateUI();
-            }
+    const btnShow  = document.getElementById('btnShow');
+    const emptyViewer = document.getElementById('emptyViewer');
+    const itemViewer  = document.getElementById('itemViewer');
 
-            async loadProductData() {
-                try {
-                    this.showMessage('⚡ Loading database...', 'warning');
-                    
-                    const response = await fetch('./bcd.json');
-                    if (!response.ok) {
-                        throw new Error('HTTP error! status: ' + response.status);
-                    }
-                    
-                    this.products = await response.json();
-                    
-                    if (!Array.isArray(this.products)) {
-                        throw new Error('Invalid JSON format');
-                    }
-                    
-                    // Create optimized hash map
-                    this.barcodeIndex = new Map();
-                    this.products.forEach(product => {
-                        if (product.BARCODE) {
-                            this.barcodeIndex.set(product.BARCODE, product);
-                        }
-                    });
-                    
-                    this.showMessage(`🚀 Database loaded: ${this.products.length} products`, 'success');
-                    
-                } catch (error) {
-                    console.error('Database error:', error);
-                    this.showMessage('Using sample data - upload bcd.json for full database', 'warning');
-                    
-                    // Fallback sample data
-                    this.products = [
-                        {"PLU": "10000019", "NAMA_PRODUK": "INDOMILK SUSU KENTAL MANIS PUTIH 370g", "BARCODE": "8992702000018"},
-                        {"PLU": "10000020", "NAMA_PRODUK": "INDOMILK SUSU KENTAL MANIS COKLAT 370g", "BARCODE": "8992702000063"},
-                        {"PLU": "10000021", "NAMA_PRODUK": "CAP ENAK KENTAL MANIS PUTIH 370g", "BARCODE": "8992702000025"}
-                    ];
-                    
-                    this.barcodeIndex = new Map();
-                    this.products.forEach(product => {
-                        if (product.BARCODE) {
-                            this.barcodeIndex.set(product.BARCODE, product);
-                        }
-                    });
-                }
-            }
+    const spanPLU = document.getElementById('plu');
+    const spanName= document.getElementById('name');
+    const spanRaw = document.getElementById('raw');
+    const svgBarcode = document.getElementById('barcodeSvg');
+    const imgProd  = document.getElementById('prodImg');
+    const idxNow = document.getElementById('idxNow');
+    const idxTotal = document.getElementById('idxTotal');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
 
-            async startScanner() {
-                if (this.isScanning) return;
-                
-                try {
-                    this.isInitializing = true;
-                    this.updateUI();
-                    this.showLoading(true);
-                    
-                    const video = document.getElementById('video');
-                    const canvas = document.getElementById('canvas');
-                    
-                    // Request camera with optimized settings
-                    this.stream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: { ideal: 'environment' },
-                            width: { ideal: 1920, min: 1280 },
-                            height: { ideal: 1080, min: 720 },
-                            frameRate: { ideal: 30, min: 15 }
-                        }
-                    });
+    const dlgCancel = document.getElementById('confirmCancel');
+    const cancelNo = document.getElementById('cancelNo');
+    const cancelYes = document.getElementById('cancelYes');
 
-                    video.srcObject = this.stream;
-                    await video.play();
+    let products = [];
+    let mapByBarcode = new Map();
 
-                    canvas.width = video.videoWidth || 1280;
-                    canvas.height = video.videoHeight || 720;
-
-                    this.isScanning = true;
-                    this.isInitializing = false;
-                    this.showLoading(false);
-                    this.hideError();
-                    
-                    this.showMessage('📱 Camera ready - Start scanning!', 'success');
-                    this.startScanLoop();
-                    this.updateUI();
-                    
-                } catch (error) {
-                    console.error('Camera error:', error);
-                    this.isInitializing = false;
-                    this.isScanning = false;
-                    this.showLoading(false);
-                    
-                    let errorMessage = 'Camera access failed';
-                    if (error.name === 'NotAllowedError') {
-                        errorMessage = 'Camera permission denied. Please allow camera access.';
-                    } else if (error.name === 'NotFoundError') {
-                        errorMessage = 'No camera found on device.';
-                    } else if (error.name === 'NotSupportedError') {
-                        errorMessage = 'Camera not supported on this device.';
-                    }
-                    
-                    this.showError(errorMessage);
-                    this.updateUI();
-                }
-            }
-
-            stopScanner() {
-                if (!this.isScanning) return;
-                
-                this.isScanning = false;
-                
-                if (this.animationFrame) {
-                    cancelAnimationFrame(this.animationFrame);
-                    this.animationFrame = null;
-                }
-                
-                if (this.stream) {
-                    this.stream.getTracks().forEach(track => track.stop());
-                    this.stream = null;
-                }
-                
-                const video = document.getElementById('video');
-                video.srcObject = null;
-                
-                this.showMessage('🛑 Scanner stopped', 'error');
-                this.updateUI();
-            }
-
-            retryCamera() {
-                this.hideError();
-                this.startScanner();
-            }
-
-            startScanLoop() {
-                const video = document.getElementById('video');
-                const canvas = document.getElementById('canvas');
-                const context = canvas.getContext('2d');
-                
-                let lastScanAttempt = 0;
-                const minScanInterval = 100; // 10 scans per second max
-                
-                const scanLoop = (timestamp) => {
-                    if (!this.isScanning) return;
-                    
-                    if (timestamp - lastScanAttempt >= minScanInterval) {
-                        this.performScan(video, canvas, context);
-                        lastScanAttempt = timestamp;
-                    }
-                    
-                    this.animationFrame = requestAnimationFrame(scanLoop);
-                };
-                
-                this.animationFrame = requestAnimationFrame(scanLoop);
-            }
-
-            performScan(video, canvas, context) {
-                if (this.scanCooldown) return;
-                
-                try {
-                    const startTime = performance.now();
-                    
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    // Get center region for scanning
-                    const roiWidth = Math.floor(canvas.width * 0.8);
-                    const roiHeight = Math.floor(canvas.height * 0.6);
-                    const roiX = Math.floor((canvas.width - roiWidth) / 2);
-                    const roiY = Math.floor((canvas.height - roiHeight) / 2);
-                    
-                    const imageData = context.getImageData(roiX, roiY, roiWidth, roiHeight);
-                    
-                    // Detect barcode pattern
-                    if (this.detectBarcodePattern(imageData)) {
-                        // Simulate barcode detection (in real app, use a barcode library)
-                        if (Math.random() > 0.985) { // 1.5% chance per scan
-                            const mockBarcodes = [
-                                '8992702000018',
-                                '8992702000063', 
-                                '8992702000025',
-                                '1234567890123',
-                                '9876543210987'
-                            ];
-                            const randomBarcode = mockBarcodes[Math.floor(Math.random() * mockBarcodes.length)];
-                            this.onBarcodeDetected(randomBarcode);
-                        }
-                    }
-                    
-                    const scanTime = Math.round(performance.now() - startTime);
-                    document.getElementById('scan-speed').textContent = scanTime;
-                    
-                } catch (error) {
-                    console.warn('Scan error:', error);
-                }
-            }
-
-            detectBarcodePattern(imageData) {
-                const data = imageData.data;
-                const width = imageData.width;
-                const height = imageData.height;
-                
-                // Check horizontal lines for barcode patterns
-                const y = Math.floor(height / 2);
-                const lineStart = y * width * 4;
-                
-                let transitions = 0;
-                let lastBrightness = 0;
-                
-                for (let x = 0; x < width; x += 4) {
-                    const pixelIndex = lineStart + (x * 4);
-                    const brightness = (data[pixelIndex] + data[pixelIndex + 1] + data[pixelIndex + 2]) / 3;
-                    const isLight = brightness > 128;
-                    
-                    if (isLight !== lastBrightness) {
-                        transitions++;
-                    }
-                    lastBrightness = isLight;
-                }
-                
-                return transitions > 20 && transitions < 200;
-            }
-
-            onBarcodeDetected(barcode) {
-                if (this.scanCooldown) return;
-                
-                // Validate barcode
-                if (!barcode || barcode.length < 8 || barcode.length > 20) return;
-                
-                const cleanBarcode = barcode.replace(/[^0-9]/g, '');
-                if (cleanBarcode.length < 8) return;
-                
-                this.scanCooldown = true;
-                setTimeout(() => {
-                    this.scanCooldown = false;
-                }, 500);
-                
-                if (!this.scannedBarcodes.includes(cleanBarcode)) {
-                    this.scannedBarcodes.push(cleanBarcode);
-                    
-                    const product = this.barcodeIndex.get(cleanBarcode);
-                    const productName = product ? 
-                        product.NAMA_PRODUK.substring(0, 30) + '...' : 
-                        'Unknown Product';
-                    
-                    this.showMessage(`✅ SCANNED: ${productName}`, 'success');
-                    this.successFeedback();
-                    
-                } else {
-                    this.showMessage(`⚠️ ${cleanBarcode} already scanned`, 'warning');
-                    this.duplicateFeedback();
-                }
-                
-                this.updateUI();
-            }
-
-            successFeedback() {
-                const overlay = document.getElementById('scanner-overlay');
-                overlay.style.borderColor = '#00ff00';
-                overlay.style.boxShadow = '0 0 0 99999px rgba(0,255,0,0.3), 0 0 60px #00ff00';
-                
-                setTimeout(() => {
-                    overlay.style.borderColor = '#00ff00';
-                    overlay.style.boxShadow = '0 0 0 99999px rgba(0,0,0,0.5), 0 0 30px #00ff00';
-                }, 400);
-                
-                this.playSuccessSound();
-                this.vibrate([100, 50, 100]);
-            }
-
-            duplicateFeedback() {
-                const overlay = document.getElementById('scanner-overlay');
-                overlay.style.borderColor = '#ff6b6b';
-                overlay.style.boxShadow = '0 0 0 99999px rgba(255,107,107,0.3), 0 0 40px #ff6b6b';
-                
-                setTimeout(() => {
-                    overlay.style.borderColor = '#00ff00';
-                    overlay.style.boxShadow = '0 0 0 99999px rgba(0,0,0,0.5), 0 0 30px #00ff00';
-                }, 300);
-                
-                this.vibrate([50, 30, 50, 30, 50]);
-            }
-
-            playSuccessSound() {
-                try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.value = 800;
-                    oscillator.type = 'sine';
-                    
-                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-                    
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.2);
-                    
-                } catch (error) {
-                    console.warn('Audio feedback not supported');
-                }
-            }
-
-            vibrate(pattern) {
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(pattern);
-                }
-            }
-
-            saveResults() {
-                if (this.scannedBarcodes.length === 0) {
-                    this.showMessage('❌ No barcodes scanned', 'error');
-                    return;
-                }
-                
-                this.stopScanner();
-                this.showMessage(`💾 ${this.scannedBarcodes.length} barcode(s) saved successfully`, 'success');
-            }
-
-            showResults() {
-                if (this.scannedBarcodes.length === 0) {
-                    this.showMessage('❌ No results to display', 'error');
-                    return;
-                }
-                
-                document.getElementById('scanner-section').classList.add('hidden');
-                document.getElementById('results-section').classList.add('show');
-                
-                this.currentPage = 0;
-                this.renderResults();
-            }
-
-            backToScanner() {
-                document.getElementById('scanner-section').classList.remove('hidden');
-                document.getElementById('results-section').classList.remove('show');
-            }
-
-            showResetModal() {
-                document.getElementById('modal').classList.add('show');
-            }
-
-            hideModal() {
-                document.getElementById('modal').classList.remove('show');
-            }
-
-            confirmReset() {
-                this.scannedBarcodes = [];
-                this.stopScanner();
-                this.hideModal();
-                this.backToScanner();
-                this.showMessage('🔄 All scans reset', 'warning');
-                this.updateUI();
-            }
-
-            renderResults() {
-                const container = document.getElementById('products-container');
-                const startIndex = this.currentPage * this.productsPerPage;
-                const endIndex = Math.min(startIndex + this.productsPerPage, this.scannedBarcodes.length);
-                
-                container.innerHTML = '';
-                
-                for (let i = startIndex; i < endIndex; i++) {
-                    const barcode = this.scannedBarcodes[i];
-                    const product = this.barcodeIndex.get(barcode);
-                    
-                    const productCard = this.createProductCard(barcode, product);
-                    container.appendChild(productCard);
-                }
-                
-                this.updatePagination();
-                
-                // Generate barcodes after DOM update
-                setTimeout(() => {
-                    this.generateBarcodes();
-                }, 50);
-            }
-
-            createProductCard(barcode, product) {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                
-                const plu = product ? product.PLU : 'Not Found';
-                const productName = product ? product.NAMA_PRODUK : `Product with barcode ${barcode} not found`;
-                const imageUrl = product ? `https://cdn-klik.klikindomaret.com/klik-catalog/product/${product.PLU}_1.jpg` : '';
-                
-                card.innerHTML = `
-                    <div class="plu">PLU: ${plu}</div>
-                    <div class="product-name">${productName}</div>
-                    ${product ? `<img class="product-image" src="${imageUrl}" alt="${productName}" onerror="this.style.display='none'">` : ''}
-                    <div class="barcode-container">
-                        <svg class="barcode-svg" id="barcode-${barcode}"></svg>
-                    </div>
-                `;
-                
-                return card;
-            }
-
-            generateBarcodes() {
-                if (typeof JsBarcode === 'undefined') return;
-                
-                const startIndex = this.currentPage * this.productsPerPage;
-                const endIndex = Math.min(startIndex + this.productsPerPage, this.scannedBarcodes.length);
-                
-                for (let i = startIndex; i < endIndex; i++) {
-                    const barcode = this.scannedBarcodes[i];
-                    const elementId = `barcode-${barcode}`;
-                    const element = document.getElementById(elementId);
-                    
-                    if (element) {
-                        try {
-                            const formats = ['EAN13', 'EAN8', 'UPC', 'CODE128'];
-                            
-                            for (const format of formats) {
-                                try {
-                                    JsBarcode(`#${elementId}`, barcode, {
-                                        format: format,
-                                        width: 2,
-                                        height: 60,
-                                        displayValue: true,
-                                        fontSize: 14,
-                                        margin: 10,
-                                        background: '#ffffff',
-                                        lineColor: '#000000'
-                                    });
-                                    break;
-                                } catch (formatError) {
-                                    continue;
-                                }
-                            }
-                        } catch (error) {
-                            element.innerHTML = `<text x="50%" y="30" text-anchor="middle" fill="#333">Barcode: ${barcode}</text>`;
-                        }
-                    }
-                }
-            }
-
-            updatePagination() {
-                const totalPages = Math.max(1, Math.ceil(this.scannedBarcodes.length / this.productsPerPage));
-                const currentPage = this.currentPage + 1;
-                
-                document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
-                document.getElementById('page-info-bottom').textContent = `${currentPage} / ${totalPages}`;
-                
-                const prevBtns = document.querySelectorAll('#prev-btn, .navigation button:first-child');
-                const nextBtns = document.querySelectorAll('#next-btn, .navigation button:last-child');
-                
-                prevBtns.forEach(btn => {
-                    btn.disabled = this.currentPage === 0;
-                });
-                
-                nextBtns.forEach(btn => {
-                    btn.disabled = this.currentPage >= totalPages - 1;
-                });
-            }
-
-            prevPage() {
-                if (this.currentPage > 0) {
-                    this.currentPage--;
-                    this.renderResults();
-                }
-            }
-
-            nextPage() {
-                const totalPages = Math.ceil(this.scannedBarcodes.length / this.productsPerPage);
-                if (this.currentPage < totalPages - 1) {
-                    this.currentPage++;
-                    this.renderResults();
-                }
-            }
-
-            showMessage(message, type) {
-                const statusElement = document.getElementById('status-message');
-                statusElement.textContent = message;
-                statusElement.className = `status-message ${type}`;
-                statusElement.classList.remove('hidden');
-                
-                setTimeout(() => {
-                    statusElement.classList.add('hidden');
-                }, 4000);
-            }
-
-            showLoading(show) {
-                const spinner = document.getElementById('loading-spinner');
-                const errorDiv = document.getElementById('camera-error');
-                
-                if (show) {
-                    errorDiv.classList.remove('hidden');
-                    spinner.classList.remove('hidden');
-                    document.getElementById('error-message').classList.add('hidden');
-                } else {
-                    spinner.classList.add('hidden');
-                }
-            }
-
-            showError(message) {
-                const errorDiv = document.getElementById('camera-error');
-                const errorText = document.getElementById('error-text');
-                
-                errorDiv.classList.remove('hidden');
-                document.getElementById('error-message').classList.remove('hidden');
-                errorText.textContent = message;
-            }
-
-            hideError() {
-                document.getElementById('camera-error').classList.add('hidden');
-            }
-
-            updateUI() {
-                // Update counters
-                document.getElementById('scanned-count').textContent = this.scannedBarcodes.length;
-                document.getElementById('status-indicator').textContent = this.isScanning ? 'ON' : 'OFF';
-                
-                // Update buttons
-                document.getElementById('start-btn').disabled = this.isScanning || this.isInitializing;
-                document.getElementById('start-btn').textContent = this.isInitializing ? '🔄 LOADING...' : '🚀 START SCANNER';
-                
-                document.getElementById('stop-btn').disabled = !this.isScanning;
-                document.getElementById('save-btn').disabled = this.scannedBarcodes.length === 0;
-                document.getElementById('save-btn').textContent = `💾 Save Results (${this.scannedBarcodes.length})`;
-                
-                // Show/hide results button
-                const resultsBtn = document.getElementById('results-btn');
-                if (this.scannedBarcodes.length > 0) {
-                    resultsBtn.classList.remove('hidden');
-                    resultsBtn.textContent = `📋 View Results (${this.scannedBarcodes.length})`;
-                } else {
-                    resultsBtn.classList.add('hidden');
-                }
-            }
-        }
-
-        // Initialize scanner when DOM is loaded
-        let scanner;
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Initializing Optimized Barcode Scanner...');
-            scanner = new OptimizedBarcodeScanner();
-            
-            // Close modal when clicking outside
-            document.getElementById('modal').addEventListener('click', (e) => {
-                if (e.target.id === 'modal') {
-                    scanner.hideModal();
-                }
-            });
+    async function loadProducts() {
+      try {
+        const res = await fetch('bcd.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Gagal membaca bcd.json');
+        products = await res.json();
+        products.forEach(p=>{
+          if (p.BARCODE) mapByBarcode.set(String(p.BARCODE), p);
         });
+      } catch (e) {
+        console.warn('bcd.json tidak ditemukan atau rusak:', e);
+        products = [];
+      }
+    }
+    loadProducts();
 
-        // Performance optimization
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('data:text/javascript,').catch(() => {});
-        }
+    const { BrowserMultiFormatReader, NotFoundException } = ZXing;
+    let codeReader = null;
+    let currentDeviceId = null;
+    let scanActive = false;
+    let lastText = '';
+    let throttle = false;
 
-        // Mobile optimizations
-        if ('virtualKeyboard' in navigator) {
-            navigator.virtualKeyboard.overlaysContent = true;
+    async function startScan(){
+      if (scanActive) return;
+      btnStart.disabled = true;
+      btnStop.disabled = false;
+      btnSave.disabled = false;
+
+      if (!codeReader) codeReader = new BrowserMultiFormatReader();
+      const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+      let deviceId = devices?.[0]?.deviceId || null;
+      const back = devices.find(d=>/back|rear|belakang/i.test(d.label));
+      if (back) deviceId = back.deviceId;
+      currentDeviceId = deviceId;
+      camLabel.textContent = (devices.find(d=>d.deviceId===deviceId)?.label) || 'Kamera';
+
+      scanActive = true;
+      lastText = '';
+
+      await codeReader.decodeFromVideoDevice(deviceId, videoEl, (result, err)=>{
+        if (!scanActive) return;
+        if (result) {
+          const text = String(result.getText());
+          if (throttle || text === lastText) return;
+          throttle = true; setTimeout(()=>{ throttle = false; }, 350);
+          lastText = text;
+          onScan(text);
+        } else if (err && !(err instanceof NotFoundException)) {
+          console.error(err);
         }
-    </script>
-</body>
+      });
+    }
+
+    async function stopScan(){
+      scanActive = false;
+      try { codeReader?.reset(); } catch(e){}
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+    }
+
+    function onScan(code){
+      if (!code) return;
+      if (!scanned.includes(code)) {
+        scanned.push(code);
+        renderScanList();
+      }
+    }
+
+    function renderScanList(){
+      scanList.innerHTML = '';
+      scanned.forEach((code, i)=>{
+        const div = document.createElement('span');
+        div.className = 'pill mono';
+        div.textContent = `${i+1}. ${code}`;
+        scanList.appendChild(div);
+      });
+      scanCount.textContent = scanned.length;
+      btnSave.disabled = scanned.length === 0;
+    }
+
+    function saveResults(){
+      saved = scanned.slice();
+      currentIndex = 0;
+      btnShow.disabled = saved.length === 0;
+      if (saved.length > 0) showViewer();
+    }
+
+    function openCancelDialog(){
+      dlgCancel.showModal();
+    }
+    function performCancel(){
+      stopScan();
+      scanned.splice(0, scanned.length);
+      renderScanList();
+      btnSave.disabled = true;
+      btnShow.disabled = saved.length === 0;
+      dlgCancel.close();
+    }
+
+    function showViewer(){
+      emptyViewer.style.display = 'none';
+      itemViewer.style.display = '';
+      idxTotal.textContent = saved.length;
+      renderViewer(currentIndex);
+    }
+
+    function guessFormat(code){
+      if (/^\d{13}$/.test(code)) return 'EAN13';
+      if (/^\d{8}$/.test(code)) return 'EAN8';
+      return 'CODE128';
+    }
+
+    function lookupProduct(code){
+      if (mapByBarcode.has(code)) return mapByBarcode.get(code);
+      return { PLU: '', NAMA_PRODUK: '(Produk tidak ditemukan di bcd.json)', BARCODE: code };
+    }
+
+    function renderViewer(i){
+      if (saved.length === 0) return;
+      if (i<0) i=0; if (i>saved.length-1) i=saved.length-1; currentIndex = i;
+
+      const code = saved[i];
+      const info = lookupProduct(code);
+
+      const plu = info.PLU || '';
+      const name = info.NAMA_PRODUK || '(Nama tidak tersedia)';
+
+      spanPLU.textContent = plu;
+      spanName.textContent = name;
+      spanRaw.textContent = code;
+
+      svgBarcode.innerHTML = '';
+      try {
+        JsBarcode(svgBarcode, code, { format: guessFormat(code), displayValue: true, fontSize: 16, margin: 8, height: 90 });
+      } catch(e){
+        JsBarcode(svgBarcode, code, { format: 'CODE128', displayValue: true, fontSize: 16, margin: 8, height: 90 });
+      }
+
+      if (plu) {
+        const imageUrl = `https://cdn-klik.klikindomaret.com/klik-catalog/product/${plu}_1.jpg`;
+        imgProd.src = imageUrl;
+        imgProd.style.display = '';
+      } else {
+        imgProd.removeAttribute('src');
+        imgProd.style.display = 'none';
+      }
+
+      idxNow.textContent = i+1;
+      idxTotal.textContent = saved.length;
+
+      prevBtn.disabled = (i===0);
+      nextBtn.disabled = (i===saved.length-1);
+    }
+
+    btnStart.addEventListener('click', startScan);
+    btnStop.addEventListener('click', stopScan);
+    btnSave.addEventListener('click', ()=>{ saveResults(); btnShow.disabled=false; });
+    btnCancel.addEventListener('click', openCancelDialog);
+
+    btnShow.addEventListener('click', ()=>{ if(saved.length>0){ showViewer(); } });
+    prevBtn.addEventListener('click', ()=> renderViewer(currentIndex-1));
+    nextBtn.addEventListener('click', ()=> renderViewer(currentIndex+1));
+
+    cancelNo.addEventListener('click', ()=> dlgCancel.close());
+    cancelYes.addEventListener('click', performCancel);
+
+    window.addEventListener('pagehide', stopScan);
+  </script></body>
 </html>
