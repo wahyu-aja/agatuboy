@@ -1,16 +1,269 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Scanner Barcode • Simpan & Tampilkan</title>
   <style>
-    /* (style sama dengan versi sebelumnya) */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    header {
+      background: rgba(255,255,255,0.95);
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    header h1 {
+      color: #333;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    }
+
+    .body {
+      padding: 24px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 16px;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      background: #667eea;
+      color: white;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    button.secondary {
+      background: #6c757d;
+    }
+
+    button.ok {
+      background: #28a745;
+    }
+
+    button.danger {
+      background: #dc3545;
+    }
+
+    button.ghost {
+      background: transparent;
+      border: 2px solid #667eea;
+      color: #667eea;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 6px;
+    }
+
+    #preview {
+      width: 100%;
+      height: 200px;
+      background: #000;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      object-fit: cover;
+    }
+
+    .list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+      min-height: 32px;
+    }
+
+    .pill {
+      background: #e9ecef;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      display: inline-block;
+    }
+
+    .mono {
+      font-family: 'Courier New', Consolas, monospace;
+    }
+
+    .viewer {
+      min-height: 200px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #666;
+      padding: 40px 20px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .prod {
+      max-width: 120px;
+      max-height: 120px;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    .badge {
+      background: #f8f9fa;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    footer {
+      background: rgba(255,255,255,0.9);
+      padding: 16px;
+      text-align: center;
+      margin-top: 20px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    dialog {
+      border: none;
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    dialog::backdrop {
+      background: rgba(0,0,0,0.5);
+    }
+
+    .mwrap {
+      padding: 20px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      padding: 0 20px 20px;
+      justify-content: flex-end;
+    }
+
+    .manual-input {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .manual-input input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      font-family: 'Courier New', Consolas, monospace;
+    }
+
+    #barcodeSvg {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 8px;
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>📷 Scanner Barcode • Simpan ➜ Tampilkan (PLU, Nama, Gambar)</h1>
-  </header>  <div class="wrap">
+  </header>
+  
+  <div class="wrap">
     <div class="grid">
       <!-- SCANNER CARD -->
       <section class="card" id="scanner-card">
@@ -22,48 +275,62 @@
             <button id="btnSave" class="ok" disabled>Simpan Hasil</button>
             <button id="btnCancel" class="danger">Batal</button>
           </div>
+          
+          <div class="manual-input">
+            <input type="text" id="manualInput" placeholder="atau ketik barcode manual..." class="mono">
+            <button id="btnManual" class="ghost">Tambah</button>
+          </div>
+          
           <div class="hint">Gunakan kamera belakang (jika ada). Sistem akan menambahkan hasil unik satu per satu sesuai urutan scan.</div>
           <video id="preview" playsinline muted></video>
           <div class="list" id="scanList"></div>
           <div class="hint">Total discan: <span id="scanCount">0</span> • Perangkat: <span id="camLabel">-</span></div>
         </div>
-      </section><!-- VIEWER CARD -->
-  <section class="card" id="viewer-card">
-    <div class="body">
-      <h2>2) Tampilkan Hasil</h2>
-      <div class="row" style="margin-bottom:8px">
-        <button id="btnShow" class="ghost" disabled>Tampilkan Barcode</button>
-      </div>
-
-      <div id="viewer" class="viewer">
-        <div class="empty" id="emptyViewer">Belum ada hasil tersimpan. Pindai dulu, lalu klik <b>Simpan Hasil</b>.</div>
-
-        <div id="itemViewer" style="display:none">
-          <div class="title">PLU: <span id="plu" class="mono"></span></div>
-          <div>Nama Produk: <span id="name"></span></div>
-          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px">
-            <div>
-              <svg id="barcodeSvg"></svg>
-              <div class="hint">Kode Asli: <span id="raw" class="mono"></span></div>
-            </div>
-            <img id="prodImg" class="prod" alt="Gambar produk" />
+      </section>
+      
+      <!-- VIEWER CARD -->
+      <section class="card" id="viewer-card">
+        <div class="body">
+          <h2>2) Tampilkan Hasil</h2>
+          <div class="row" style="margin-bottom:8px">
+            <button id="btnShow" class="ghost" disabled>Tampilkan Barcode</button>
           </div>
-          <div class="nav">
-            <button id="prevBtn" class="secondary">⟵ Sebelumnya</button>
-            <div class="badge">Index: <span id="idxNow">0</span>/<span id="idxTotal">0</span></div>
-            <button id="nextBtn">Berikutnya ⟶</button>
+
+          <div id="viewer" class="viewer">
+            <div class="empty" id="emptyViewer">Belum ada hasil tersimpan. Pindai dulu, lalu klik <b>Simpan Hasil</b>.</div>
+
+            <div id="itemViewer" style="display:none">
+              <div class="title">PLU: <span id="plu" class="mono"></span></div>
+              <div>Nama Produk: <span id="name"></span></div>
+              <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px">
+                <div>
+                  <svg id="barcodeSvg"></svg>
+                  <div class="hint">Kode Asli: <span id="raw" class="mono"></span></div>
+                </div>
+                <img id="prodImg" class="prod" alt="Gambar produk" />
+              </div>
+              <div class="nav">
+                <button id="prevBtn" class="secondary">⟵ Sebelumnya</button>
+                <div class="badge">Index: <span id="idxNow">0</span>/<span id="idxTotal">0</span></div>
+                <button id="nextBtn">Berikutnya ⟶</button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
-  </section>
-</div>
 
-<footer>
-  <div>File <span class="mono">bcd.json</span> harus diletakkan di folder yang sama dengan file ini (<span class="mono">index.html</span>), agar nama & PLU bisa dicocokkan.</div>
-</footer>
+    <footer>
+      <div>File <span class="mono">bcd.json</span> harus diletakkan di folder yang sama dengan file ini (<span class="mono">index.html</span>), agar nama & PLU bisa dicocokkan.</div>
+    </footer>
+  </div>
 
-  </div>  <!-- ZXing untuk scanning -->  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0"></script>  <!-- JsBarcode untuk render gambar barcode -->  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>  <dialog id="confirmCancel">
+  <!-- ZXing untuk scanning -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/zxing-js/0.20.0/index.min.js"></script>
+  <!-- JsBarcode untuk render gambar barcode -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+
+  <dialog id="confirmCancel">
     <div class="mwrap">
       <h3 style="margin:0 0 8px 0">Batalkan & hapus hasil sementara?</h3>
       <div class="hint">Semua hasil yang belum disimpan akan hilang.</div>
@@ -72,163 +339,317 @@
       <button id="cancelNo" class="secondary">Tidak</button>
       <button id="cancelYes" class="danger">Ya, Hapus</button>
     </div>
-  </dialog><script>
-document.addEventListener('DOMContentLoaded', ()=>{
-  const statusEl = document.getElementById('status') || document.body;
-  function setStatus(txt){ if(statusEl) statusEl.textContent = 'Status: '+txt; console.log('STATUS:', txt); }
+  </dialog>
 
-  // elemen
-  const videoEl = document.getElementById('preview');
-  const btnStart = document.getElementById('btnStart');
-  const btnStop  = document.getElementById('btnStop');
-  const btnSave  = document.getElementById('btnSave');
-  const btnCancel= document.getElementById('btnCancel');
-  const scanList = document.getElementById('scanList');
-  const scanCount= document.getElementById('scanCount');
-  const camLabel = document.getElementById('camLabel');
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const statusEl = document.getElementById('status') || document.body;
+      function setStatus(txt) { 
+        if (statusEl) statusEl.textContent = 'Status: ' + txt; 
+        console.log('STATUS:', txt); 
+      }
 
-  const btnShow  = document.getElementById('btnShow');
-  const emptyViewer = document.getElementById('emptyViewer');
-  const itemViewer  = document.getElementById('itemViewer');
+      // elemen
+      const videoEl = document.getElementById('preview');
+      const btnStart = document.getElementById('btnStart');
+      const btnStop = document.getElementById('btnStop');
+      const btnSave = document.getElementById('btnSave');
+      const btnCancel = document.getElementById('btnCancel');
+      const scanList = document.getElementById('scanList');
+      const scanCount = document.getElementById('scanCount');
+      const camLabel = document.getElementById('camLabel');
 
-  const spanPLU = document.getElementById('plu');
-  const spanName= document.getElementById('name');
-  const spanRaw = document.getElementById('raw');
-  const svgBarcode = document.getElementById('barcodeSvg');
-  const imgProd  = document.getElementById('prodImg');
-  const idxNow = document.getElementById('idxNow');
-  const idxTotal = document.getElementById('idxTotal');
-  const prevBtn = document.getElementById('prevBtn');
-  const nextBtn = document.getElementById('nextBtn');
+      const btnShow = document.getElementById('btnShow');
+      const emptyViewer = document.getElementById('emptyViewer');
+      const itemViewer = document.getElementById('itemViewer');
 
-  const btnManual = document.getElementById('btnManual');
-  const manualInput = document.getElementById('manualInput');
+      const spanPLU = document.getElementById('plu');
+      const spanName = document.getElementById('name');
+      const spanRaw = document.getElementById('raw');
+      const svgBarcode = document.getElementById('barcodeSvg');
+      const imgProd = document.getElementById('prodImg');
+      const idxNow = document.getElementById('idxNow');
+      const idxTotal = document.getElementById('idxTotal');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
 
-  const dlgCancel = document.getElementById('confirmCancel');
+      const btnManual = document.getElementById('btnManual');
+      const manualInput = document.getElementById('manualInput');
 
-  // state
-  const scanned = [];
-  let saved = [];
-  let currentIndex = 0;
+      const dlgCancel = document.getElementById('confirmCancel');
+      const cancelNo = document.getElementById('cancelNo');
+      const cancelYes = document.getElementById('cancelYes');
 
-  // products
-  let products = [];
-  let mapByBarcode = new Map();
+      // state
+      const scanned = [];
+      let saved = [];
+      let currentIndex = 0;
 
-  async function loadProducts(){
-    try{
-      const res = await fetch('bcd.json', {cache:'no-store'});
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      products = await res.json();
-      products.forEach(p=>{ if(p.BARCODE) mapByBarcode.set(String(p.BARCODE), p); });
-      setStatus('bcd.json dimuat, item: '+products.length);
-    }catch(e){
-      console.warn('loadProducts error', e);
-      setStatus('Tidak dapat memuat bcd.json — pencocokan nama akan kosong. ('+e.message+')');
-    }
-  }
-  loadProducts();
+      // products
+      let products = [];
+      let mapByBarcode = new Map();
 
-  // cek ZXing
-  let zxingAvailable = (typeof ZXing !== 'undefined') && ZXing && ZXing.BrowserMultiFormatReader;
-  let codeReader = null;
-  let scanActive = false;
-  let lastText = '';
-  let throttle = false;
+      async function loadProducts() {
+        try {
+          const res = await fetch('bcd.json', { cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          products = await res.json();
+          products.forEach(p => { 
+            if (p.BARCODE) mapByBarcode.set(String(p.BARCODE), p); 
+          });
+          setStatus('bcd.json dimuat, item: ' + products.length);
+        } catch (e) {
+          console.warn('loadProducts error', e);
+          setStatus('Tidak dapat memuat bcd.json — pencocokan nama akan kosong. (' + e.message + ')');
+        }
+      }
+      loadProducts();
 
-  if(!zxingAvailable){
-    setStatus('ZXing tidak ter-load. Scanner nonaktif. (CDN error / offline)');
-    btnStart.disabled = true;
-  } else {
-    setStatus('Scanner siap (ZXing OK).');
-  }
+      // cek ZXing
+      let zxingAvailable = (typeof ZXing !== 'undefined') && ZXing && ZXing.BrowserMultiFormatReader;
+      let codeReader = null;
+      let scanActive = false;
+      let lastText = '';
+      let throttle = false;
 
-  // pasang listeners dulu (agar tombol selalu merespon)
-  btnManual?.addEventListener('click', ()=>{
-    const v = (manualInput.value||'').trim();
-    if(!v) return;
-    addScanned(v);
-    manualInput.value='';
-  });
+      if (!zxingAvailable) {
+        setStatus('ZXing tidak ter-load. Scanner nonaktif. (CDN error / offline)');
+        btnStart.disabled = true;
+      } else {
+        setStatus('Scanner siap (ZXing OK).');
+      }
 
-  btnStart?.addEventListener('click', async ()=>{
-    try{
-      if(!zxingAvailable){ alert('Scanner tidak tersedia. Periksa koneksi/internet atau gunakan input manual.'); return; }
-      if(scanActive) return;
-      btnStart.disabled = true; btnStop.disabled=false; btnSave.disabled=false;
-      if(!codeReader) codeReader = new ZXing.BrowserMultiFormatReader();
-      const devices = await ZXing.BrowserMultiFormatReader.listVideoInputDevices();
-      let deviceId = devices?.[0]?.deviceId || null;
-      const back = devices.find(d=>/back|rear|belakang/i.test(d.label));
-      if(back) deviceId = back.deviceId;
-      camLabel.textContent = (devices.find(d=>d.deviceId===deviceId)?.label) || 'Kamera';
-      scanActive = true; lastText='';
-      setStatus('Scanner aktif — arahkan kamera ke barcode');
-      await codeReader.decodeFromVideoDevice(deviceId, videoEl, (result, err)=>{
-        if(!scanActive) return;
-        if(result){
-          const text = String(result.getText()).trim();
-          if(throttle || text===lastText) return;
-          throttle=true; setTimeout(()=>throttle=false, 350);
-          lastText = text; addScanned(text);
-        } else if(err && !(err instanceof ZXing.NotFoundException)){
-          console.error('scanner err', err);
+      // Event listeners
+      btnManual?.addEventListener('click', () => {
+        const v = (manualInput.value || '').trim();
+        if (!v) return;
+        addScanned(v);
+        manualInput.value = '';
+      });
+
+      manualInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          btnManual.click();
         }
       });
-    }catch(err){
-      console.error('startScan err', err);
-      setStatus('Gagal mulai scanner: '+(err.message||err));
-      btnStart.disabled=false; btnStop.disabled=true;
-    }
-  });
 
-  btnStop?.addEventListener('click', ()=>{ stopScan(); });
+      btnStart?.addEventListener('click', async () => {
+        try {
+          if (!zxingAvailable) { 
+            alert('Scanner tidak tersedia. Periksa koneksi/internet atau gunakan input manual.'); 
+            return; 
+          }
+          if (scanActive) return;
+          btnStart.disabled = true; 
+          btnStop.disabled = false; 
+          btnSave.disabled = false;
+          
+          if (!codeReader) codeReader = new ZXing.BrowserMultiFormatReader();
+          
+          const devices = await ZXing.BrowserMultiFormatReader.listVideoInputDevices();
+          let deviceId = devices?.[0]?.deviceId || null;
+          const back = devices.find(d => /back|rear|belakang/i.test(d.label));
+          if (back) deviceId = back.deviceId;
+          
+          camLabel.textContent = (devices.find(d => d.deviceId === deviceId)?.label) || 'Kamera';
+          scanActive = true; 
+          lastText = '';
+          setStatus('Scanner aktif — arahkan kamera ke barcode');
+          
+          await codeReader.decodeFromVideoDevice(deviceId, videoEl, (result, err) => {
+            if (!scanActive) return;
+            if (result) {
+              const text = String(result.getText()).trim();
+              if (throttle || text === lastText) return;
+              throttle = true; 
+              setTimeout(() => throttle = false, 350);
+              lastText = text; 
+              addScanned(text);
+            } else if (err && !(err instanceof ZXing.NotFoundException)) {
+              console.error('scanner err', err);
+            }
+          });
+        } catch (err) {
+          console.error('startScan err', err);
+          setStatus('Gagal mulai scanner: ' + (err.message || err));
+          btnStart.disabled = false; 
+          btnStop.disabled = true;
+        }
+      });
 
-  btnSave?.addEventListener('click', ()=>{
-    saved = scanned.slice(); currentIndex = 0;
-    btnShow.disabled = saved.length===0;
-    if(saved.length>0) showViewer();
-    setStatus('Hasil disimpan: '+saved.length+' item');
-  });
+      btnStop?.addEventListener('click', () => { stopScan(); });
 
-  btnCancel?.addEventListener('click', ()=>{
-    try{
-      if(dlgCancel && typeof dlgCancel.showModal === 'function') dlgCancel.showModal();
-      else if(confirm('Batalkan & hapus hasil sementara?')) performCancel();
-    }catch(e){ if(confirm('Batalkan & hapus hasil sementara?')) performCancel(); }
-  });
+      btnSave?.addEventListener('click', () => {
+        saved = scanned.slice(); 
+        currentIndex = 0;
+        btnShow.disabled = saved.length === 0;
+        if (saved.length > 0) showViewer();
+        setStatus('Hasil disimpan: ' + saved.length + ' item');
+      });
 
-  window.addEventListener('error', (ev)=>{ console.error('window error', ev); setStatus('Error: '+(ev.error?.message||ev.message||'unknown')); });
+      btnCancel?.addEventListener('click', () => {
+        try {
+          if (dlgCancel && typeof dlgCancel.showModal === 'function') {
+            dlgCancel.showModal();
+          } else if (confirm('Batalkan & hapus hasil sementara?')) {
+            performCancel();
+          }
+        } catch (e) { 
+          if (confirm('Batalkan & hapus hasil sementara?')) performCancel(); 
+        }
+      });
 
-  function performCancel(){ stopScan(); scanned.length=0; renderScanList(); btnSave.disabled=true; btnShow.disabled=saved.length===0; setStatus('Hasil sementara dibatalkan'); }
-  function stopScan(){ scanActive=false; try{ codeReader?.reset(); }catch(e){}; btnStart.disabled = !zxingAvailable; btnStop.disabled=true; setStatus('Scanner dihentikan'); }
-  function addScanned(code){ if(!code) return; code = String(code).trim(); if(!scanned.includes(code)){ scanned.push(code); renderScanList(); setStatus('Barcode ditambahkan: '+code); } else setStatus('Barcode sudah ada: '+code); }
-  function renderScanList(){ scanList.innerHTML=''; scanned.forEach((c,i)=>{ const s=document.createElement('span'); s.className='pill mono'; s.textContent=(i+1)+'. '+c; scanList.appendChild(s); }); scanCount.textContent = scanned.length; btnSave.disabled = scanned.length===0; }
+      btnShow?.addEventListener('click', () => {
+        if (saved.length > 0) showViewer();
+      });
 
-  function showViewer(){ emptyViewer.style.display='none'; itemViewer.style.display=''; idxTotal.textContent=saved.length; renderViewer(currentIndex); }
-  function guessFormat(code){ if(/^\d{13}$/.test(code)) return 'EAN13'; if(/^\d{8}$/.test(code)) return 'EAN8'; return 'CODE128'; }
+      prevBtn?.addEventListener('click', () => {
+        if (currentIndex > 0) {
+          currentIndex--;
+          renderViewer(currentIndex);
+        }
+      });
 
-  function lookupProduct(code){
-    if(mapByBarcode.has(code)) return mapByBarcode.get(code);
-    const trimmed = code.replace(/^0+/, '');
-    for(const p of products){ if(String(p.BARCODE)===code || String(p.BARCODE)===trimmed || String(p.PLU)===code) return p; }
-    return { PLU:'', NAMA_PRODUK: '(Produk tidak ditemukan di bcd.json)', BARCODE: code };
-  }
+      nextBtn?.addEventListener('click', () => {
+        if (currentIndex < saved.length - 1) {
+          currentIndex++;
+          renderViewer(currentIndex);
+        }
+      });
 
-  function renderViewer(i){
-    if(saved.length===0) return; if(i<0) i=0; if(i>saved.length-1) i=saved.length-1; currentIndex=i;
-    const code = saved[i]; const info = lookupProduct(code) || {};
-    const plu = info.PLU || (/^\d{8}$/.test(code) ? code : '');
-    const name = info.NAMA_PRODUK || '(Nama tidak tersedia)';
-    spanPLU.textContent = plu || '-'; spanName.textContent = name; spanRaw.textContent = code;
-    svgBarcode.innerHTML=''; try{ JsBarcode(svgBarcode, code, { format: guessFormat(code), displayValue:true, fontSize:14, margin:6, height:80 }); }catch(e){ try{ JsBarcode(svgBarcode, code, { format:'CODE128', displayValue:true, fontSize:14, margin:6, height:80 }); }catch(_){} }
-    if(plu){ imgProd.src = `https://cdn-klik.klikindomaret.com/klik-catalog/product/${plu}_1.jpg`; imgProd.style.display=''; } else { imgProd.removeAttribute('src'); imgProd.style.display='none'; }
-    idxNow.textContent = i+1; idxTotal.textContent = saved.length; prevBtn.disabled = (i===0); nextBtn.disabled = (i===saved.length-1);
-  }
+      cancelNo?.addEventListener('click', () => {
+        dlgCancel?.close();
+      });
 
-  // hint
-  setStatus('Siap. Tes: tekan tombol Tambah (manual) dulu. Untuk kamera, buka lewat HTTPS / server lokal.');
-});
-              </script>
+      cancelYes?.addEventListener('click', () => {
+        dlgCancel?.close();
+        performCancel();
+      });
+
+      window.addEventListener('error', (ev) => { 
+        console.error('window error', ev); 
+        setStatus('Error: ' + (ev.error?.message || ev.message || 'unknown')); 
+      });
+
+      function performCancel() { 
+        stopScan(); 
+        scanned.length = 0; 
+        renderScanList(); 
+        btnSave.disabled = true; 
+        btnShow.disabled = saved.length === 0; 
+        setStatus('Hasil sementara dibatalkan'); 
+      }
+      
+      function stopScan() { 
+        scanActive = false; 
+        try { 
+          codeReader?.reset(); 
+        } catch (e) {}
+        btnStart.disabled = !zxingAvailable; 
+        btnStop.disabled = true; 
+        setStatus('Scanner dihentikan'); 
+      }
+      
+      function addScanned(code) { 
+        if (!code) return; 
+        code = String(code).trim(); 
+        if (!scanned.includes(code)) { 
+          scanned.push(code); 
+          renderScanList(); 
+          setStatus('Barcode ditambahkan: ' + code); 
+        } else {
+          setStatus('Barcode sudah ada: ' + code); 
+        }
+      }
+      
+      function renderScanList() { 
+        scanList.innerHTML = ''; 
+        scanned.forEach((c, i) => { 
+          const s = document.createElement('span'); 
+          s.className = 'pill mono'; 
+          s.textContent = (i + 1) + '. ' + c; 
+          scanList.appendChild(s); 
+        }); 
+        scanCount.textContent = scanned.length; 
+        btnSave.disabled = scanned.length === 0; 
+      }
+
+      function showViewer() { 
+        emptyViewer.style.display = 'none'; 
+        itemViewer.style.display = ''; 
+        idxTotal.textContent = saved.length; 
+        renderViewer(currentIndex); 
+      }
+      
+      function guessFormat(code) { 
+        if (/^\d{13}$/.test(code)) return 'EAN13'; 
+        if (/^\d{8}$/.test(code)) return 'EAN8'; 
+        return 'CODE128'; 
+      }
+
+      function lookupProduct(code) {
+        if (mapByBarcode.has(code)) return mapByBarcode.get(code);
+        const trimmed = code.replace(/^0+/, '');
+        for (const p of products) { 
+          if (String(p.BARCODE) === code || String(p.BARCODE) === trimmed || String(p.PLU) === code) 
+            return p; 
+        }
+        return { PLU: '', NAMA_PRODUK: '(Produk tidak ditemukan di bcd.json)', BARCODE: code };
+      }
+
+      function renderViewer(i) {
+        if (saved.length === 0) return; 
+        if (i < 0) i = 0; 
+        if (i > saved.length - 1) i = saved.length - 1; 
+        currentIndex = i;
+        
+        const code = saved[i]; 
+        const info = lookupProduct(code) || {};
+        const plu = info.PLU || (/^\d{8}$/.test(code) ? code : '');
+        const name = info.NAMA_PRODUK || '(Nama tidak tersedia)';
+        
+        spanPLU.textContent = plu || '-'; 
+        spanName.textContent = name; 
+        spanRaw.textContent = code;
+        
+        svgBarcode.innerHTML = ''; 
+        try { 
+          JsBarcode(svgBarcode, code, { 
+            format: guessFormat(code), 
+            displayValue: true, 
+            fontSize: 14, 
+            margin: 6, 
+            height: 80 
+          }); 
+        } catch (e) { 
+          try { 
+            JsBarcode(svgBarcode, code, { 
+              format: 'CODE128', 
+              displayValue: true, 
+              fontSize: 14, 
+              margin: 6, 
+              height: 80 
+            }); 
+          } catch (_) {} 
+        }
+        
+        if (plu) { 
+          imgProd.src = `https://cdn-klik.klikindomaret.com/klik-catalog/product/${plu}_1.jpg`; 
+          imgProd.style.display = ''; 
+        } else { 
+          imgProd.removeAttribute('src'); 
+          imgProd.style.display = 'none'; 
+        }
+        
+        idxNow.textContent = i + 1; 
+        idxTotal.textContent = saved.length; 
+        prevBtn.disabled = (i === 0); 
+        nextBtn.disabled = (i === saved.length - 1);
+      }
+
+      // hint
+      setStatus('Siap. Tes: tekan tombol Tambah (manual) dulu. Untuk kamera, buka lewat HTTPS / server lokal.');
+    });
+  </script>
 </body>
 </html>
