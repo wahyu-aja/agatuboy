@@ -42,6 +42,44 @@
             margin-bottom: 20px;
         }
 
+        .plu-search {
+            margin-bottom: 20px;
+        }
+
+        .plu-input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .plu-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .plu-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .search-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
         .scanner-container {
             position: relative;
             background: #000;
@@ -256,7 +294,6 @@
             border: 2px dashed #ccc;
         }
 
-        /* Price Container Styles */
         .price-container {
             margin: 20px 0;
             text-align: center;
@@ -292,7 +329,6 @@
             width: 100%;
         }
 
-        /* Promotional Price Styles */
         .price-promo {
             background: linear-gradient(135deg, #ff6b6b, #ee5a52);
             color: white;
@@ -332,7 +368,6 @@
             50% { transform: scale(1.05); }
         }
 
-        /* Regular Price Styles */
         .regular-price {
             background: linear-gradient(135deg, #74b9ff, #0984e3);
             color: white;
@@ -346,7 +381,6 @@
             font-weight: bold;
         }
 
-        /* Error States */
         .price-not-found,
         .price-error {
             background: #f8f9fa;
@@ -460,6 +494,10 @@
             .modal-buttons {
                 flex-direction: column;
             }
+
+            .plu-input-container {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -472,6 +510,17 @@
 
         <!-- Scanner Section -->
         <div id="scanner-section" class="card">
+            <!-- PLU Search Section -->
+            <div class="plu-search">
+                <h3 style="margin-bottom: 15px; color: #333;">🔍 Cari dengan PLU</h3>
+                <div class="plu-input-container">
+                    <input type="text" id="plu-input" class="plu-input" placeholder="Masukkan PLU (contoh: 20138844)" maxlength="20">
+                    <button class="search-btn" id="search-plu">Cari</button>
+                </div>
+            </div>
+
+            <hr style="margin: 20px 0; border: none; height: 1px; background: #eee;">
+
             <div class="scanner-container">
                 <div id="scanner"></div>
                 <div class="scanner-overlay"></div>
@@ -561,6 +610,35 @@
                 this.html5QrcodeScanner = null;
                 this.scanCooldown = false;
                 
+                // API configuration - sesuai dengan fungsi JS asli
+                this.API_URL = "https://ap-mc.klikindomaret.com/assets-klikidmsearch/api/get/catalog-xpress/api/webapp/search/result";
+                this.parameterSets = [
+                    {
+                        storeCode: "TMKS",
+                        latitude: "-4.5502257",
+                        longitude: "120.31591",
+                        mode: "DELIVERY",
+                        districtId: "142601813",
+                        isUserFiltered: "false"
+                    },
+                    {
+                        storeCode: "TYGA",
+                        latitude: "-7.42680566136574", 
+                        longitude: "109.2391143315548", 
+                        mode: "DELIVERY",
+                        districtId: "141308323", 
+                        isUserFiltered: "false"
+                    },
+                    {
+                        storeCode: "TJKT",
+                        latitude: "-6.1763897",
+                        longitude: "106.82667",
+                        mode: "DELIVERY",
+                        districtId: "141100100",
+                        isUserFiltered: "false"
+                    }
+                ];
+                
                 this.init();
                 this.loadProductData();
             }
@@ -580,12 +658,10 @@
                     
                     this.products = await response.json();
                     
-                    // Validasi data
                     if (!Array.isArray(this.products)) {
                         throw new Error('Format data JSON tidak valid');
                     }
                     
-                    // Buat index barcode untuk pencarian cepat
                     this.barcodeIndex = {};
                     this.products.forEach(product => {
                         if (product.BARCODE) {
@@ -600,7 +676,6 @@
                     console.error('Error loading product data:', error);
                     this.showMessage(`Gagal memuat bcd.json: ${error.message}`, 'error');
                     
-                    // Fallback ke data sample jika file tidak ditemukan
                     this.products = [
                         {"PLU": "10000019", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS PUTIH 370g KLG", "BARCODE": "8992702000018"},
                         {"PLU": "10000020", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS CHOCOLATE 370g KLG", "BARCODE": "8992702000063"},
@@ -626,6 +701,14 @@
                 document.getElementById('show-results').addEventListener('click', () => this.showResults());
                 document.getElementById('back-to-scanner').addEventListener('click', () => this.backToScanner());
                 
+                // PLU search events
+                document.getElementById('search-plu').addEventListener('click', () => this.searchByPLU());
+                document.getElementById('plu-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.searchByPLU();
+                    }
+                });
+                
                 document.getElementById('confirm-cancel').addEventListener('click', () => this.confirmCancel());
                 document.getElementById('keep-scanning').addEventListener('click', () => this.hideCancelModal());
                 
@@ -639,15 +722,117 @@
                 });
             }
 
+            async searchByPLU() {
+                const pluInput = document.getElementById('plu-input');
+                const plu = pluInput.value.trim();
+                
+                if (!plu) {
+                    this.showMessage('Masukkan PLU untuk pencarian', 'error');
+                    return;
+                }
+                
+                if (!/^\d+$/.test(plu)) {
+                    this.showMessage('PLU harus berupa angka', 'error');
+                    return;
+                }
+                
+                this.showMessage(`Mencari produk dengan PLU: ${plu}...`, 'success');
+                
+                try {
+                    const productData = await this.searchProductByPLU(plu);
+                    
+                    if (productData) {
+                        // Simulate adding to scanned list
+                        const barcode = productData.barcode || `B${plu}0001`;
+                        
+                        if (!this.scannedBarcodes.includes(barcode)) {
+                            this.scannedBarcodes.push(barcode);
+                            this.updateScannedCount();
+                            this.showMessage(`Produk berhasil ditambahkan: ${productData.productName}`, 'success');
+                            pluInput.value = '';
+                        } else {
+                            this.showMessage(`Produk dengan PLU ${plu} sudah ada dalam daftar`, 'error');
+                        }
+                    } else {
+                        this.showMessage(`Produk dengan PLU ${plu} tidak ditemukan`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error searching by PLU:', error);
+                    this.showMessage(`Error: ${error.message}`, 'error');
+                }
+            }
+
+            async searchProductByPLU(plu) {
+                for (let paramIndex = 0; paramIndex < this.parameterSets.length; paramIndex++) {
+                    const params = this.parameterSets[paramIndex];
+                    
+                    try {
+                        const queryParams = new URLSearchParams({
+                            keyword: plu,
+                            page: 0,
+                            size: 3,
+                            ...params
+                        });
+                        
+                        const response = await fetch(`${this.API_URL}?${queryParams}`, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                            },
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data && data.data && data.data.products && data.data.products.length > 0) {
+                            const product = data.data.products[0];
+                            
+                            // Validasi PLU
+                            const productPLU = product.PLU || product.plu || '';
+                            if (productPLU === plu) {
+                                return {
+                                    plu: productPLU,
+                                    productName: product.productName || product.name || 'Tidak diketahui',
+                                    originalPrice: product.price || null,
+                                    finalPrice: product.finalPrice || null,
+                                    discountText: product.discountText || null,
+                                    barcode: product.BARCODE || product.barcode || `B${plu}0001`
+                                };
+                            }
+                        }
+                    } catch (error) {
+                        console.warn(`Parameter set ${paramIndex + 1} failed:`, error.message);
+                        continue;
+                    }
+                }
+                
+                // Jika tidak ditemukan di API, cari di data lokal
+                const localProduct = this.products.find(p => p.PLU === plu);
+                if (localProduct) {
+                    return {
+                        plu: localProduct.PLU,
+                        productName: localProduct.NAMA_PRODUK,
+                        originalPrice: null,
+                        finalPrice: null,
+                        discountText: null,
+                        barcode: localProduct.BARCODE
+                    };
+                }
+                
+                return null;
+            }
+
             async startScanner() {
                 try {
-                    // Clear any existing scanner
                     if (this.html5QrcodeScanner) {
                         await this.html5QrcodeScanner.stop();
                         this.html5QrcodeScanner.clear();
                     }
 
-                    // Initialize new scanner with optimized settings
                     this.html5QrcodeScanner = new Html5Qrcode("scanner");
                     
                     const config = {
@@ -668,7 +853,7 @@
                             this.onBarcodeDetected(decodedText);
                         },
                         (errorMessage) => {
-                            // Handle scan errors silently - this is normal during scanning
+                            // Handle scan errors silently
                         }
                     );
 
@@ -707,24 +892,20 @@
             onBarcodeDetected(barcode) {
                 if (this.scanCooldown) return;
                 
-                // Set cooldown to prevent multiple scans of the same barcode
                 this.scanCooldown = true;
                 setTimeout(() => {
                     this.scanCooldown = false;
-                }, 1500); // Shorter cooldown for better responsiveness
+                }, 1500);
                 
-                // Check if barcode was already scanned
                 if (!this.scannedBarcodes.includes(barcode)) {
                     this.scannedBarcodes.push(barcode);
                     this.updateScannedCount();
                     this.showMessage(`Barcode berhasil discan: ${barcode}`, 'success');
                     
-                    // Vibrate if available
                     if ('vibrate' in navigator) {
                         navigator.vibrate(200);
                     }
                     
-                    // Audio feedback (optional)
                     this.playBeep();
                 } else {
                     this.showMessage(`Barcode ${barcode} sudah pernah discan`, 'error');
@@ -733,7 +914,6 @@
 
             playBeep() {
                 try {
-                    // Create a simple beep sound
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     const oscillator = audioContext.createOscillator();
                     const gainNode = audioContext.createGain();
@@ -833,10 +1013,7 @@
                 const productName = product ? product.NAMA_PRODUK : `Produk dengan barcode ${barcode} tidak ditemukan dalam database`;
                 const imageUrl = product ? `https://cdn-klik.klikindomaret.com/klik-catalog/product/${product.PLU}_1.jpg` : '';
                 
-                // Create unique ID for this barcode
                 const barcodeId = `barcode-${barcode}-${Date.now()}`;
-                
-                // Price loading placeholder
                 const priceLoadingId = `price-loading-${barcode}-${Date.now()}`;
                 
                 card.innerHTML = `
@@ -860,12 +1037,10 @@
                     </div>
                 `;
                 
-                // Generate barcode after element is added to DOM
                 setTimeout(() => {
                     this.generateBarcode(barcodeId, barcode);
                 }, 100);
                 
-                // Load price data if PLU is available
                 if (product && product.PLU) {
                     this.loadProductPrice(product.PLU, priceLoadingId);
                 }
@@ -875,7 +1050,6 @@
 
             async loadProductPrice(plu, priceContainerId) {
                 try {
-                    // Simulate API call to get price data (you would replace this with actual API call)
                     const priceData = await this.fetchProductPrice(plu);
                     const priceContainer = document.getElementById(priceContainerId);
                     
@@ -896,34 +1070,63 @@
             }
 
             async fetchProductPrice(plu) {
-                // This is a mock function - you would implement actual API call here
-                // Based on your provided function, you would use tryWithWget or similar
-                try {
-                    // Mock data for demonstration - replace with actual API call
-                    const mockPrices = {
-                        "20138844": { originalPrice: 19200, finalPrice: 13900, discountText: "28% OFF" },
-                        "10000019": { originalPrice: 15000, finalPrice: 12500, discountText: "17% OFF" },
-                        "10000020": { originalPrice: 16000, finalPrice: null, discountText: null },
-                        "10000021": { originalPrice: 14500, finalPrice: 11900, discountText: "18% OFF" }
-                    };
+                // Implementasi API sesuai dengan fungsi JS asli
+                for (let paramIndex = 0; paramIndex < this.parameterSets.length; paramIndex++) {
+                    const params = this.parameterSets[paramIndex];
                     
-                    // Simulate network delay
-                    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-                    
-                    return mockPrices[plu] || { originalPrice: Math.floor(Math.random() * 20000) + 10000, finalPrice: null, discountText: null };
-                } catch (error) {
-                    throw error;
+                    try {
+                        const queryParams = new URLSearchParams({
+                            keyword: plu,
+                            page: 0,
+                            size: 3,
+                            ...params
+                        });
+                        
+                        const response = await fetch(`${this.API_URL}?${queryParams}`, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                            },
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data && data.data && data.data.products && data.data.products.length > 0) {
+                            const product = data.data.products[0];
+                            
+                            // Validasi PLU sesuai logik asli
+                            const productPLU = product.PLU || product.plu || '';
+                            if (/^\d+$/.test(plu) && productPLU !== plu) {
+                                continue;
+                            }
+                            
+                            return {
+                                originalPrice: product.price || null,
+                                finalPrice: product.finalPrice || null,
+                                discountText: product.discountText || null
+                            };
+                        }
+                    } catch (error) {
+                        console.warn(`Parameter set ${paramIndex + 1} failed:`, error.message);
+                        continue;
+                    }
                 }
+                
+                return null;
             }
 
             createPriceDisplay(priceData) {
                 const { originalPrice, finalPrice, discountText } = priceData;
-                const hasDiscount = finalPrice && finalPrice < originalPrice;
+                const hasDiscount = finalPrice && originalPrice && finalPrice < originalPrice;
                 
                 let priceHtml = '<div class="price-display">';
                 
                 if (hasDiscount) {
-                    // Promotional pricing with strikethrough
                     priceHtml += `
                         <div class="price-promo">
                             <div class="original-price">Rp${this.formatPrice(originalPrice)}</div>
@@ -932,12 +1135,16 @@
                         </div>
                     `;
                 } else {
-                    // Regular pricing
-                    priceHtml += `
-                        <div class="regular-price">
-                            <div class="price">Rp${this.formatPrice(originalPrice)}</div>
-                        </div>
-                    `;
+                    const displayPrice = originalPrice || finalPrice;
+                    if (displayPrice) {
+                        priceHtml += `
+                            <div class="regular-price">
+                                <div class="price">Rp${this.formatPrice(displayPrice)}</div>
+                            </div>
+                        `;
+                    } else {
+                        priceHtml += '<div class="price-not-found">Harga tidak tersedia</div>';
+                    }
                 }
                 
                 priceHtml += '</div>';
@@ -959,7 +1166,6 @@
                         return;
                     }
 
-                    // First try EAN13
                     try {
                         JsBarcode(canvas, barcode, {
                             format: "EAN13",
@@ -978,7 +1184,6 @@
                         console.log('EAN13 failed, trying CODE128:', error);
                     }
 
-                    // Then try CODE128
                     try {
                         JsBarcode(canvas, barcode, {
                             format: "CODE128",
@@ -997,7 +1202,6 @@
                         console.log('CODE128 failed, trying AUTO:', error);
                     }
 
-                    // Finally try AUTO format
                     try {
                         JsBarcode(canvas, barcode, {
                             width: 2,
@@ -1015,7 +1219,6 @@
                         console.log('All barcode formats failed, showing fallback:', error);
                     }
 
-                    // If all fails, show fallback
                     canvas.style.display = 'none';
                     if (fallback) {
                         fallback.style.display = 'block';
@@ -1070,7 +1273,6 @@
             }
         }
 
-        // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             new BarcodeScanner();
         });
