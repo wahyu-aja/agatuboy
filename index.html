@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indomaret Photo Editor - BY WHYUU</title>
+    <title>Barcode Scanner App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,209 +14,273 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
             padding: 20px;
+            min-height: 100vh;
         }
 
         .header {
             text-align: center;
             color: white;
             margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .card {
             background: white;
             border-radius: 15px;
             padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .card-header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .card-number {
-            background: linear-gradient(45deg, #1e3c72, #2a5298);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .input-group {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             margin-bottom: 20px;
         }
 
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .input-group input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        .input-group input[type="text"]:focus {
-            outline: none;
-            border-color: #1e3c72;
-        }
-
-        .photo-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .photo-input {
-            text-align: center;
-        }
-
-        .photo-input label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .file-input-wrapper {
+        .scanner-container {
             position: relative;
-            display: inline-block;
-            cursor: pointer;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #scanner {
             width: 100%;
+            height: 300px;
+            border-radius: 10px;
         }
 
-        .file-input {
-            display: none;
+        .scanner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 100px;
+            border: 3px solid #00ff00;
+            border-radius: 10px;
+            box-shadow: 0 0 0 99999px rgba(0,0,0,0.3);
+            pointer-events: none;
+            z-index: 10;
         }
 
-        .file-input-button {
-            display: block;
-            padding: 12px 20px;
-            background: linear-gradient(45deg, #1e3c72, #2a5298);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            font-size: 14px;
+        .scanner-overlay::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border: 2px solid rgba(0,255,0,0.5);
+            border-radius: 10px;
+            animation: pulse 2s infinite;
         }
 
-        .file-input-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.4);
+        .scanning-line {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            animation: scanning 2s linear infinite;
+            z-index: 15;
         }
 
-        .preview-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 15px;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
-        .preview {
-            width: 100%;
-            height: 200px;
-            border: 2px dashed #ddd;
-            border-radius: 8px;
+        @keyframes scanning {
+            0% { transform: translateY(-50px); }
+            100% { transform: translateY(50px); }
+        }
+
+        .controls {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 14px;
-            background: #f9f9f9;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
-        .preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-
-        .process-all-button {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
+        .btn {
+            flex: 1;
+            padding: 15px;
             border: none;
-            padding: 18px 40px;
-            font-size: 1.2rem;
+            border-radius: 10px;
+            font-size: 16px;
             font-weight: bold;
-            border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: block;
-            margin: 30px auto;
-            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .process-all-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(40, 167, 69, 0.4);
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
         }
 
-        .process-all-button:disabled {
+        .btn-secondary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
         }
 
-        .loading {
-            display: none;
+        .scanned-count {
             text-align: center;
-            margin: 20px 0;
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: bold;
         }
 
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #1e3c72;
+        .scanned-count .count {
+            color: #4CAF50;
+            font-size: 24px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .results-container {
+            display: none;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .plu {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .product-name {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .product-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 2px solid #eee;
+        }
+
+        .barcode-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .barcode-svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .barcode-canvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+
+        .barcode-fallback {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #ccc;
+        }
+
+        /* Price Container Styles */
+        .price-container {
+            margin: 20px 0;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .price-loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4CAF50;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 2s linear infinite;
-            margin: 0 auto;
+            animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
@@ -222,63 +288,177 @@
             100% { transform: rotate(360deg); }
         }
 
-        .results-section {
-            margin-top: 40px;
+        .price-display {
+            width: 100%;
         }
 
-        .result-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
+        /* Promotional Price Styles */
+        .price-promo {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            position: relative;
         }
 
-        .result-canvas {
-            max-width: 100%;
-            height: auto;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
+        .original-price {
+            font-size: 16px;
+            text-decoration: line-through;
+            color: #ffcccb;
+            margin-bottom: 5px;
         }
 
-        .download-button {
-            background: linear-gradient(45deg, #dc3545, #fd7e14);
+        .final-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .discount-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            animation: pulse-badge 2s infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Regular Price Styles */
+        .regular-price {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(116, 185, 255, 0.3);
+        }
+
+        .regular-price .price {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Error States */
+        .price-not-found,
+        .price-error {
+            background: #f8f9fa;
+            color: #666;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+            font-size: 14px;
+        }
+
+        .price-error {
+            background: #fff5f5;
+            color: #e53e3e;
+            border-color: #fed7d7;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 1rem;
-            font-weight: bold;
             border-radius: 25px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 5px;
-        }
-
-        .download-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
-        }
-
-        .progress-info {
-            background: #e3f2fd;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
-            color: #1976d2;
             font-weight: bold;
         }
 
-        @media (max-width: 768px) {
-            .photo-inputs, .preview-container {
-                grid-template-columns: 1fr;
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .back-to-scanner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .camera_error_popup {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .camera_error_popup.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
             }
-            .header h1 {
-                font-size: 2rem;
+            
+            .controls {
+                flex-direction: column;
             }
-            .card {
-                padding: 20px;
+            
+            .modal-buttons {
+                flex-direction: column;
             }
         }
     </style>
@@ -286,486 +466,613 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>BY WHYUU</h1>
-            <p>Indomaret Photo Editor</p>
+            <h1>📱 Barcode Scanner by W.A.H.Y.U</h1>
+            <p>Setelah di scan semua pergi scan satu persatu di Program PriceTag Komputer</p>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <div class="card-number">🏪</div>
-                <h3>Nama Toko Global</h3>
+        <!-- Scanner Section -->
+        <div id="scanner-section" class="card">
+            <div class="scanner-container">
+                <div id="scanner"></div>
+                <div class="scanner-overlay"></div>
+                <div class="scanning-line"></div>
             </div>
-            <div class="input-group">
-                <label for="global-store-name">Nama Toko (untuk semua kartu):</label>
-                <input type="text" id="global-store-name" placeholder="Masukkan nama toko (contoh: TACCIPI BONE)" value="TACCIPI BONE">
-                <p style="margin-top: 10px; color: #666; font-size: 14px;">
-                    Hasil: <strong>INDOMARET:<span id="store-preview">TACCIPI BONE</span></strong>
-                </p>
+            
+            <div class="camera_error_popup" id="camera-error">
+                <div class="popup_heading">
+                    <span>Izinkan Akses Kamera</span>
+                    <span>Jangan khawatir jika Anda lupa mengizinkan akses kamera, ikuti langkah-langkah berikut untuk mengizinkan kamera.</span>
+                </div>
+            </div>
+            
+            <div class="status-message" id="status-message" style="display: none;"></div>
+            
+            <div class="scanned-count">
+                Barang terscan: <span class="count" id="scanned-count">0</span>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="start-scanner">
+                    🎥 Mulai Scan
+                </button>
+                <button class="btn btn-secondary" id="stop-scanner" disabled>
+                    ⏹️ Stop Scan
+                </button>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-info" id="save-results" disabled>
+                    💾 Simpan Hasil
+                </button>
+                <button class="btn btn-secondary" id="cancel-scan">
+                    ❌ Batal
+                </button>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-info" id="show-results" style="display: none;">
+                    📋 Tampilkan Hasil
+                </button>
             </div>
         </div>
 
-        <div id="editor-cards"></div>
+        <!-- Results Section -->
+        <div id="results-section" class="results-container">
+            <div class="navigation">
+                <button class="nav-btn" id="prev-page" disabled>‹ Sebelumnya</button>
+                <span class="page-info" id="page-info">1 / 1</span>
+                <button class="nav-btn" id="next-page" disabled>Selanjutnya ›</button>
+            </div>
+            
+            <div id="products-container"></div>
+            
+            <div class="navigation">
+                <button class="nav-btn" id="prev-page-bottom" disabled>‹ Sebelumnya</button>
+                <span class="page-info" id="page-info-bottom">1 / 1</span>
+                <button class="nav-btn" id="next-page-bottom" disabled>Selanjutnya ›</button>
+            </div>
+        </div>
 
-        <button class="process-all-button" onclick="processAllPhotos()">
-            BUAT SEMUA FOTO
+        <button class="back-to-scanner" id="back-to-scanner" style="display: none;">
+            🔙
         </button>
+    </div>
 
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Memproses foto...</p>
-            <div class="progress-info" id="progress-info">
-                Mempersiapkan proses...
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3>⚠️ Konfirmasi</h3>
+            <p>Apakah Anda yakin ingin membatalkan semua scan?</p>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" id="confirm-cancel">Ya, Batal</button>
+                <button class="btn btn-primary" id="keep-scanning">Tidak</button>
             </div>
         </div>
-
-        <div class="results-section" id="results"></div>
     </div>
 
     <script>
-        // Global variable untuk menyimpan canvas hasil
-        const processedCanvases = new Map();
+        class BarcodeScanner {
+            constructor() {
+                this.scannedBarcodes = [];
+                this.products = [];
+                this.currentPage = 0;
+                this.productsPerPage = 1;
+                this.isScanning = false;
+                this.html5QrcodeScanner = null;
+                this.scanCooldown = false;
+                
+                this.init();
+                this.loadProductData();
+            }
 
-        function generateCards() {
-            const container = document.getElementById('editor-cards');
-            let cardsHTML = '';
-            for (let i = 1; i <= 8; i++) {
-                cardsHTML += `
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-number">${i}</div>
-                            <h3>Editor Foto ${i}</h3>
+            init() {
+                this.bindEvents();
+            }
+
+            async loadProductData() {
+                try {
+                    this.showMessage('Memuat data produk...', 'success');
+                    
+                    const response = await fetch('./bcd.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    this.products = await response.json();
+                    
+                    // Validasi data
+                    if (!Array.isArray(this.products)) {
+                        throw new Error('Format data JSON tidak valid');
+                    }
+                    
+                    // Buat index barcode untuk pencarian cepat
+                    this.barcodeIndex = {};
+                    this.products.forEach(product => {
+                        if (product.BARCODE) {
+                            this.barcodeIndex[product.BARCODE] = product;
+                        }
+                    });
+                    
+                    this.showMessage(`Data produk berhasil dimuat: ${this.products.length} item`, 'success');
+                    console.log(`Loaded ${this.products.length} products from bcd.json`);
+                    
+                } catch (error) {
+                    console.error('Error loading product data:', error);
+                    this.showMessage(`Gagal memuat bcd.json: ${error.message}`, 'error');
+                    
+                    // Fallback ke data sample jika file tidak ditemukan
+                    this.products = [
+                        {"PLU": "10000019", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS PUTIH 370g KLG", "BARCODE": "8992702000018"},
+                        {"PLU": "10000020", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS CHOCOLATE 370g KLG", "BARCODE": "8992702000063"},
+                        {"PLU": "10000021", "NAMA_PRODUK": "CAP ENAK,KENTAL MANIS PUTIH 370g KLG", "BARCODE": "8992702000025"}
+                    ];
+                    
+                    this.barcodeIndex = {};
+                    this.products.forEach(product => {
+                        if (product.BARCODE) {
+                            this.barcodeIndex[product.BARCODE] = product;
+                        }
+                    });
+                    
+                    this.showMessage('Menggunakan data sample karena bcd.json tidak ditemukan', 'error');
+                }
+            }
+
+            bindEvents() {
+                document.getElementById('start-scanner').addEventListener('click', () => this.startScanner());
+                document.getElementById('stop-scanner').addEventListener('click', () => this.stopScanner());
+                document.getElementById('save-results').addEventListener('click', () => this.saveResults());
+                document.getElementById('cancel-scan').addEventListener('click', () => this.showCancelModal());
+                document.getElementById('show-results').addEventListener('click', () => this.showResults());
+                document.getElementById('back-to-scanner').addEventListener('click', () => this.backToScanner());
+                
+                document.getElementById('confirm-cancel').addEventListener('click', () => this.confirmCancel());
+                document.getElementById('keep-scanning').addEventListener('click', () => this.hideCancelModal());
+                
+                document.getElementById('prev-page').addEventListener('click', () => this.prevPage());
+                document.getElementById('next-page').addEventListener('click', () => this.nextPage());
+                document.getElementById('prev-page-bottom').addEventListener('click', () => this.prevPage());
+                document.getElementById('next-page-bottom').addEventListener('click', () => this.nextPage());
+                
+                document.getElementById('modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'modal') this.hideCancelModal();
+                });
+            }
+
+            async startScanner() {
+                try {
+                    // Clear any existing scanner
+                    if (this.html5QrcodeScanner) {
+                        await this.html5QrcodeScanner.stop();
+                        this.html5QrcodeScanner.clear();
+                    }
+
+                    // Initialize new scanner with optimized settings
+                    this.html5QrcodeScanner = new Html5Qrcode("scanner");
+                    
+                    const config = {
+                        fps: 30,
+                        qrbox: { width: 300, height: 150 },
+                        aspectRatio: 1.5,
+                        showTorchButtonIfSupported: true,
+                        showZoomSliderIfSupported: true,
+                        defaultZoomValueIfSupported: 2,
+                        disableFlip: false,
+                        rememberLastUsedCamera: true
+                    };
+
+                    await this.html5QrcodeScanner.start(
+                        { facingMode: "environment" },
+                        config,
+                        (decodedText, decodedResult) => {
+                            this.onBarcodeDetected(decodedText);
+                        },
+                        (errorMessage) => {
+                            // Handle scan errors silently - this is normal during scanning
+                        }
+                    );
+
+                    this.isScanning = true;
+                    document.getElementById('start-scanner').disabled = true;
+                    document.getElementById('stop-scanner').disabled = false;
+                    document.getElementById('camera-error').classList.remove('show');
+                    
+                    this.showMessage('Scanner aktif - Arahkan kamera ke barcode', 'success');
+                    
+                } catch (error) {
+                    console.error('Error starting scanner:', error);
+                    document.getElementById('camera-error').classList.add('show');
+                    this.showMessage('Gagal memulai scanner. Pastikan kamera dapat diakses.', 'error');
+                }
+            }
+
+            async stopScanner() {
+                if (this.html5QrcodeScanner && this.isScanning) {
+                    try {
+                        await this.html5QrcodeScanner.stop();
+                        this.html5QrcodeScanner.clear();
+                        this.html5QrcodeScanner = null;
+                    } catch (error) {
+                        console.error('Error stopping scanner:', error);
+                    }
+                    
+                    this.isScanning = false;
+                    document.getElementById('start-scanner').disabled = false;
+                    document.getElementById('stop-scanner').disabled = true;
+                    
+                    this.showMessage('Scanner berhenti', 'error');
+                }
+            }
+
+            onBarcodeDetected(barcode) {
+                if (this.scanCooldown) return;
+                
+                // Set cooldown to prevent multiple scans of the same barcode
+                this.scanCooldown = true;
+                setTimeout(() => {
+                    this.scanCooldown = false;
+                }, 1500); // Shorter cooldown for better responsiveness
+                
+                // Check if barcode was already scanned
+                if (!this.scannedBarcodes.includes(barcode)) {
+                    this.scannedBarcodes.push(barcode);
+                    this.updateScannedCount();
+                    this.showMessage(`Barcode berhasil discan: ${barcode}`, 'success');
+                    
+                    // Vibrate if available
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(200);
+                    }
+                    
+                    // Audio feedback (optional)
+                    this.playBeep();
+                } else {
+                    this.showMessage(`Barcode ${barcode} sudah pernah discan`, 'error');
+                }
+            }
+
+            playBeep() {
+                try {
+                    // Create a simple beep sound
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'square';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                } catch (error) {
+                    // Audio not supported or allowed
+                }
+            }
+
+            updateScannedCount() {
+                document.getElementById('scanned-count').textContent = this.scannedBarcodes.length;
+                document.getElementById('save-results').disabled = this.scannedBarcodes.length === 0;
+            }
+
+            saveResults() {
+                if (this.scannedBarcodes.length === 0) {
+                    this.showMessage('Tidak ada barcode yang discan', 'error');
+                    return;
+                }
+                
+                this.stopScanner();
+                document.getElementById('show-results').style.display = 'block';
+                this.showMessage(`${this.scannedBarcodes.length} barcode berhasil disimpan`, 'success');
+            }
+
+            showCancelModal() {
+                document.getElementById('modal').style.display = 'block';
+            }
+
+            hideCancelModal() {
+                document.getElementById('modal').style.display = 'none';
+            }
+
+            confirmCancel() {
+                this.scannedBarcodes = [];
+                this.updateScannedCount();
+                this.stopScanner();
+                document.getElementById('show-results').style.display = 'none';
+                this.hideCancelModal();
+                this.showMessage('Semua scan dibatalkan', 'error');
+            }
+
+            showResults() {
+                if (this.scannedBarcodes.length === 0) {
+                    this.showMessage('Tidak ada hasil untuk ditampilkan', 'error');
+                    return;
+                }
+                
+                document.getElementById('scanner-section').style.display = 'none';
+                document.getElementById('results-section').style.display = 'block';
+                document.getElementById('back-to-scanner').style.display = 'block';
+                
+                this.currentPage = 0;
+                this.renderResults();
+            }
+
+            backToScanner() {
+                document.getElementById('scanner-section').style.display = 'block';
+                document.getElementById('results-section').style.display = 'none';
+                document.getElementById('back-to-scanner').style.display = 'none';
+            }
+
+            renderResults() {
+                const container = document.getElementById('products-container');
+                const startIndex = this.currentPage * this.productsPerPage;
+                const endIndex = Math.min(startIndex + this.productsPerPage, this.scannedBarcodes.length);
+                
+                container.innerHTML = '';
+                
+                for (let i = startIndex; i < endIndex; i++) {
+                    const barcode = this.scannedBarcodes[i];
+                    const product = this.barcodeIndex[barcode];
+                    
+                    const productCard = this.createProductCard(barcode, product);
+                    container.appendChild(productCard);
+                }
+                
+                this.updatePagination();
+            }
+
+            createProductCard(barcode, product) {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                
+                const plu = product ? product.PLU : 'Tidak ditemukan';
+                const productName = product ? product.NAMA_PRODUK : `Produk dengan barcode ${barcode} tidak ditemukan dalam database`;
+                const imageUrl = product ? `https://cdn-klik.klikindomaret.com/klik-catalog/product/${product.PLU}_1.jpg` : '';
+                
+                // Create unique ID for this barcode
+                const barcodeId = `barcode-${barcode}-${Date.now()}`;
+                
+                // Price loading placeholder
+                const priceLoadingId = `price-loading-${barcode}-${Date.now()}`;
+                
+                card.innerHTML = `
+                    <div class="plu">PLU: ${plu}</div>
+                    <div class="product-name">${productName}</div>
+                    ${product ? `<img class="product-image" src="${imageUrl}" alt="${productName}" onerror="this.style.display='none'">` : ''}
+                    <div class="price-container" id="${priceLoadingId}">
+                        <div class="price-loading">
+                            <div class="loading-spinner"></div>
+                            <span>Memuat harga...</span>
                         </div>
-                        <div class="photo-inputs">
-                            <div class="photo-input">
-                                <label>Foto Contoh:</label>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="contoh-${i}" class="file-input" accept="image/*" onchange="previewImage(this, 'contoh-preview-${i}')">
-                                    <label for="contoh-${i}" class="file-input-button">Upload Foto Contoh</label>
-                                </div>
+                    </div>
+                    <div class="barcode-container">
+                        <canvas id="${barcodeId}" class="barcode-canvas"></canvas>
+                        <div class="barcode-fallback" id="fallback-${barcodeId}" style="display: none;">
+                            <div style="font-family: 'Courier New', monospace; font-size: 24px; letter-spacing: 2px; margin: 20px 0; padding: 10px; background: #f0f0f0; border: 1px solid #ccc;">
+                                ${barcode}
                             </div>
-                            <div class="photo-input">
-                                <label>Foto Realisasi:</label>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="realisasi-${i}" class="file-input" accept="image/*" onchange="previewImage(this, 'realisasi-preview-${i}')">
-                                    <label for="realisasi-${i}" class="file-input-button">Upload Foto Realisasi</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="preview-container">
-                            <div class="preview" id="contoh-preview-${i}">Preview Foto Contoh</div>
-                            <div class="preview" id="realisasi-preview-${i}">Preview Foto Realisasi</div>
+                            <div style="font-size: 14px; color: #666;">Barcode: ${barcode}</div>
                         </div>
                     </div>
                 `;
-            }
-            container.innerHTML = cardsHTML;
-        }
-
-        function previewImage(input, previewId) {
-            const preview = document.getElementById(previewId);
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-        
-        async function processAllPhotos() {
-            const loading = document.getElementById('loading');
-            const results = document.getElementById('results');
-            const button = document.querySelector('.process-all-button');
-            const progressInfo = document.getElementById('progress-info');
-            const globalStoreName = document.getElementById('global-store-name').value.trim();
-
-            if (!globalStoreName) {
-                alert('Mohon isi nama toko terlebih dahulu!');
-                return;
-            }
-
-            // Reset state
-            processedCanvases.clear();
-            loading.style.display = 'block';
-            button.disabled = true;
-            results.innerHTML = '';
-
-            // Cari kartu yang memiliki foto
-            let validCards = [];
-            for (let i = 1; i <= 8; i++) {
-                const contohFile = document.getElementById(`contoh-${i}`).files[0];
-                const realisasiFile = document.getElementById(`realisasi-${i}`).files[0];
-                if (contohFile && realisasiFile) {
-                    validCards.push(i);
+                
+                // Generate barcode after element is added to DOM
+                setTimeout(() => {
+                    this.generateBarcode(barcodeId, barcode);
+                }, 100);
+                
+                // Load price data if PLU is available
+                if (product && product.PLU) {
+                    this.loadProductPrice(product.PLU, priceLoadingId);
                 }
+                
+                return card;
             }
 
-            if (validCards.length === 0) {
-                alert('Mohon upload foto contoh dan realisasi pada minimal satu kartu!');
-                loading.style.display = 'none';
-                button.disabled = false;
-                return;
-            }
-
-            progressInfo.textContent = `Ditemukan ${validCards.length} foto untuk diproses...`;
-
-            // Proses foto satu per satu dengan delay untuk mencegah overload
-            for (let index = 0; index < validCards.length; index++) {
-                const cardNumber = validCards[index];
-                progressInfo.textContent = `Memproses foto ${index + 1} dari ${validCards.length} (Kartu ${cardNumber})...`;
-                
-                const contohFile = document.getElementById(`contoh-${cardNumber}`).files[0];
-                const realisasiFile = document.getElementById(`realisasi-${cardNumber}`).files[0];
-                
+            async loadProductPrice(plu, priceContainerId) {
                 try {
-                    const canvas = await createComparisonImage(globalStoreName, contohFile, realisasiFile);
-                    processedCanvases.set(cardNumber, canvas);
-                    displayResult(canvas, cardNumber, globalStoreName);
+                    // Simulate API call to get price data (you would replace this with actual API call)
+                    const priceData = await this.fetchProductPrice(plu);
+                    const priceContainer = document.getElementById(priceContainerId);
                     
-                    console.log(`Berhasil memproses foto ${cardNumber}`);
+                    if (!priceContainer) return;
+                    
+                    if (priceData && (priceData.originalPrice || priceData.finalPrice)) {
+                        priceContainer.innerHTML = this.createPriceDisplay(priceData);
+                    } else {
+                        priceContainer.innerHTML = '<div class="price-not-found">Harga tidak tersedia</div>';
+                    }
                 } catch (error) {
-                    console.error(`Error processing card ${cardNumber}:`, error);
-                    displayErrorResult(cardNumber, globalStoreName, error.message);
+                    console.error('Error loading price:', error);
+                    const priceContainer = document.getElementById(priceContainerId);
+                    if (priceContainer) {
+                        priceContainer.innerHTML = '<div class="price-error">Gagal memuat harga</div>';
+                    }
+                }
+            }
+
+            async fetchProductPrice(plu) {
+                // This is a mock function - you would implement actual API call here
+                // Based on your provided function, you would use tryWithWget or similar
+                try {
+                    // Mock data for demonstration - replace with actual API call
+                    const mockPrices = {
+                        "20138844": { originalPrice: 19200, finalPrice: 13900, discountText: "28% OFF" },
+                        "10000019": { originalPrice: 15000, finalPrice: 12500, discountText: "17% OFF" },
+                        "10000020": { originalPrice: 16000, finalPrice: null, discountText: null },
+                        "10000021": { originalPrice: 14500, finalPrice: 11900, discountText: "18% OFF" }
+                    };
+                    
+                    // Simulate network delay
+                    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+                    
+                    return mockPrices[plu] || { originalPrice: Math.floor(Math.random() * 20000) + 10000, finalPrice: null, discountText: null };
+                } catch (error) {
+                    throw error;
+                }
+            }
+
+            createPriceDisplay(priceData) {
+                const { originalPrice, finalPrice, discountText } = priceData;
+                const hasDiscount = finalPrice && finalPrice < originalPrice;
+                
+                let priceHtml = '<div class="price-display">';
+                
+                if (hasDiscount) {
+                    // Promotional pricing with strikethrough
+                    priceHtml += `
+                        <div class="price-promo">
+                            <div class="original-price">Rp${this.formatPrice(originalPrice)}</div>
+                            <div class="final-price">Rp${this.formatPrice(finalPrice)}</div>
+                            ${discountText ? `<div class="discount-badge">${discountText}</div>` : ''}
+                        </div>
+                    `;
+                } else {
+                    // Regular pricing
+                    priceHtml += `
+                        <div class="regular-price">
+                            <div class="price">Rp${this.formatPrice(originalPrice)}</div>
+                        </div>
+                    `;
                 }
                 
-                // Delay untuk mencegah browser overload
-                await new Promise(resolve => setTimeout(resolve, 500));
+                priceHtml += '</div>';
+                return priceHtml;
             }
 
-            progressInfo.textContent = `Selesai! ${processedCanvases.size} foto berhasil dibuat.`;
-            
-            // Hide loading setelah semua selesai
-            setTimeout(() => {
-                loading.style.display = 'none';
-                button.disabled = false;
-            }, 1000);
-        }
+            formatPrice(price) {
+                if (!price) return '0';
+                return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
 
-        // Fungsi untuk memuat gambar dari file dengan error handling yang lebih baik
-        function loadUserImage(file) {
-            return new Promise((resolve, reject) => {
-                if (!file) {
-                    reject(new Error('File tidak ditemukan'));
-                    return;
+            generateBarcode(canvasId, barcode) {
+                try {
+                    const canvas = document.getElementById(canvasId);
+                    const fallback = document.getElementById(`fallback-${canvasId}`);
+                    
+                    if (!canvas) {
+                        console.error('Canvas element not found:', canvasId);
+                        return;
+                    }
+
+                    // First try EAN13
+                    try {
+                        JsBarcode(canvas, barcode, {
+                            format: "EAN13",
+                            width: 2,
+                            height: 80,
+                            displayValue: true,
+                            fontSize: 16,
+                            margin: 10,
+                            background: "#ffffff",
+                            lineColor: "#000000"
+                        });
+                        canvas.style.display = 'block';
+                        if (fallback) fallback.style.display = 'none';
+                        return;
+                    } catch (error) {
+                        console.log('EAN13 failed, trying CODE128:', error);
+                    }
+
+                    // Then try CODE128
+                    try {
+                        JsBarcode(canvas, barcode, {
+                            format: "CODE128",
+                            width: 2,
+                            height: 80,
+                            displayValue: true,
+                            fontSize: 16,
+                            margin: 10,
+                            background: "#ffffff",
+                            lineColor: "#000000"
+                        });
+                        canvas.style.display = 'block';
+                        if (fallback) fallback.style.display = 'none';
+                        return;
+                    } catch (error) {
+                        console.log('CODE128 failed, trying AUTO:', error);
+                    }
+
+                    // Finally try AUTO format
+                    try {
+                        JsBarcode(canvas, barcode, {
+                            width: 2,
+                            height: 80,
+                            displayValue: true,
+                            fontSize: 16,
+                            margin: 10,
+                            background: "#ffffff",
+                            lineColor: "#000000"
+                        });
+                        canvas.style.display = 'block';
+                        if (fallback) fallback.style.display = 'none';
+                        return;
+                    } catch (error) {
+                        console.log('All barcode formats failed, showing fallback:', error);
+                    }
+
+                    // If all fails, show fallback
+                    canvas.style.display = 'none';
+                    if (fallback) {
+                        fallback.style.display = 'block';
+                    }
+
+                } catch (error) {
+                    console.error('Error generating barcode:', error);
+                    const fallback = document.getElementById(`fallback-${canvasId}`);
+                    if (fallback) {
+                        fallback.style.display = 'block';
+                    }
                 }
-
-                const img = new Image();
-                const url = URL.createObjectURL(file);
-                
-                img.onload = function() {
-                    URL.revokeObjectURL(url); // Hapus URL dari memori
-                    resolve(this);
-                };
-                
-                img.onerror = function() {
-                    URL.revokeObjectURL(url);
-                    reject(new Error(`Gagal memuat file: ${file.name}`));
-                };
-                
-                img.src = url;
-            });
-        }
-
-        // Fungsi untuk membuat template sesuai gambar yang diberikan dengan background Indomaret
-        function createBaseTemplate(width, height, storeName) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            canvas.width = width;
-            canvas.height = height;
-            
-            // Background biru dengan gradient dan pattern seperti toko Indomaret
-            const gradient = ctx.createLinearGradient(0, 0, width, height);
-            gradient.addColorStop(0, '#4169E1');
-            gradient.addColorStop(0.3, '#5B7CE6');
-            gradient.addColorStop(0.7, '#6495ED');
-            gradient.addColorStop(1, '#1E90FF');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, width, height);
-            
-            // Tambahkan efek visual seperti background toko Indomaret
-            drawIndomaretBackground(ctx, width, height);
-            
-            // Area header putih untuk nama toko (sesuai template)
-            const headerX = width * 0.05;
-            const headerY = height * 0.05;
-            const headerWidth = width * 0.9;
-            const headerHeight = height * 0.12;
-            
-            ctx.fillStyle = 'white';
-            ctx.fillRect(headerX, headerY, headerWidth, headerHeight);
-            ctx.strokeStyle = '#333333';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(headerX, headerY, headerWidth, headerHeight);
-            
-            // Teks "INDOMARET:" pada header
-            ctx.fillStyle = 'black';
-            const fontSize = Math.floor(height * 0.04);
-            ctx.font = `bold ${fontSize}px Arial`;
-            ctx.textAlign = 'left';
-            const textX = headerX + width * 0.02;
-            const textY = headerY + headerHeight * 0.65;
-            ctx.fillText(`INDOMARET: ${storeName.toUpperCase()}`, textX, textY);
-            
-            // Area utama putih untuk foto (sesuai template)
-            const mainAreaX = width * 0.05;
-            const mainAreaY = height * 0.22;
-            const mainAreaWidth = width * 0.9;
-            const mainAreaHeight = height * 0.73;
-            
-            ctx.fillStyle = 'white';
-            ctx.fillRect(mainAreaX, mainAreaY, mainAreaWidth, mainAreaHeight);
-            ctx.strokeStyle = '#333333';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(mainAreaX, mainAreaY, mainAreaWidth, mainAreaHeight);
-            
-            // Garis pembagi tengah
-            const centerX = width / 2;
-            ctx.beginPath();
-            ctx.moveTo(centerX, mainAreaY);
-            ctx.lineTo(centerX, mainAreaY + mainAreaHeight);
-            ctx.stroke();
-            
-            // Label "CONTOH" dan "REALISASI" (sesuai template)
-            ctx.fillStyle = 'black';
-            const labelFontSize = Math.floor(height * 0.035);
-            ctx.font = `bold ${labelFontSize}px Arial`;
-            ctx.textAlign = 'center';
-            
-            const labelY = mainAreaY + labelFontSize + 10;
-            ctx.fillText('CONTOH', mainAreaX + (mainAreaWidth * 0.25), labelY);
-            ctx.fillText('REALISASI', mainAreaX + (mainAreaWidth * 0.75), labelY);
-            
-            return canvas;
-        }
-
-        // Fungsi untuk menggambar background visual seperti toko Indomaret
-        function drawIndomaretBackground(ctx, width, height) {
-            // Simpan state context
-            ctx.save();
-            
-            // Set opacity untuk background elements
-            ctx.globalAlpha = 0.3;
-            
-            // Gambar bentuk-bentuk geometris yang menyerupai elemen toko
-            // Bentuk diagonal (seperti atap atau struktur bangunan)
-            ctx.fillStyle = '#FF6B35'; // Orange Indomaret
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(width * 0.4, 0);
-            ctx.lineTo(width * 0.2, height * 0.3);
-            ctx.lineTo(0, height * 0.15);
-            ctx.closePath();
-            ctx.fill();
-            
-            // Bentuk diagonal kedua (sisi kanan)
-            ctx.beginPath();
-            ctx.moveTo(width, 0);
-            ctx.lineTo(width * 0.6, 0);
-            ctx.lineTo(width * 0.8, height * 0.3);
-            ctx.lineTo(width, height * 0.15);
-            ctx.closePath();
-            ctx.fill();
-            
-            // Gambar bentuk persegi panjang (seperti struktur toko)
-            ctx.fillStyle = '#FFFFFF';
-            ctx.globalAlpha = 0.15;
-            for (let i = 0; i < 5; i++) {
-                const rectWidth = width * 0.1;
-                const rectHeight = height * 0.05;
-                const x = (width * 0.2) + (i * width * 0.15);
-                const y = height * 0.8;
-                ctx.fillRect(x, y, rectWidth, rectHeight);
             }
-            
-            // Gambar garis-garis vertikal (seperti pilar atau struktur)
-            ctx.strokeStyle = '#FFFFFF';
-            ctx.globalAlpha = 0.2;
-            ctx.lineWidth = 3;
-            for (let i = 1; i <= 4; i++) {
-                const x = (width / 5) * i;
-                ctx.beginPath();
-                ctx.moveTo(x, height * 0.3);
-                ctx.lineTo(x, height);
-                ctx.stroke();
+
+            updatePagination() {
+                const totalPages = Math.max(1, Math.ceil(this.scannedBarcodes.length / this.productsPerPage));
+                const currentPage = this.currentPage + 1;
+                
+                document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
+                document.getElementById('page-info-bottom').textContent = `${currentPage} / ${totalPages}`;
+                
+                document.getElementById('prev-page').disabled = this.currentPage === 0;
+                document.getElementById('next-page').disabled = this.currentPage >= totalPages - 1;
+                document.getElementById('prev-page-bottom').disabled = this.currentPage === 0;
+                document.getElementById('next-page-bottom').disabled = this.currentPage >= totalPages - 1;
             }
-            
-            // Tambahkan efek lingkaran (seperti logo atau elemen dekoratif)
-            ctx.fillStyle = '#FF6B35';
-            ctx.globalAlpha = 0.1;
-            
-            // Lingkaran besar di kiri atas
-            ctx.beginPath();
-            ctx.arc(width * 0.15, height * 0.25, width * 0.08, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Lingkaran besar di kanan atas
-            ctx.beginPath();
-            ctx.arc(width * 0.85, height * 0.25, width * 0.08, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Lingkaran kecil di tengah bawah
-            ctx.globalAlpha = 0.15;
-            ctx.beginPath();
-            ctx.arc(width * 0.5, height * 0.85, width * 0.05, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Restore context state
-            ctx.restore();
-        }
-        
-        async function createComparisonImage(storeName, contohFile, realisasiFile) {
-            try {
-                // Load template dan kedua gambar user secara bersamaan
-                const [templateImg, contohImg, realisasiImg] = await Promise.all([
-                    loadTemplateImage('IMG-20250918-WA0268.jpg'), // Template eksternal
-                    loadUserImage(contohFile),
-                    loadUserImage(realisasiFile)
-                ]);
 
-                // Gunakan ukuran template sebagai dasar canvas
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = templateImg.width;
-                canvas.height = templateImg.height;
-                
-                // 1. Gambar template sebagai background
-                ctx.drawImage(templateImg, 0, 0);
-
-                // 2. Tulis nama toko di area header putih
-                // (Sesuaikan koordinat berdasarkan template xxx.jpg)
-                const headerX = canvas.width * 0.05;
-                const headerY = canvas.height * 0.05;
-                const headerWidth = canvas.width * 0.9;
-                const headerHeight = canvas.height * 0.12;
-                
-                // Bersihkan area header dan gambar ulang background putih
-                ctx.fillStyle = 'white';
-                ctx.fillRect(headerX, headerY, headerWidth, headerHeight);
-                ctx.strokeStyle = '#333333';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(headerX, headerY, headerWidth, headerHeight);
-
-                // Tulis nama toko
-                ctx.fillStyle = 'black';
-                const fontSize = Math.floor(canvas.height * 0.04);
-                ctx.font = `bold ${fontSize}px Arial`;
-                ctx.textAlign = 'left';
-                const textX = headerX + (canvas.width * 0.02);
-                const textY = headerY + (headerHeight * 0.65);
-                ctx.fillText(`INDOMARET: ${storeName.toUpperCase()}`, textX, textY);
-
-                // 3. Gambar foto di area yang sudah disediakan template
-                // Area foto (sesuaikan dengan layout template xxx.jpg)
-                const mainAreaX = canvas.width * 0.05;
-                const mainAreaY = canvas.height * 0.22;
-                const mainAreaWidth = canvas.width * 0.9;
-                const mainAreaHeight = canvas.height * 0.73;
-                
-                // Area foto individual (dikurangi margin dan space untuk label)
-                const photoMargin = 10;
-                const labelSpace = 50; // Space untuk label CONTOH/REALISASI
-                const photoWidth = (mainAreaWidth / 2) - (photoMargin * 2);
-                const photoHeight = mainAreaHeight - labelSpace - (photoMargin * 2);
-                const photoY = mainAreaY + labelSpace + photoMargin;
-                
-                // Posisi foto contoh (kiri)
-                const contohX = mainAreaX + photoMargin;
-                ctx.drawImage(contohImg, contohX, photoY, photoWidth, photoHeight);
-                
-                // Posisi foto realisasi (kanan)
-                const realisasiX = mainAreaX + (mainAreaWidth / 2) + photoMargin;
-                ctx.drawImage(realisasiImg, realisasiX, photoY, photoWidth, photoHeight);
-                
-                return canvas;
-                
-            } catch (error) {
-                console.error('Error in createComparisonImage:', error);
-                throw new Error(`Gagal membuat gambar: ${error.message}`);
-            }
-        }
-
-        function displayResult(canvas, cardNumber, storeName) {
-            const results = document.getElementById('results');
-            const resultCard = document.createElement('div');
-            resultCard.className = 'result-card';
-            resultCard.innerHTML = `
-                <h3>Hasil Foto ${cardNumber} - ${storeName}</h3>
-                <canvas class="result-canvas" id="result-canvas-${cardNumber}"></canvas>
-                <div>
-                    <button class="download-button" onclick="downloadImage(${cardNumber}, '${storeName}')">
-                        📥 Download Foto ${cardNumber}
-                    </button>
-                </div>
-            `;
-            results.appendChild(resultCard);
-            
-            // Copy canvas ke result canvas
-            const resultCanvas = document.getElementById(`result-canvas-${cardNumber}`);
-            resultCanvas.width = canvas.width;
-            resultCanvas.height = canvas.height;
-            const resultCtx = resultCanvas.getContext('2d');
-            resultCtx.drawImage(canvas, 0, 0);
-        }
-
-        function displayErrorResult(cardNumber, storeName, errorMessage) {
-            const results = document.getElementById('results');
-            const errorCard = document.createElement('div');
-            errorCard.className = 'result-card';
-            errorCard.style.border = '2px solid #dc3545';
-            errorCard.innerHTML = `
-                <h3 style="color: #dc3545;">❌ Error - Foto ${cardNumber} - ${storeName}</h3>
-                <div style="padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 15px 0;">
-                    <p style="color: #dc3545; margin: 0;">
-                        <strong>Gagal memproses foto:</strong><br>
-                        ${errorMessage}
-                    </p>
-                    <p style="color: #666; margin-top: 10px; font-size: 14px;">
-                        Pastikan file foto valid dan coba upload ulang.
-                    </p>
-                </div>
-            `;
-            results.appendChild(errorCard);
-        }
-
-        function downloadImage(cardNumber, storeName) {
-            try {
-                const canvas = processedCanvases.get(cardNumber);
-                if (!canvas) {
-                    alert(`Foto ${cardNumber} belum diproses atau terjadi error!`);
-                    return;
+            prevPage() {
+                if (this.currentPage > 0) {
+                    this.currentPage--;
+                    this.renderResults();
                 }
+            }
+
+            nextPage() {
+                const totalPages = Math.ceil(this.scannedBarcodes.length / this.productsPerPage);
+                if (this.currentPage < totalPages - 1) {
+                    this.currentPage++;
+                    this.renderResults();
+                }
+            }
+
+            showMessage(message, type) {
+                const statusElement = document.getElementById('status-message');
+                statusElement.textContent = message;
+                statusElement.className = `status-message ${type}`;
+                statusElement.style.display = 'block';
                 
-                // Konversi canvas ke blob untuk download yang lebih reliable
-                canvas.toBlob(function(blob) {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.download = `INDOMARET_${storeName.replace(/\s+/g, '_')}_${cardNumber}.png`;
-                    link.href = url;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                }, 'image/png', 1.0);
-                
-            } catch (error) {
-                console.error('Download error:', error);
-                alert('Gagal mendownload gambar! Silakan coba lagi.');
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 3000);
             }
         }
 
-        // Initialize
-        generateCards();
-        
-        document.getElementById('global-store-name').addEventListener('input', function() {
-            const preview = document.getElementById('store-preview');
-            preview.textContent = this.value.trim().toUpperCase() || 'NAMA TOKO ANDA';
-        });
-
-        // Cleanup saat halaman ditutup
-        window.addEventListener('beforeunload', function() {
-            processedCanvases.clear();
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new BarcodeScanner();
         });
     </script>
 </body>
