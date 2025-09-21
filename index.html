@@ -15,9 +15,9 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
-            color: #333;
+            color: #e0e6ed;
         }
 
         .container {
@@ -29,16 +29,19 @@
 
         .header {
             text-align: center;
-            color: white;
+            color: #64ffda;
             margin-bottom: 30px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
         }
 
         .card {
-            background: white;
+            background: linear-gradient(145deg, #253447, #1e2a3a);
+            border: 1px solid #3a4a5c;
             border-radius: 15px;
             padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 
+                0 4px 15px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
         }
 
@@ -532,7 +535,17 @@
             </div>
 
             <!-- Results Section -->
-            <div id="results-container"></div>
+            <div id="results-container">
+                <!-- Results Navigation -->
+                <div class="results-navigation" id="results-nav">
+                    <button class="nav-btn" id="prev-result" disabled>‹ Sebelumnya</button>
+                    <span class="page-info" id="result-info">0 / 0</span>
+                    <button class="nav-btn" id="next-result" disabled>Selanjutnya ›</button>
+                </div>
+                
+                <!-- Single Product Display -->
+                <div class="single-product-container" id="single-product-display"></div>
+            </div>
         </div>
 
         <!-- Bulk Mode Section -->
@@ -613,6 +626,7 @@
             constructor() {
                 // Single mode properties
                 this.currentResults = [];
+                this.currentResultPage = 0;
                 
                 // Bulk mode properties
                 this.bulkScannedBarcodes = [];
@@ -687,6 +701,10 @@
                 
                 document.getElementById('start-scanner').addEventListener('click', () => this.startScanner());
                 document.getElementById('stop-scanner').addEventListener('click', () => this.stopScanner());
+                
+                // Single mode navigation
+                document.getElementById('prev-result').addEventListener('click', () => this.prevResult());
+                document.getElementById('next-result').addEventListener('click', () => this.nextResult());
                 
                 // Bulk mode events
                 document.getElementById('bulk-search-plu').addEventListener('click', () => this.bulkSearchPLU());
@@ -900,12 +918,61 @@
 
             // Display single product with price (for single mode)
             displaySingleProduct(productData) {
-                const resultsContainer = document.getElementById('results-container');
-                const productCard = this.createSingleProductCard(productData);
-                resultsContainer.appendChild(productCard);
+                // Add to results array
+                this.currentResults.push(productData);
                 
-                // Scroll to the new product
-                productCard.scrollIntoView({ behavior: 'smooth' });
+                // Update navigation and display
+                this.currentResultPage = this.currentResults.length - 1;
+                this.updateResultsDisplay();
+                
+                // Show navigation if more than one result
+                if (this.currentResults.length > 1) {
+                    document.getElementById('results-nav').classList.add('show');
+                }
+                
+                // Scroll to results
+                document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
+            }
+
+            updateResultsDisplay() {
+                const container = document.getElementById('single-product-display');
+                const navInfo = document.getElementById('result-info');
+                const prevBtn = document.getElementById('prev-result');
+                const nextBtn = document.getElementById('next-result');
+                
+                if (this.currentResults.length === 0) {
+                    container.innerHTML = '';
+                    navInfo.textContent = '0 / 0';
+                    prevBtn.disabled = true;
+                    nextBtn.disabled = true;
+                    document.getElementById('results-nav').classList.remove('show');
+                    return;
+                }
+                
+                // Display current result
+                const currentResult = this.currentResults[this.currentResultPage];
+                const productCard = this.createSingleProductCard(currentResult);
+                container.innerHTML = '';
+                container.appendChild(productCard);
+                
+                // Update navigation
+                navInfo.textContent = `${this.currentResultPage + 1} / ${this.currentResults.length}`;
+                prevBtn.disabled = this.currentResultPage === 0;
+                nextBtn.disabled = this.currentResultPage === this.currentResults.length - 1;
+            }
+
+            prevResult() {
+                if (this.currentResultPage > 0) {
+                    this.currentResultPage--;
+                    this.updateResultsDisplay();
+                }
+            }
+
+            nextResult() {
+                if (this.currentResultPage < this.currentResults.length - 1) {
+                    this.currentResultPage++;
+                    this.updateResultsDisplay();
+                }
             }
 
             createSingleProductCard(productData) {
@@ -974,8 +1041,9 @@
             }
 
             clearResults() {
-                document.getElementById('results-container').innerHTML = '';
                 this.currentResults = [];
+                this.currentResultPage = 0;
+                this.updateResultsDisplay();
                 this.showMessage('Hasil pencarian dihapus', 'success');
             }
 
@@ -1444,4 +1512,4 @@
         });
     </script>
 </body>
-</html>
+    </html>
