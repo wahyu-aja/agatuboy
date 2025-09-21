@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barcode Scanner App</title>
+    <title>Product Scanner App</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
     <style>
@@ -42,22 +42,52 @@
             margin-bottom: 20px;
         }
 
+        /* Mode Toggle Buttons */
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .mode-btn:not(.active) {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        /* PLU Search Section */
         .plu-search {
             margin-bottom: 20px;
         }
 
         .plu-input-container {
-            display: flex;
-            gap: 10px;
             margin-bottom: 15px;
         }
 
         .plu-input {
-            flex: 1;
+            width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
+            min-height: 100px;
+            resize: vertical;
         }
 
         .plu-input:focus {
@@ -65,7 +95,13 @@
             border-color: #4CAF50;
         }
 
+        .search-controls {
+            display: flex;
+            gap: 10px;
+        }
+
         .search-btn {
+            flex: 1;
             padding: 12px 20px;
             background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
@@ -75,11 +111,17 @@
             font-weight: bold;
         }
 
-        .search-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        .clear-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
         }
 
+        /* Scanner Section */
         .scanner-container {
             position: relative;
             background: #000;
@@ -170,11 +212,6 @@
             color: white;
         }
 
-        .btn-info {
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
-            color: white;
-        }
-
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
@@ -199,41 +236,7 @@
             font-size: 24px;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 350px;
-            width: 90%;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .results-container {
-            display: none;
-        }
-
+        /* Product Display */
         .product-card {
             background: white;
             border-radius: 15px;
@@ -272,11 +275,6 @@
             padding: 20px;
             border-radius: 10px;
             margin: 15px 0;
-        }
-
-        .barcode-svg {
-            max-width: 100%;
-            height: auto;
         }
 
         .barcode-canvas {
@@ -335,7 +333,6 @@
             padding: 15px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-            position: relative;
         }
 
         .original-price {
@@ -360,12 +357,6 @@
             font-size: 12px;
             font-weight: bold;
             display: inline-block;
-            animation: pulse-badge 2s infinite;
-        }
-
-        @keyframes pulse-badge {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
         }
 
         .regular-price {
@@ -395,55 +386,6 @@
             background: #fff5f5;
             color: #e53e3e;
             border-color: #fed7d7;
-        }
-
-        .navigation {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 20px 0;
-        }
-
-        .nav-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .nav-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .page-info {
-            font-weight: bold;
-            color: #666;
-        }
-
-        .back-to-scanner {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            z-index: 100;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
         }
 
         .status-message {
@@ -477,6 +419,37 @@
             display: block;
         }
 
+        .hidden {
+            display: none !important;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-weight: bold;
+            color: #666;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -487,15 +460,11 @@
                 padding: 10px;
             }
             
-            .controls {
+            .controls, .search-controls {
                 flex-direction: column;
             }
             
-            .modal-buttons {
-                flex-direction: column;
-            }
-
-            .plu-input-container {
+            .mode-toggle {
                 flex-direction: column;
             }
         }
@@ -504,113 +473,162 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📱 Barcode Scanner by W.A.H.Y.U</h1>
-            <p>Setelah di scan semua pergi scan satu persatu di Program PriceTag Komputer</p>
+            <h1>📱 Product Scanner by W.A.H.Y.U</h1>
+            <p>Scan barcode atau masukkan PLU untuk melihat produk dan harga</p>
         </div>
 
-        <!-- Scanner Section -->
-        <div id="scanner-section" class="card">
+        <!-- Mode Toggle -->
+        <div class="card">
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="single-mode">
+                    🔍 Mode Tunggal (Dengan Harga)
+                </button>
+                <button class="mode-btn" id="bulk-mode">
+                    📋 Mode Massal (Tanpa Harga)
+                </button>
+            </div>
+        </div>
+
+        <!-- Single Mode Section -->
+        <div id="single-section">
             <!-- PLU Search Section -->
-            <div class="plu-search">
-                <h3 style="margin-bottom: 15px; color: #333;">🔍 Cari dengan PLU</h3>
-                <div class="plu-input-container">
-                    <input type="text" id="plu-input" class="plu-input" placeholder="Masukkan PLU (contoh: 20138844)" maxlength="20">
-                    <button class="search-btn" id="search-plu">Cari</button>
+            <div class="card">
+                <div class="plu-search">
+                    <h3 style="margin-bottom: 15px; color: #333;">🔍 Cari dengan PLU</h3>
+                    <div class="plu-input-container">
+                        <textarea id="plu-input" class="plu-input" placeholder="Masukkan PLU (pisahkan dengan koma, spasi, atau baris baru)&#10;Contoh: 20088719, 10000019&#10;atau:&#10;20088719&#10;10000019"></textarea>
+                    </div>
+                    <div class="search-controls">
+                        <button class="search-btn" id="search-plu">🔍 Cari PLU</button>
+                        <button class="clear-btn" id="clear-results">🗑️ Hapus</button>
+                    </div>
                 </div>
             </div>
 
-            <hr style="margin: 20px 0; border: none; height: 1px; background: #eee;">
-
-            <div class="scanner-container">
-                <div id="scanner"></div>
-                <div class="scanner-overlay"></div>
-                <div class="scanning-line"></div>
-            </div>
-            
-            <div class="camera_error_popup" id="camera-error">
-                <div class="popup_heading">
-                    <span>Izinkan Akses Kamera</span>
-                    <span>Jangan khawatir jika Anda lupa mengizinkan akses kamera, ikuti langkah-langkah berikut untuk mengizinkan kamera.</span>
+            <!-- Scanner Section -->
+            <div class="card">
+                <h3 style="margin-bottom: 15px; color: #333;">📷 Scan Barcode</h3>
+                <div class="scanner-container">
+                    <div id="scanner"></div>
+                    <div class="scanner-overlay"></div>
+                    <div class="scanning-line"></div>
+                </div>
+                
+                <div class="camera_error_popup" id="camera-error">
+                    <div class="popup_heading">
+                        <span>Izinkan Akses Kamera</span>
+                        <span>Jangan khawatir jika Anda lupa mengizinkan akses kamera, ikuti langkah-langkah berikut untuk mengizinkan kamera.</span>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" id="start-scanner">
+                        🎥 Mulai Scan
+                    </button>
+                    <button class="btn btn-secondary" id="stop-scanner" disabled>
+                        ⏹️ Stop Scan
+                    </button>
                 </div>
             </div>
-            
-            <div class="status-message" id="status-message" style="display: none;"></div>
-            
-            <div class="scanned-count">
-                Barang terscan: <span class="count" id="scanned-count">0</span>
+
+            <!-- Results Section -->
+            <div id="results-container"></div>
+        </div>
+
+        <!-- Bulk Mode Section -->
+        <div id="bulk-section" class="hidden">
+            <!-- PLU Input Section -->
+            <div class="card">
+                <div class="plu-search">
+                    <h3 style="margin-bottom: 15px; color: #333;">📝 Input PLU Massal</h3>
+                    <div class="plu-input-container">
+                        <textarea id="bulk-plu-input" class="plu-input" placeholder="Masukkan banyak PLU (pisahkan dengan koma, spasi, atau baris baru)&#10;Contoh: 20088719, 10000019, 10000020&#10;atau:&#10;20088719&#10;10000019&#10;10000020"></textarea>
+                    </div>
+                    <div class="search-controls">
+                        <button class="search-btn" id="bulk-search-plu">📝 Tambah PLU</button>
+                        <button class="clear-btn" id="bulk-clear-all">🗑️ Hapus Semua</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="controls">
-                <button class="btn btn-primary" id="start-scanner">
-                    🎥 Mulai Scan
-                </button>
-                <button class="btn btn-secondary" id="stop-scanner" disabled>
-                    ⏹️ Stop Scan
-                </button>
+            <!-- Scanner Section -->
+            <div class="card">
+                <h3 style="margin-bottom: 15px; color: #333;">📷 Scan Massal</h3>
+                <div class="scanner-container">
+                    <div id="bulk-scanner"></div>
+                    <div class="scanner-overlay"></div>
+                    <div class="scanning-line"></div>
+                </div>
+                
+                <div class="camera_error_popup" id="bulk-camera-error">
+                    <div class="popup_heading">
+                        <span>Izinkan Akses Kamera</span>
+                    </div>
+                </div>
+                
+                <div class="scanned-count">
+                    Barang terscan: <span class="count" id="bulk-scanned-count">0</span>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" id="bulk-start-scanner">
+                        🎥 Mulai Scan
+                    </button>
+                    <button class="btn btn-secondary" id="bulk-stop-scanner" disabled>
+                        ⏹️ Stop Scan
+                    </button>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" id="bulk-show-results" disabled>
+                        📋 Tampilkan Hasil
+                    </button>
+                </div>
             </div>
 
-            <div class="controls">
-                <button class="btn btn-info" id="save-results" disabled>
-                    💾 Simpan Hasil
-                </button>
-                <button class="btn btn-secondary" id="cancel-scan">
-                    ❌ Batal
-                </button>
-            </div>
-
-            <div class="controls">
-                <button class="btn btn-info" id="show-results" style="display: none;">
-                    📋 Tampilkan Hasil
-                </button>
+            <!-- Bulk Results Section -->
+            <div id="bulk-results-section" class="hidden">
+                <div class="navigation">
+                    <button class="nav-btn" id="bulk-prev-page" disabled>‹ Sebelumnya</button>
+                    <span class="page-info" id="bulk-page-info">1 / 1</span>
+                    <button class="nav-btn" id="bulk-next-page" disabled>Selanjutnya ›</button>
+                </div>
+                
+                <div id="bulk-products-container"></div>
+                
+                <div class="navigation">
+                    <button class="nav-btn" id="bulk-prev-page-bottom" disabled>‹ Sebelumnya</button>
+                    <span class="page-info" id="bulk-page-info-bottom">1 / 1</span>
+                    <button class="nav-btn" id="bulk-next-page-bottom" disabled>Selanjutnya ›</button>
+                </div>
             </div>
         </div>
 
-        <!-- Results Section -->
-        <div id="results-section" class="results-container">
-            <div class="navigation">
-                <button class="nav-btn" id="prev-page" disabled>‹ Sebelumnya</button>
-                <span class="page-info" id="page-info">1 / 1</span>
-                <button class="nav-btn" id="next-page" disabled>Selanjutnya ›</button>
-            </div>
-            
-            <div id="products-container"></div>
-            
-            <div class="navigation">
-                <button class="nav-btn" id="prev-page-bottom" disabled>‹ Sebelumnya</button>
-                <span class="page-info" id="page-info-bottom">1 / 1</span>
-                <button class="nav-btn" id="next-page-bottom" disabled>Selanjutnya ›</button>
-            </div>
-        </div>
-
-        <button class="back-to-scanner" id="back-to-scanner" style="display: none;">
-            🔙
-        </button>
-    </div>
-
-    <!-- Modal -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <h3>⚠️ Konfirmasi</h3>
-            <p>Apakah Anda yakin ingin membatalkan semua scan?</p>
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" id="confirm-cancel">Ya, Batal</button>
-                <button class="btn btn-primary" id="keep-scanning">Tidak</button>
-            </div>
-        </div>
+        <!-- Status Message -->
+        <div class="status-message" id="status-message" style="display: none;"></div>
     </div>
 
     <script>
-        class BarcodeScanner {
+        class ProductScanner {
             constructor() {
-                this.scannedBarcodes = [];
-                this.products = [];
-                this.currentPage = 0;
-                this.productsPerPage = 1;
-                this.isScanning = false;
-                this.html5QrcodeScanner = null;
-                this.scanCooldown = false;
+                // Single mode properties
+                this.currentResults = [];
                 
-                // API configuration - sesuai dengan fungsi JS asli
+                // Bulk mode properties
+                this.bulkScannedBarcodes = [];
+                this.bulkProducts = [];
+                this.bulkCurrentPage = 0;
+                this.bulkProductsPerPage = 1;
+                
+                // Scanner properties
+                this.isScanning = false;
+                this.isBulkScanning = false;
+                this.html5QrcodeScanner = null;
+                this.bulkHtml5QrcodeScanner = null;
+                this.scanCooldown = false;
+                this.bulkScanCooldown = false;
+                
+                // API configuration
                 this.API_URL = "https://ap-mc.klikindomaret.com/assets-klikidmsearch/api/get/catalog-xpress/api/webapp/search/result";
                 this.parameterSets = [
                     {
@@ -639,12 +657,66 @@
                     }
                 ];
                 
+                // Product database
+                this.products = [];
+                this.barcodeIndex = {};
+                this.currentMode = 'single';
+                
                 this.init();
                 this.loadProductData();
             }
 
             init() {
                 this.bindEvents();
+                this.showMode('single');
+            }
+
+            bindEvents() {
+                // Mode toggle
+                document.getElementById('single-mode').addEventListener('click', () => this.showMode('single'));
+                document.getElementById('bulk-mode').addEventListener('click', () => this.showMode('bulk'));
+                
+                // Single mode events
+                document.getElementById('search-plu').addEventListener('click', () => this.searchMultiplePLU());
+                document.getElementById('clear-results').addEventListener('click', () => this.clearResults());
+                document.getElementById('plu-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        this.searchMultiplePLU();
+                    }
+                });
+                
+                document.getElementById('start-scanner').addEventListener('click', () => this.startScanner());
+                document.getElementById('stop-scanner').addEventListener('click', () => this.stopScanner());
+                
+                // Bulk mode events
+                document.getElementById('bulk-search-plu').addEventListener('click', () => this.bulkSearchPLU());
+                document.getElementById('bulk-clear-all').addEventListener('click', () => this.bulkClearAll());
+                
+                document.getElementById('bulk-start-scanner').addEventListener('click', () => this.startBulkScanner());
+                document.getElementById('bulk-stop-scanner').addEventListener('click', () => this.stopBulkScanner());
+                document.getElementById('bulk-show-results').addEventListener('click', () => this.showBulkResults());
+                
+                // Bulk pagination
+                document.getElementById('bulk-prev-page').addEventListener('click', () => this.bulkPrevPage());
+                document.getElementById('bulk-next-page').addEventListener('click', () => this.bulkNextPage());
+                document.getElementById('bulk-prev-page-bottom').addEventListener('click', () => this.bulkPrevPage());
+                document.getElementById('bulk-next-page-bottom').addEventListener('click', () => this.bulkNextPage());
+            }
+
+            showMode(mode) {
+                this.currentMode = mode;
+                
+                // Update button states
+                document.getElementById('single-mode').classList.toggle('active', mode === 'single');
+                document.getElementById('bulk-mode').classList.toggle('active', mode === 'bulk');
+                
+                // Show/hide sections
+                document.getElementById('single-section').classList.toggle('hidden', mode !== 'single');
+                document.getElementById('bulk-section').classList.toggle('hidden', mode !== 'bulk');
+                
+                // Stop any active scanners
+                this.stopScanner();
+                this.stopBulkScanner();
             }
 
             async loadProductData() {
@@ -663,9 +735,14 @@
                     }
                     
                     this.barcodeIndex = {};
+                    this.pluIndex = {};
+                    
                     this.products.forEach(product => {
                         if (product.BARCODE) {
                             this.barcodeIndex[product.BARCODE] = product;
+                        }
+                        if (product.PLU) {
+                            this.pluIndex[product.PLU] = product;
                         }
                     });
                     
@@ -676,6 +753,7 @@
                     console.error('Error loading product data:', error);
                     this.showMessage(`Gagal memuat bcd.json: ${error.message}`, 'error');
                     
+                    // Fallback data
                     this.products = [
                         {"PLU": "10000019", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS PUTIH 370g KLG", "BARCODE": "8992702000018"},
                         {"PLU": "10000020", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS CHOCOLATE 370g KLG", "BARCODE": "8992702000063"},
@@ -683,9 +761,14 @@
                     ];
                     
                     this.barcodeIndex = {};
+                    this.pluIndex = {};
+                    
                     this.products.forEach(product => {
                         if (product.BARCODE) {
                             this.barcodeIndex[product.BARCODE] = product;
+                        }
+                        if (product.PLU) {
+                            this.pluIndex[product.PLU] = product;
                         }
                     });
                     
@@ -693,72 +776,65 @@
                 }
             }
 
-            bindEvents() {
-                document.getElementById('start-scanner').addEventListener('click', () => this.startScanner());
-                document.getElementById('stop-scanner').addEventListener('click', () => this.stopScanner());
-                document.getElementById('save-results').addEventListener('click', () => this.saveResults());
-                document.getElementById('cancel-scan').addEventListener('click', () => this.showCancelModal());
-                document.getElementById('show-results').addEventListener('click', () => this.showResults());
-                document.getElementById('back-to-scanner').addEventListener('click', () => this.backToScanner());
+            // Parse multiple PLUs from input
+            parsePLUs(input) {
+                if (!input.trim()) return [];
                 
-                // PLU search events
-                document.getElementById('search-plu').addEventListener('click', () => this.searchByPLU());
-                document.getElementById('plu-input').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.searchByPLU();
-                    }
-                });
-                
-                document.getElementById('confirm-cancel').addEventListener('click', () => this.confirmCancel());
-                document.getElementById('keep-scanning').addEventListener('click', () => this.hideCancelModal());
-                
-                document.getElementById('prev-page').addEventListener('click', () => this.prevPage());
-                document.getElementById('next-page').addEventListener('click', () => this.nextPage());
-                document.getElementById('prev-page-bottom').addEventListener('click', () => this.prevPage());
-                document.getElementById('next-page-bottom').addEventListener('click', () => this.nextPage());
-                
-                document.getElementById('modal').addEventListener('click', (e) => {
-                    if (e.target.id === 'modal') this.hideCancelModal();
-                });
+                // Split by comma, space, or newline and clean up
+                return input.trim()
+                    .split(/[,\s\n\r]+/)
+                    .map(plu => plu.trim())
+                    .filter(plu => plu && /^\d+$/.test(plu))
+                    .filter((plu, index, arr) => arr.indexOf(plu) === index); // Remove duplicates
             }
 
-            async searchByPLU() {
-                const pluInput = document.getElementById('plu-input');
-                const plu = pluInput.value.trim();
+            // Single mode: Search multiple PLUs and display immediately
+            async searchMultiplePLU() {
+                const input = document.getElementById('plu-input').value;
+                const plusArray = this.parsePLUs(input);
                 
-                if (!plu) {
-                    this.showMessage('Masukkan PLU untuk pencarian', 'error');
+                if (plusArray.length === 0) {
+                    this.showMessage('Masukkan PLU yang valid (hanya angka)', 'error');
                     return;
                 }
                 
-                if (!/^\d+$/.test(plu)) {
-                    this.showMessage('PLU harus berupa angka', 'error');
-                    return;
+                this.showMessage(`Mencari ${plusArray.length} produk...`, 'success');
+                
+                for (const plu of plusArray) {
+                    await this.searchAndDisplaySinglePLU(plu);
                 }
                 
-                this.showMessage(`Mencari produk dengan PLU: ${plu}...`, 'success');
-                
+                document.getElementById('plu-input').value = '';
+            }
+
+            async searchAndDisplaySinglePLU(plu) {
                 try {
                     const productData = await this.searchProductByPLU(plu);
                     
                     if (productData) {
-                        // Simulate adding to scanned list
-                        const barcode = productData.barcode || `B${plu}0001`;
-                        
-                        if (!this.scannedBarcodes.includes(barcode)) {
-                            this.scannedBarcodes.push(barcode);
-                            this.updateScannedCount();
-                            this.showMessage(`Produk berhasil ditambahkan: ${productData.productName}`, 'success');
-                            pluInput.value = '';
-                        } else {
-                            this.showMessage(`Produk dengan PLU ${plu} sudah ada dalam daftar`, 'error');
-                        }
+                        this.displaySingleProduct(productData);
                     } else {
-                        this.showMessage(`Produk dengan PLU ${plu} tidak ditemukan`, 'error');
+                        // PLU tidak ditemukan di API, cek di database lokal
+                        const localProduct = this.pluIndex[plu];
+                        if (localProduct) {
+                            const fallbackData = {
+                                plu: localProduct.PLU,
+                                productName: localProduct.NAMA_PRODUK,
+                                originalPrice: null,
+                                finalPrice: null,
+                                discountText: null,
+                                barcode: localProduct.BARCODE,
+                                size: null,
+                                fromLocal: true
+                            };
+                            this.displaySingleProduct(fallbackData);
+                        } else {
+                            this.showMessage(`PLU ${plu} tidak ditemukan`, 'error');
+                        }
                     }
                 } catch (error) {
-                    console.error('Error searching by PLU:', error);
-                    this.showMessage(`Error: ${error.message}`, 'error');
+                    console.error('Error searching PLU:', error);
+                    this.showMessage(`Error mencari PLU ${plu}: ${error.message}`, 'error');
                 }
             }
 
@@ -790,23 +866,26 @@
                         }
                         
                         const data = await response.json();
-                        console.log('PLU Search Response:', data); // Debug log
                         
-                        // Menggunakan struktur response yang benar
                         if (data && data.status === "00" && data.data && data.data.content && data.data.content.length > 0) {
                             const product = data.data.content[0];
                             
                             // Validasi PLU
                             const productPLU = product.plu || '';
                             if (productPLU === plu) {
+                                // Cari barcode di database lokal
+                                const localProduct = this.pluIndex[plu];
+                                const barcode = localProduct ? localProduct.BARCODE : `B${plu}0001`;
+                                
                                 return {
                                     plu: productPLU,
                                     productName: product.productName || 'Tidak diketahui',
                                     originalPrice: product.price || null,
                                     finalPrice: product.finalPrice || null,
                                     discountText: product.discountText || null,
-                                    barcode: product.barcode || `B${plu}0001`,
-                                    size: product.size || null
+                                    barcode: barcode,
+                                    size: product.size || null,
+                                    fromAPI: true
                                 };
                             }
                         }
@@ -816,23 +895,91 @@
                     }
                 }
                 
-                // Jika tidak ditemukan di API, cari di data lokal
-                const localProduct = this.products.find(p => p.PLU === plu);
-                if (localProduct) {
-                    return {
-                        plu: localProduct.PLU,
-                        productName: localProduct.NAMA_PRODUK,
-                        originalPrice: null,
-                        finalPrice: null,
-                        discountText: null,
-                        barcode: localProduct.BARCODE,
-                        size: null
-                    };
-                }
-                
                 return null;
             }
 
+            // Display single product with price (for single mode)
+            displaySingleProduct(productData) {
+                const resultsContainer = document.getElementById('results-container');
+                const productCard = this.createSingleProductCard(productData);
+                resultsContainer.appendChild(productCard);
+                
+                // Scroll to the new product
+                productCard.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            createSingleProductCard(productData) {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                
+                const imageUrl = `https://cdn-klik.klikindomaret.com/klik-catalog/product/${productData.plu}_1.jpg`;
+                const barcodeId = `barcode-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                const priceLoadingId = `price-loading-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                
+                card.innerHTML = `
+                    <div class="plu">PLU: ${productData.plu}</div>
+                    <div class="product-name">${productData.productName}</div>
+                    <img class="product-image" src="${imageUrl}" alt="${productData.productName}" onerror="this.style.display='none'">
+                    <div class="price-container" id="${priceLoadingId}">
+                        ${this.createPriceDisplay(productData)}
+                    </div>
+                    <div class="barcode-container">
+                        <canvas id="${barcodeId}" class="barcode-canvas"></canvas>
+                        <div class="barcode-fallback" id="fallback-${barcodeId}" style="display: none;">
+                            <div style="font-family: 'Courier New', monospace; font-size: 24px; letter-spacing: 2px; margin: 20px 0; padding: 10px; background: #f0f0f0; border: 1px solid #ccc;">
+                                ${productData.barcode}
+                            </div>
+                            <div style="font-size: 14px; color: #666;">Barcode: ${productData.barcode}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Generate barcode
+                setTimeout(() => {
+                    this.generateBarcode(barcodeId, productData.barcode);
+                }, 100);
+                
+                return card;
+            }
+
+            createPriceDisplay(productData) {
+                if (productData.fromLocal) {
+                    return '<div class="price-not-found">Harga tidak tersedia (dari database lokal)</div>';
+                }
+                
+                const { originalPrice, finalPrice, discountText } = productData;
+                const hasDiscount = finalPrice && originalPrice && finalPrice < originalPrice;
+                
+                if (hasDiscount) {
+                    return `
+                        <div class="price-display">
+                            <div class="price-promo">
+                                <div class="original-price">Rp${this.formatPrice(originalPrice)}</div>
+                                <div class="final-price">Rp${this.formatPrice(finalPrice)}</div>
+                                ${discountText ? `<div class="discount-badge">${discountText}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                } else if (originalPrice) {
+                    return `
+                        <div class="price-display">
+                            <div class="regular-price">
+                                <div class="price">Rp${this.formatPrice(originalPrice)}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return '<div class="price-not-found">Harga tidak tersedia</div>';
+                }
+            }
+
+            clearResults() {
+                document.getElementById('results-container').innerHTML = '';
+                this.currentResults = [];
+                this.showMessage('Hasil pencarian dihapus', 'success');
+            }
+
+            // Scanner functions for single mode
             async startScanner() {
                 try {
                     if (this.html5QrcodeScanner) {
@@ -869,7 +1016,7 @@
                     document.getElementById('stop-scanner').disabled = false;
                     document.getElementById('camera-error').classList.remove('show');
                     
-                    this.showMessage('Scanner aktif - Arahkan kamera ke barcode', 'success');
+                    this.showMessage('Scanner aktif - Scan barcode untuk menampilkan produk', 'success');
                     
                 } catch (error) {
                     console.error('Error starting scanner:', error);
@@ -902,137 +1049,231 @@
                 this.scanCooldown = true;
                 setTimeout(() => {
                     this.scanCooldown = false;
+                }, 2000);
+                
+                this.processScannedBarcode(barcode);
+            }
+
+            async processScannedBarcode(barcode) {
+                try {
+                    const product = this.barcodeIndex[barcode];
+                    
+                    if (product) {
+                        // Barcode ditemukan di database, cari harga di API
+                        const productData = await this.searchProductByPLU(product.PLU);
+                        
+                        if (productData) {
+                            this.displaySingleProduct(productData);
+                        } else {
+                            // Tidak ada di API, tampilkan dari database saja
+                            const fallbackData = {
+                                plu: product.PLU,
+                                productName: product.NAMA_PRODUK,
+                                originalPrice: null,
+                                finalPrice: null,
+                                discountText: null,
+                                barcode: product.BARCODE,
+                                size: null,
+                                fromLocal: true
+                            };
+                            this.displaySingleProduct(fallbackData);
+                        }
+                        
+                        this.showMessage(`Barcode ${barcode} berhasil diproses`, 'success');
+                        
+                        if ('vibrate' in navigator) {
+                            navigator.vibrate(200);
+                        }
+                        this.playBeep();
+                    } else {
+                        // Barcode tidak ditemukan di database
+                        this.showMessage(`Barcode ${barcode} tidak ditemukan dalam database`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error processing barcode:', error);
+                    this.showMessage(`Error: ${error.message}`, 'error');
+                }
+            }
+
+            // Bulk mode functions
+            async bulkSearchPLU() {
+                const input = document.getElementById('bulk-plu-input').value;
+                const plusArray = this.parsePLUs(input);
+                
+                if (plusArray.length === 0) {
+                    this.showMessage('Masukkan PLU yang valid', 'error');
+                    return;
+                }
+                
+                this.showMessage(`Menambahkan ${plusArray.length} PLU...`, 'success');
+                
+                for (const plu of plusArray) {
+                    if (!this.bulkScannedBarcodes.includes(plu)) {
+                        this.bulkScannedBarcodes.push(plu);
+                    }
+                }
+                
+                this.updateBulkScannedCount();
+                document.getElementById('bulk-plu-input').value = '';
+            }
+
+            bulkClearAll() {
+                this.bulkScannedBarcodes = [];
+                this.updateBulkScannedCount();
+                document.getElementById('bulk-results-section').classList.add('hidden');
+                this.showMessage('Semua data dihapus', 'success');
+            }
+
+            async startBulkScanner() {
+                try {
+                    if (this.bulkHtml5QrcodeScanner) {
+                        await this.bulkHtml5QrcodeScanner.stop();
+                        this.bulkHtml5QrcodeScanner.clear();
+                    }
+
+                    this.bulkHtml5QrcodeScanner = new Html5Qrcode("bulk-scanner");
+                    
+                    const config = {
+                        fps: 30,
+                        qrbox: { width: 300, height: 150 },
+                        aspectRatio: 1.5,
+                        showTorchButtonIfSupported: true,
+                        showZoomSliderIfSupported: true,
+                        defaultZoomValueIfSupported: 2,
+                        disableFlip: false,
+                        rememberLastUsedCamera: true
+                    };
+
+                    await this.bulkHtml5QrcodeScanner.start(
+                        { facingMode: "environment" },
+                        config,
+                        (decodedText, decodedResult) => {
+                            this.onBulkBarcodeDetected(decodedText);
+                        },
+                        (errorMessage) => {
+                            // Handle scan errors silently
+                        }
+                    );
+
+                    this.isBulkScanning = true;
+                    document.getElementById('bulk-start-scanner').disabled = true;
+                    document.getElementById('bulk-stop-scanner').disabled = false;
+                    document.getElementById('bulk-camera-error').classList.remove('show');
+                    
+                    this.showMessage('Bulk scanner aktif', 'success');
+                    
+                } catch (error) {
+                    console.error('Error starting bulk scanner:', error);
+                    document.getElementById('bulk-camera-error').classList.add('show');
+                    this.showMessage('Gagal memulai bulk scanner', 'error');
+                }
+            }
+
+            async stopBulkScanner() {
+                if (this.bulkHtml5QrcodeScanner && this.isBulkScanning) {
+                    try {
+                        await this.bulkHtml5QrcodeScanner.stop();
+                        this.bulkHtml5QrcodeScanner.clear();
+                        this.bulkHtml5QrcodeScanner = null;
+                    } catch (error) {
+                        console.error('Error stopping bulk scanner:', error);
+                    }
+                    
+                    this.isBulkScanning = false;
+                    document.getElementById('bulk-start-scanner').disabled = false;
+                    document.getElementById('bulk-stop-scanner').disabled = true;
+                    
+                    this.showMessage('Bulk scanner berhenti', 'error');
+                }
+            }
+
+            onBulkBarcodeDetected(barcode) {
+                if (this.bulkScanCooldown) return;
+                
+                this.bulkScanCooldown = true;
+                setTimeout(() => {
+                    this.bulkScanCooldown = false;
                 }, 1500);
                 
-                if (!this.scannedBarcodes.includes(barcode)) {
-                    this.scannedBarcodes.push(barcode);
-                    this.updateScannedCount();
-                    this.showMessage(`Barcode berhasil discan: ${barcode}`, 'success');
+                if (!this.bulkScannedBarcodes.includes(barcode)) {
+                    this.bulkScannedBarcodes.push(barcode);
+                    this.updateBulkScannedCount();
+                    this.showMessage(`Barcode terscan: ${barcode}`, 'success');
                     
                     if ('vibrate' in navigator) {
                         navigator.vibrate(200);
                     }
-                    
                     this.playBeep();
                 } else {
-                    this.showMessage(`Barcode ${barcode} sudah pernah discan`, 'error');
+                    this.showMessage(`Barcode ${barcode} sudah ada`, 'error');
                 }
             }
 
-            playBeep() {
-                try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.value = 800;
-                    oscillator.type = 'square';
-                    
-                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-                    
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.1);
-                } catch (error) {
-                    // Audio not supported or allowed
-                }
+            updateBulkScannedCount() {
+                document.getElementById('bulk-scanned-count').textContent = this.bulkScannedBarcodes.length;
+                document.getElementById('bulk-show-results').disabled = this.bulkScannedBarcodes.length === 0;
             }
 
-            updateScannedCount() {
-                document.getElementById('scanned-count').textContent = this.scannedBarcodes.length;
-                document.getElementById('save-results').disabled = this.scannedBarcodes.length === 0;
-            }
-
-            saveResults() {
-                if (this.scannedBarcodes.length === 0) {
-                    this.showMessage('Tidak ada barcode yang discan', 'error');
+            showBulkResults() {
+                if (this.bulkScannedBarcodes.length === 0) {
+                    this.showMessage('Tidak ada data untuk ditampilkan', 'error');
                     return;
                 }
                 
-                this.stopScanner();
-                document.getElementById('show-results').style.display = 'block';
-                this.showMessage(`${this.scannedBarcodes.length} barcode berhasil disimpan`, 'success');
-            }
-
-            showCancelModal() {
-                document.getElementById('modal').style.display = 'block';
-            }
-
-            hideCancelModal() {
-                document.getElementById('modal').style.display = 'none';
-            }
-
-            confirmCancel() {
-                this.scannedBarcodes = [];
-                this.updateScannedCount();
-                this.stopScanner();
-                document.getElementById('show-results').style.display = 'none';
-                this.hideCancelModal();
-                this.showMessage('Semua scan dibatalkan', 'error');
-            }
-
-            showResults() {
-                if (this.scannedBarcodes.length === 0) {
-                    this.showMessage('Tidak ada hasil untuk ditampilkan', 'error');
-                    return;
-                }
+                document.getElementById('bulk-results-section').classList.remove('hidden');
+                this.bulkCurrentPage = 0;
+                this.renderBulkResults();
                 
-                document.getElementById('scanner-section').style.display = 'none';
-                document.getElementById('results-section').style.display = 'block';
-                document.getElementById('back-to-scanner').style.display = 'block';
-                
-                this.currentPage = 0;
-                this.renderResults();
+                // Scroll to results
+                document.getElementById('bulk-results-section').scrollIntoView({ behavior: 'smooth' });
             }
 
-            backToScanner() {
-                document.getElementById('scanner-section').style.display = 'block';
-                document.getElementById('results-section').style.display = 'none';
-                document.getElementById('back-to-scanner').style.display = 'none';
-            }
-
-            renderResults() {
-                const container = document.getElementById('products-container');
-                const startIndex = this.currentPage * this.productsPerPage;
-                const endIndex = Math.min(startIndex + this.productsPerPage, this.scannedBarcodes.length);
+            renderBulkResults() {
+                const container = document.getElementById('bulk-products-container');
+                const startIndex = this.bulkCurrentPage * this.bulkProductsPerPage;
+                const endIndex = Math.min(startIndex + this.bulkProductsPerPage, this.bulkScannedBarcodes.length);
                 
                 container.innerHTML = '';
                 
                 for (let i = startIndex; i < endIndex; i++) {
-                    const barcode = this.scannedBarcodes[i];
-                    const product = this.barcodeIndex[barcode];
-                    
-                    const productCard = this.createProductCard(barcode, product);
+                    const item = this.bulkScannedBarcodes[i];
+                    const productCard = this.createBulkProductCard(item);
                     container.appendChild(productCard);
                 }
                 
-                this.updatePagination();
+                this.updateBulkPagination();
             }
 
-            createProductCard(barcode, product) {
+            createBulkProductCard(item) {
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 
-                const plu = product ? product.PLU : 'Tidak ditemukan';
-                const productName = product ? product.NAMA_PRODUK : `Produk dengan barcode ${barcode} tidak ditemukan dalam database`;
-                const imageUrl = product ? `https://cdn-klik.klikindomaret.com/klik-catalog/product/${product.PLU}_1.jpg` : '';
+                // Determine if item is PLU or barcode
+                const isPLU = /^\d+$/.test(item) && !this.barcodeIndex[item];
+                let product = null;
+                let plu = '';
+                let barcode = '';
+                let productName = '';
                 
-                const barcodeId = `barcode-${barcode}-${Date.now()}`;
-                const priceLoadingId = `price-loading-${barcode}-${Date.now()}`;
+                if (isPLU) {
+                    plu = item;
+                    product = this.pluIndex[plu];
+                    barcode = product ? product.BARCODE : `B${plu}0001`;
+                    productName = product ? product.NAMA_PRODUK : `Produk dengan PLU ${plu}`;
+                } else {
+                    barcode = item;
+                    product = this.barcodeIndex[barcode];
+                    plu = product ? product.PLU : 'Tidak ditemukan';
+                    productName = product ? product.NAMA_PRODUK : `Produk dengan barcode ${barcode}`;
+                }
+                
+                const imageUrl = plu ? `https://cdn-klik.klikindomaret.com/klik-catalog/product/${plu}_1.jpg` : '';
+                const barcodeId = `bulk-barcode-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                 
                 card.innerHTML = `
                     <div class="plu">PLU: ${plu}</div>
                     <div class="product-name">${productName}</div>
-                    ${product ? `<img class="product-image" src="${imageUrl}" alt="${productName}" onerror="this.style.display='none'">` : ''}
-                    <div class="price-container" id="${priceLoadingId}">
-                        <div class="price-loading">
-                            <div class="loading-spinner"></div>
-                            <span>Memuat harga...</span>
-                        </div>
-                    </div>
+                    ${imageUrl ? `<img class="product-image" src="${imageUrl}" alt="${productName}" onerror="this.style.display='none'">` : ''}
                     <div class="barcode-container">
                         <canvas id="${barcodeId}" class="barcode-canvas"></canvas>
                         <div class="barcode-fallback" id="fallback-${barcodeId}" style="display: none;">
@@ -1044,175 +1285,43 @@
                     </div>
                 `;
                 
+                // Generate barcode
                 setTimeout(() => {
                     this.generateBarcode(barcodeId, barcode);
                 }, 100);
                 
-                if (product && product.PLU) {
-                    this.loadProductPrice(product.PLU, priceLoadingId);
-                }
-                
                 return card;
             }
 
-            async loadProductPrice(plu, priceContainerId) {
-                try {
-                    const priceData = await this.fetchProductPrice(plu);
-                    const priceContainer = document.getElementById(priceContainerId);
-                    
-                    if (!priceContainer) return;
-                    
-                    if (priceData && (priceData.originalPrice || priceData.finalPrice)) {
-                        priceContainer.innerHTML = this.createPriceDisplay(priceData);
-                    } else {
-                        priceContainer.innerHTML = '<div class="price-not-found">Harga tidak tersedia</div>';
-                    }
-                } catch (error) {
-                    console.error('Error loading price:', error);
-                    const priceContainer = document.getElementById(priceContainerId);
-                    if (priceContainer) {
-                        priceContainer.innerHTML = '<div class="price-error">Gagal memuat harga</div>';
-                    }
+            updateBulkPagination() {
+                const totalPages = Math.max(1, Math.ceil(this.bulkScannedBarcodes.length / this.bulkProductsPerPage));
+                const currentPage = this.bulkCurrentPage + 1;
+                
+                document.getElementById('bulk-page-info').textContent = `${currentPage} / ${totalPages}`;
+                document.getElementById('bulk-page-info-bottom').textContent = `${currentPage} / ${totalPages}`;
+                
+                document.getElementById('bulk-prev-page').disabled = this.bulkCurrentPage === 0;
+                document.getElementById('bulk-next-page').disabled = this.bulkCurrentPage >= totalPages - 1;
+                document.getElementById('bulk-prev-page-bottom').disabled = this.bulkCurrentPage === 0;
+                document.getElementById('bulk-next-page-bottom').disabled = this.bulkCurrentPage >= totalPages - 1;
+            }
+
+            bulkPrevPage() {
+                if (this.bulkCurrentPage > 0) {
+                    this.bulkCurrentPage--;
+                    this.renderBulkResults();
                 }
             }
 
-            async fetchProductPrice(plu) {
-                for (let paramIndex = 0; paramIndex < this.parameterSets.length; paramIndex++) {
-                    const params = this.parameterSets[paramIndex];
-                    
-                    try {
-                        const queryParams = new URLSearchParams({
-                            keyword: plu,
-                            page: 0,
-                            size: 3,
-                            ...params
-                        });
-                        
-                        const response = await fetch(`${this.API_URL}?${queryParams}`, {
-                            method: 'GET',
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json',
-                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                                'Referer': 'https://www.klikindomaret.com/',
-                                'Origin': 'https://www.klikindomaret.com'
-                            },
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        
-                        const data = await response.json();
-                        console.log('API Response:', data); // Debug log
-                        
-                        // Menggunakan struktur response yang benar berdasarkan hasil Anda
-                        if (data && data.status === "00" && data.data && data.data.content && data.data.content.length > 0) {
-                            const product = data.data.content[0];
-                            
-                            // Validasi PLU sesuai logik asli
-                            const productPLU = product.plu || '';
-                            if (/^\d+$/.test(plu) && productPLU !== plu) {
-                                continue;
-                            }
-                            
-                            console.log('Found product:', product); // Debug log
-                            
-                            return {
-                                originalPrice: product.price || null,
-                                finalPrice: product.finalPrice || null,
-                                discountText: product.discountText || null,
-                                productName: product.productName || null,
-                                size: product.size || null
-                            };
-                        }
-                    } catch (error) {
-                        console.warn(`Parameter set ${paramIndex + 1} failed:`, error.message);
-                        continue;
-                    }
+            bulkNextPage() {
+                const totalPages = Math.ceil(this.bulkScannedBarcodes.length / this.bulkProductsPerPage);
+                if (this.bulkCurrentPage < totalPages - 1) {
+                    this.bulkCurrentPage++;
+                    this.renderBulkResults();
                 }
-                
-                // Jika semua gagal, gunakan data fallback
-                console.log(`API failed for PLU ${plu}, using fallback data`);
-                return this.getFallbackPrice(plu);
-            }
-            
-            getFallbackPrice(plu) {
-                // Data fallback berdasarkan pattern PLU untuk demo
-                // Dalam implementasi nyata, ini bisa dari database lokal atau cache
-                const pricePatterns = {
-                    // PLU dengan awalan 2 = harga 15-25k
-                    '^2': () => ({
-                        originalPrice: Math.floor(Math.random() * 10000) + 15000,
-                        finalPrice: Math.random() > 0.6 ? Math.floor(Math.random() * 5000) + 10000 : null,
-                        discountText: Math.random() > 0.6 ? `${Math.floor(Math.random() * 30) + 10}% OFF` : null
-                    }),
-                    // PLU dengan awalan 1 = harga 8-18k
-                    '^1': () => ({
-                        originalPrice: Math.floor(Math.random() * 10000) + 8000,
-                        finalPrice: Math.random() > 0.5 ? Math.floor(Math.random() * 5000) + 6000 : null,
-                        discountText: Math.random() > 0.5 ? `${Math.floor(Math.random() * 25) + 15}% OFF` : null
-                    }),
-                    // PLU dengan awalan 3 = harga 20-40k
-                    '^3': () => ({
-                        originalPrice: Math.floor(Math.random() * 20000) + 20000,
-                        finalPrice: Math.random() > 0.7 ? Math.floor(Math.random() * 10000) + 15000 : null,
-                        discountText: Math.random() > 0.7 ? `${Math.floor(Math.random() * 35) + 20}% OFF` : null
-                    }),
-                    // Default pattern
-                    '.*': () => ({
-                        originalPrice: Math.floor(Math.random() * 15000) + 5000,
-                        finalPrice: Math.random() > 0.6 ? Math.floor(Math.random() * 8000) + 4000 : null,
-                        discountText: Math.random() > 0.6 ? `${Math.floor(Math.random() * 40) + 10}% OFF` : null
-                    })
-                };
-                
-                // Cari pattern yang cocok
-                for (const [pattern, generator] of Object.entries(pricePatterns)) {
-                    if (new RegExp(pattern).test(plu)) {
-                        return generator();
-                    }
-                }
-                
-                // Default fallback
-                return {
-                    originalPrice: Math.floor(Math.random() * 15000) + 5000,
-                    finalPrice: null,
-                    discountText: null
-                };
             }
 
-            createPriceDisplay(priceData) {
-                const { originalPrice, finalPrice, discountText } = priceData;
-                const hasDiscount = finalPrice && originalPrice && finalPrice < originalPrice;
-                
-                let priceHtml = '<div class="price-display">';
-                
-                if (hasDiscount) {
-                    priceHtml += `
-                        <div class="price-promo">
-                            <div class="original-price">Rp${this.formatPrice(originalPrice)}</div>
-                            <div class="final-price">Rp${this.formatPrice(finalPrice)}</div>
-                            ${discountText ? `<div class="discount-badge">${discountText}</div>` : ''}
-                        </div>
-                    `;
-                } else {
-                    const displayPrice = originalPrice || finalPrice;
-                    if (displayPrice) {
-                        priceHtml += `
-                            <div class="regular-price">
-                                <div class="price">Rp${this.formatPrice(displayPrice)}</div>
-                            </div>
-                        `;
-                    } else {
-                        priceHtml += '<div class="price-not-found">Harga tidak tersedia</div>';
-                    }
-                }
-                
-                priceHtml += '</div>';
-                return priceHtml;
-            }
-
+            // Utility functions
             formatPrice(price) {
                 if (!price) return '0';
                 return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -1295,31 +1404,25 @@
                 }
             }
 
-            updatePagination() {
-                const totalPages = Math.max(1, Math.ceil(this.scannedBarcodes.length / this.productsPerPage));
-                const currentPage = this.currentPage + 1;
-                
-                document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
-                document.getElementById('page-info-bottom').textContent = `${currentPage} / ${totalPages}`;
-                
-                document.getElementById('prev-page').disabled = this.currentPage === 0;
-                document.getElementById('next-page').disabled = this.currentPage >= totalPages - 1;
-                document.getElementById('prev-page-bottom').disabled = this.currentPage === 0;
-                document.getElementById('next-page-bottom').disabled = this.currentPage >= totalPages - 1;
-            }
-
-            prevPage() {
-                if (this.currentPage > 0) {
-                    this.currentPage--;
-                    this.renderResults();
-                }
-            }
-
-            nextPage() {
-                const totalPages = Math.ceil(this.scannedBarcodes.length / this.productsPerPage);
-                if (this.currentPage < totalPages - 1) {
-                    this.currentPage++;
-                    this.renderResults();
+            playBeep() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'square';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                } catch (error) {
+                    // Audio not supported or allowed
                 }
             }
 
@@ -1335,8 +1438,9 @@
             }
         }
 
+        // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            new BarcodeScanner();
+            new ProductScanner();
         });
     </script>
 </body>
