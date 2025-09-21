@@ -611,6 +611,12 @@
             </div>
             
             <div class="single-product-container" id="single-product-display"></div>
+            
+            <div class="card" style="text-align: center; margin-top: 20px;">
+                <button class="action-btn" id="reset-search-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px 30px; font-size: 16px;">
+                    🗑️ RESET PENCARIAN
+                </button>
+            </div>
         </div>
     </div>
 
@@ -736,6 +742,9 @@
                 document.getElementById('input-plu-btn').addEventListener('click', () => this.showPLUPopup());
                 document.getElementById('search-keyword-btn').addEventListener('click', () => this.showSearchPopup());
                 document.getElementById('scan-barcode-btn').addEventListener('click', () => this.showScannerPopup());
+                
+                // Reset search button
+                document.getElementById('reset-search-btn').addEventListener('click', () => this.resetSearch());
                 
                 // PLU popup events
                 document.getElementById('plu-popup-close').addEventListener('click', () => this.hidePLUPopup());
@@ -1151,7 +1160,7 @@
                 if (this.currentResults.length === 0) return;
                 
                 document.getElementById('results-container').classList.remove('hidden');
-                this.currentResultPage = this.currentResults.length - 1;
+                this.currentResultPage = 0; // Mulai dari slide pertama
                 this.updateResultsDisplay();
                 
                 // Scroll to results
@@ -1496,6 +1505,29 @@
                 setTimeout(() => {
                     statusElement.classList.remove('show');
                 }, 3000);
+            }
+
+            resetSearch() {
+                // Reset all results and state
+                this.currentResults = [];
+                this.currentResultPage = 0;
+                
+                // Hide results container
+                document.getElementById('results-container').classList.add('hidden');
+                
+                // Clear the display
+                document.getElementById('single-product-display').innerHTML = '';
+                
+                // Reset navigation info
+                document.getElementById('result-info').textContent = '0 / 0';
+                document.getElementById('prev-result').disabled = true;
+                document.getElementById('next-result').disabled = true;
+                
+                // Show success message
+                this.showMessage('Pencarian telah direset', 'success');
+                
+                // Scroll back to top
+                document.querySelector('.header').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
