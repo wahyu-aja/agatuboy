@@ -78,6 +78,11 @@
             color: white;
         }
 
+        .btn-search {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+
         .btn-scanner {
             background: linear-gradient(135deg, #2196F3, #1976D2);
             color: white;
@@ -151,7 +156,12 @@
             width: 450px;
         }
 
-        .plu-input {
+        /* Search Input Popup */
+        .search-popup {
+            width: 450px;
+        }
+
+        .plu-input, .search-input {
             width: 100%;
             padding: 15px;
             border: 2px solid #3a4a5c;
@@ -164,9 +174,13 @@
             margin-bottom: 20px;
         }
 
-        .plu-input:focus {
+        .plu-input:focus, .search-input:focus {
             outline: none;
             border-color: #4CAF50;
+        }
+
+        .search-input:focus {
+            border-color: #FF9800;
         }
 
         .popup-actions {
@@ -184,8 +198,13 @@
             font-size: 16px;
         }
 
-        .btn-search {
+        .btn-search-action {
             background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-search-keyword {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
             color: white;
         }
 
@@ -550,7 +569,7 @@
                 margin: 10px;
             }
             
-            .plu-popup, .scanner-popup, .not-found-popup {
+            .plu-popup, .search-popup, .scanner-popup, .not-found-popup {
                 width: calc(100vw - 40px);
             }
             
@@ -565,7 +584,7 @@
     <div class="container">
         <div class="header">
             <h1>📱 Product Scanner by W.A.H.Y.U</h1>
-            <p>Scan barcode atau masukkan PLU untuk melihat produk dan harga</p>
+            <p>Scan barcode, masukkan PLU, atau cari produk berdasarkan keyword</p>
         </div>
 
         <!-- Main Actions -->
@@ -573,6 +592,9 @@
             <div class="main-actions">
                 <button class="action-btn btn-plu" id="input-plu-btn">
                     🔍 INPUT PLU
+                </button>
+                <button class="action-btn btn-search" id="search-keyword-btn">
+                    🔎 CARI PRODUK
                 </button>
                 <button class="action-btn btn-scanner" id="scan-barcode-btn">
                     📷 SCAN BARCODE PRODUK
@@ -599,8 +621,21 @@
             <h3 style="margin-bottom: 20px; color: #64ffda; text-align: center;">🔍 Masukkan PLU</h3>
             <textarea id="plu-input" class="plu-input" placeholder="Masukkan PLU (pisahkan dengan koma, spasi, atau baris baru)&#10;Contoh: 20088719, 10000019&#10;atau:&#10;20088719&#10;10000019"></textarea>
             <div class="popup-actions">
-                <button class="popup-btn btn-search" id="search-plu">🔍 Cari PLU</button>
+                <button class="popup-btn btn-search-action" id="search-plu">🔍 Cari PLU</button>
                 <button class="popup-btn btn-cancel" id="cancel-plu">❌ Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Keyword Popup -->
+    <div class="popup-overlay" id="search-popup-overlay">
+        <div class="popup search-popup">
+            <button class="popup-close" id="search-popup-close">×</button>
+            <h3 style="margin-bottom: 20px; color: #64ffda; text-align: center;">🔎 Cari Produk</h3>
+            <textarea id="search-input" class="search-input" placeholder="Masukkan keyword untuk mencari produk (pisahkan dengan baris baru untuk multiple search)&#10;Contoh: daia&#10;atau:&#10;daia&#10;indomilk&#10;rinso"></textarea>
+            <div class="popup-actions">
+                <button class="popup-btn btn-search-keyword" id="search-keyword">🔎 Cari Produk</button>
+                <button class="popup-btn btn-cancel" id="cancel-search">❌ Batal</button>
             </div>
         </div>
     </div>
@@ -617,7 +652,7 @@
                 <div class="scanning-line"></div>
             </div>
             <div class="popup-actions">
-                <button class="popup-btn btn-search" id="start-scanner">🎥 Mulai Scan</button>
+                <button class="popup-btn btn-search-action" id="start-scanner">🎥 Mulai Scan</button>
                 <button class="popup-btn btn-cancel" id="stop-scanner" disabled>⏹️ Stop Scan</button>
             </div>
         </div>
@@ -699,6 +734,7 @@
             bindEvents() {
                 // Main action buttons
                 document.getElementById('input-plu-btn').addEventListener('click', () => this.showPLUPopup());
+                document.getElementById('search-keyword-btn').addEventListener('click', () => this.showSearchPopup());
                 document.getElementById('scan-barcode-btn').addEventListener('click', () => this.showScannerPopup());
                 
                 // PLU popup events
@@ -708,6 +744,16 @@
                 document.getElementById('plu-input').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter' && e.ctrlKey) {
                         this.searchPLU();
+                    }
+                });
+                
+                // Search popup events
+                document.getElementById('search-popup-close').addEventListener('click', () => this.hideSearchPopup());
+                document.getElementById('cancel-search').addEventListener('click', () => this.hideSearchPopup());
+                document.getElementById('search-keyword').addEventListener('click', () => this.searchKeyword());
+                document.getElementById('search-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        this.searchKeyword();
                     }
                 });
                 
@@ -727,6 +773,9 @@
                 // Close popups when clicking overlay
                 document.getElementById('plu-popup-overlay').addEventListener('click', (e) => {
                     if (e.target === e.currentTarget) this.hidePLUPopup();
+                });
+                document.getElementById('search-popup-overlay').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) this.hideSearchPopup();
                 });
                 document.getElementById('scanner-popup-overlay').addEventListener('click', (e) => {
                     if (e.target === e.currentTarget) this.hideScannerPopup();
@@ -753,6 +802,16 @@
             hidePLUPopup() {
                 document.getElementById('plu-popup-overlay').classList.remove('show');
                 document.getElementById('plu-input').value = '';
+            }
+
+            showSearchPopup() {
+                document.getElementById('search-popup-overlay').classList.add('show');
+                document.getElementById('search-input').focus();
+            }
+
+            hideSearchPopup() {
+                document.getElementById('search-popup-overlay').classList.remove('show');
+                document.getElementById('search-input').value = '';
             }
 
             showScannerPopup() {
@@ -842,6 +901,16 @@
                     .filter((plu, index, arr) => arr.indexOf(plu) === index);
             }
 
+            parseKeywords(input) {
+                if (!input.trim()) return [];
+                
+                return input.trim()
+                    .split(/\n/)
+                    .map(keyword => keyword.trim())
+                    .filter(keyword => keyword.length > 0)
+                    .filter((keyword, index, arr) => arr.indexOf(keyword) === index);
+            }
+
             async searchPLU() {
                 const input = document.getElementById('plu-input').value;
                 const plusArray = this.parsePLUs(input);
@@ -905,6 +974,54 @@
                 }
             }
 
+            async searchKeyword() {
+                const input = document.getElementById('search-input').value;
+                const keywordsArray = this.parseKeywords(input);
+                
+                if (keywordsArray.length === 0) {
+                    this.showMessage('Masukkan keyword yang valid', 'error');
+                    return;
+                }
+                
+                this.hideSearchPopup();
+                this.showLoading(`Mencari produk dengan ${keywordsArray.length} keyword...`);
+                
+                let foundCount = 0;
+                let notFoundKeywords = [];
+                
+                for (const keyword of keywordsArray) {
+                    try {
+                        const products = await this.searchProductsByKeyword(keyword);
+                        
+                        if (products && products.length > 0) {
+                            products.forEach(productData => {
+                                this.addToResults(productData);
+                                foundCount++;
+                            });
+                        } else {
+                            notFoundKeywords.push(keyword);
+                        }
+                    } catch (error) {
+                        console.error(`Error searching keyword ${keyword}:`, error);
+                        notFoundKeywords.push(keyword);
+                    }
+                }
+                
+                this.hideLoading();
+                
+                if (foundCount > 0) {
+                    this.showResults();
+                    this.showMessage(`Ditemukan ${foundCount} produk`, 'success');
+                }
+                
+                if (notFoundKeywords.length > 0) {
+                    this.showNotFoundPopup(
+                        `${notFoundKeywords.length} keyword tidak ditemukan`,
+                        `Keyword: ${notFoundKeywords.join(', ')}`
+                    );
+                }
+            }
+
             async searchProductByPLU(plu) {
                 for (let paramIndex = 0; paramIndex < this.parameterSets.length; paramIndex++) {
                     const params = this.parameterSets[paramIndex];
@@ -961,6 +1078,69 @@
                 }
                 
                 return null;
+            }
+
+            async searchProductsByKeyword(keyword) {
+                const results = [];
+                
+                for (let paramIndex = 0; paramIndex < this.parameterSets.length; paramIndex++) {
+                    const params = this.parameterSets[paramIndex];
+                    
+                    try {
+                        const queryParams = new URLSearchParams({
+                            keyword: keyword,
+                            page: 0,
+                            size: 16,
+                            ...params
+                        });
+                        
+                        const response = await fetch(`${this.API_URL}?${queryParams}`, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                                'Referer': 'https://www.klikindomaret.com/',
+                                'Origin': 'https://www.klikindomaret.com'
+                            },
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data && data.status === "00" && data.data && data.data.content && data.data.content.length > 0) {
+                            for (const product of data.data.content) {
+                                const productPLU = product.plu || '';
+                                const localProduct = this.pluIndex[productPLU];
+                                const barcode = localProduct ? localProduct.BARCODE : `B${productPLU}0001`;
+                                
+                                const productData = {
+                                    plu: productPLU,
+                                    productName: product.productName || 'Tidak diketahui',
+                                    originalPrice: product.price || null,
+                                    finalPrice: product.finalPrice || null,
+                                    discountText: product.discountText || null,
+                                    barcode: barcode,
+                                    size: product.size || null,
+                                    fromAPI: true
+                                };
+                                
+                                results.push(productData);
+                            }
+                            
+                            // Berhasil mendapat data, keluar dari loop
+                            break;
+                        }
+                    } catch (error) {
+                        console.warn(`Parameter set ${paramIndex + 1} failed for keyword ${keyword}:`, error.message);
+                        continue;
+                    }
+                }
+                
+                return results;
             }
 
             addToResults(productData) {
