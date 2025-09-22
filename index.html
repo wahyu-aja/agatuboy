@@ -331,19 +331,17 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Product Display - MODIFIED FOR COMPACT VIEW */
+        /* Product Display */
         .product-card {
             background: linear-gradient(145deg, #ffffff, #f5f5f5);
-            border-radius: 15px;
-            padding: 15px;
+            border-radius: 20px;
+            padding: 30px;
             margin-bottom: 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-align: center;
-            border-left: 4px solid #4CAF50;
+            border-left: 6px solid #4CAF50;
             color: #333;
             animation: slideIn 0.5s ease-out;
-            max-height: 90vh;
-            overflow-y: auto;
         }
 
         @keyframes slideIn {
@@ -358,84 +356,84 @@
         }
 
         .plu {
-            font-size: 20px;
+            font-size: 28px;
             font-weight: bold;
             color: #4CAF50;
-            margin-bottom: 8px;
+            margin-bottom: 15px;
         }
 
         .product-name {
-            font-size: 14px;
+            font-size: 20px;
             color: #333;
-            margin-bottom: 12px;
-            line-height: 1.2;
+            margin-bottom: 20px;
+            line-height: 1.4;
             font-weight: 600;
         }
 
         .product-image {
-            width: 100px;
-            height: 100px;
+            width: 180px;
+            height: 180px;
             object-fit: cover;
-            border-radius: 8px;
-            margin: 8px 0;
-            border: 2px solid #eee;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 3px solid #eee;
         }
 
         .barcode-container {
             background: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
         }
 
         .barcode-canvas {
             max-width: 100%;
             height: auto;
-            border: 1px solid #eee;
-            border-radius: 4px;
+            border: 2px solid #eee;
+            border-radius: 8px;
         }
 
         .barcode-fallback {
             text-align: center;
-            padding: 12px;
+            padding: 25px;
             background: #f8f9fa;
-            border-radius: 6px;
+            border-radius: 10px;
             border: 2px dashed #ccc;
         }
 
-        /* Price Display - MODIFIED FOR COMPACT VIEW */
+        /* Price Display */
         .price-container {
-            margin: 12px 0;
+            margin: 25px 0;
             text-align: center;
         }
 
         .price-promo {
             background: linear-gradient(135deg, #ff6b6b, #ee5a52);
             color: white;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
         }
 
         .original-price {
-            font-size: 12px;
+            font-size: 18px;
             text-decoration: line-through;
             color: #ffcccb;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
 
         .final-price {
-            font-size: 18px;
+            font-size: 28px;
             font-weight: bold;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
         }
 
         .discount-badge {
             background: #4CAF50;
             color: white;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-size: 10px;
+            padding: 6px 15px;
+            border-radius: 25px;
+            font-size: 14px;
             font-weight: bold;
             display: inline-block;
         }
@@ -443,13 +441,13 @@
         .regular-price {
             background: linear-gradient(135deg, #74b9ff, #0984e3);
             color: white;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(116, 185, 255, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(116, 185, 255, 0.3);
         }
 
         .regular-price .price {
-            font-size: 18px;
+            font-size: 28px;
             font-weight: bold;
         }
 
@@ -457,10 +455,10 @@
         .price-error {
             background: #f8f9fa;
             color: #666;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 10px;
             border: 2px dashed #ddd;
-            font-size: 12px;
+            font-size: 16px;
         }
 
         /* Not Found Popup */
@@ -579,27 +577,14 @@
                 font-size: 16px;
                 padding: 18px;
             }
-            
-            .product-image {
-                width: 80px;
-                height: 80px;
-            }
-            
-            .plu {
-                font-size: 18px;
-            }
-            
-            .product-name {
-                font-size: 12px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📱 Product Scanner by W.A.H.Y.U</h1>
-            <p>Scan barcode, masukkan PLU, atau cari produk berdasarkan keyword</p>
+            <h1>📱 CEK HARGA DAN BARCODE =WZ®</h1>
+            <p>Berdasarkan Harga KlikIndomaret...</p>
         </div>
 
         <!-- Main Actions -->
@@ -661,20 +646,18 @@
         </div>
     </div>
 
-    <!-- Scanner Popup - MODIFIED: Auto-start scanner -->
+    <!-- Scanner Popup -->
     <div class="popup-overlay" id="scanner-popup-overlay">
         <div class="popup scanner-popup">
             <button class="popup-close" id="scanner-popup-close">×</button>
             <h3 style="margin-bottom: 20px; color: #64ffda; text-align: center;">📷 Scan Barcode Produk</h3>
-            <div class="scanner-status" id="scanner-status">Memulai kamera...</div>
+            <div class="scanner-status" id="scanner-status">Mempersiapkan kamera...</div>
             <div class="scanner-container">
                 <div id="scanner"></div>
                 <div class="scanner-overlay"></div>
                 <div class="scanning-line"></div>
             </div>
-            <div class="popup-actions">
-                <button class="popup-btn btn-cancel" id="stop-scanner">⏹️ Stop Scan</button>
-            </div>
+            <!-- Tombol Mulai dan Stop Scan dihapus dari sini -->
         </div>
     </div>
 
@@ -780,9 +763,8 @@
                     }
                 });
                 
-                // Scanner popup events - MODIFIED: Auto-start functionality
+                // Scanner popup events
                 document.getElementById('scanner-popup-close').addEventListener('click', () => this.hideScannerPopup());
-                document.getElementById('stop-scanner').addEventListener('click', () => this.stopScanner());
                 
                 // Not found popup events
                 document.getElementById('not-found-popup-close').addEventListener('click', () => this.hideNotFoundPopup());
@@ -836,18 +818,15 @@
                 document.getElementById('search-input').value = '';
             }
 
-            // MODIFIED: Auto-start scanner when popup opens
+            // MODIFIKASI: Fungsi ini sekarang langsung memulai scanner
             showScannerPopup() {
                 document.getElementById('scanner-popup-overlay').classList.add('show');
-                // Auto-start scanner after popup animation
-                setTimeout(() => {
-                    this.startScanner();
-                }, 300);
+                this.startScanner();
             }
 
             hideScannerPopup() {
                 document.getElementById('scanner-popup-overlay').classList.remove('show');
-                this.stopScanner();
+                this.stopScanner(); // stopScanner dipanggil saat popup ditutup
             }
 
             showNotFoundPopup(message, details) {
@@ -1246,10 +1225,10 @@
                     <div class="barcode-container">
                         <canvas id="${barcodeId}" class="barcode-canvas"></canvas>
                         <div class="barcode-fallback" id="fallback-${barcodeId}" style="display: none;">
-                            <div style="font-family: 'Courier New', monospace; font-size: 18px; letter-spacing: 1px; margin: 10px 0; padding: 8px; background: #f0f0f0; border: 1px solid #ccc;">
+                            <div style="font-family: 'Courier New', monospace; font-size: 24px; letter-spacing: 2px; margin: 20px 0; padding: 10px; background: #f0f0f0; border: 1px solid #ccc;">
                                 ${productData.barcode}
                             </div>
-                            <div style="font-size: 12px; color: #666;">Barcode: ${productData.barcode}</div>
+                            <div style="font-size: 14px; color: #666;">Barcode: ${productData.barcode}</div>
                         </div>
                     </div>
                 `;
@@ -1288,21 +1267,17 @@
                 }
             }
 
-            // MODIFIED: Auto-start scanner functionality
+            // MODIFIKASI: Fungsi ini disederhanakan
             async startScanner() {
+                if (this.isScanning) return; // Mencegah pemanggilan ganda
+                
                 try {
                     document.getElementById('scanner-status').textContent = 'Memulai kamera...';
-                    document.getElementById('stop-scanner').disabled = false;
                     
-                    if (this.html5QrcodeScanner) {
-                        await this.html5QrcodeScanner.stop();
-                        this.html5QrcodeScanner.clear();
-                    }
-
                     this.html5QrcodeScanner = new Html5Qrcode("scanner");
                     
                     const config = {
-                        fps: 30,
+                        fps: 60,
                         qrbox: { width: 300, height: 150 },
                         aspectRatio: 1.5,
                         showTorchButtonIfSupported: true,
@@ -1331,21 +1306,22 @@
                     console.error('Error starting scanner:', error);
                     document.getElementById('scanner-status').textContent = 'Gagal memulai kamera - Pastikan izin kamera diberikan';
                     document.getElementById('scanner-status').style.color = '#ff6b6b';
+                    this.isScanning = false;
                 }
             }
 
+            // MODIFIKASI: Fungsi ini disederhanakan
             async stopScanner() {
                 if (this.html5QrcodeScanner && this.isScanning) {
                     try {
                         await this.html5QrcodeScanner.stop();
                         this.html5QrcodeScanner.clear();
                         this.html5QrcodeScanner = null;
+                        this.isScanning = false;
                     } catch (error) {
                         console.error('Error stopping scanner:', error);
                     }
                     
-                    this.isScanning = false;
-                    document.getElementById('stop-scanner').disabled = true;
                     document.getElementById('scanner-status').textContent = 'Scanner berhenti';
                     document.getElementById('scanner-status').style.color = '#666';
                 }
@@ -1428,11 +1404,11 @@
                     try {
                         JsBarcode(canvas, barcode, {
                             format: "EAN13",
-                            width: 1.2,
-                            height: 50,
+                            width: 2,
+                            height: 80,
                             displayValue: true,
-                            fontSize: 12,
-                            margin: 6,
+                            fontSize: 16,
+                            margin: 10,
                             background: "#ffffff",
                             lineColor: "#000000"
                         });
@@ -1446,11 +1422,11 @@
                     try {
                         JsBarcode(canvas, barcode, {
                             format: "CODE128",
-                            width: 1.2,
-                            height: 50,
+                            width: 2,
+                            height: 80,
                             displayValue: true,
-                            fontSize: 12,
-                            margin: 6,
+                            fontSize: 16,
+                            margin: 10,
                             background: "#ffffff",
                             lineColor: "#000000"
                         });
@@ -1463,11 +1439,11 @@
 
                     try {
                         JsBarcode(canvas, barcode, {
-                            width: 1.2,
-                            height: 50,
+                            width: 2,
+                            height: 80,
                             displayValue: true,
-                            fontSize: 12,
-                            margin: 6,
+                            fontSize: 16,
+                            margin: 10,
                             background: "#ffffff",
                             lineColor: "#000000"
                         });
