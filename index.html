@@ -708,14 +708,11 @@
     </style>
 </head>
 <body>
-    <!-- Real-time clock -->
     <div class="realtime-clock" id="realtime-clock"></div>
     
-    <!-- Home button -->
     <button class="home-button" id="home-btn" style="display: none;">🏠</button>
 
     <div class="container">
-        <!-- Main Menu Screen -->
         <div class="main-menu" id="main-menu">
             <div class="header">
                 <h1>📱 CEK HARGA DAN BARCODE =WZ®</h1>
@@ -734,7 +731,6 @@
             </div>
         </div>
 
-        <!-- Price Check Function Screen -->
         <div class="function-screen" id="price-check-screen">
             <div class="header">
                 <h1>💰 CEK HARGA</h1>
@@ -755,7 +751,6 @@
                 </div>
             </div>
 
-            <!-- Price Check Results -->
             <div id="price-results-container" class="hidden">
                 <div class="navigation" id="price-results-nav">
                     <button class="nav-btn" id="price-prev-result" disabled>
@@ -771,14 +766,12 @@
             </div>
         </div>
 
-        <!-- Barcode Check Function Screen -->
         <div class="function-screen" id="barcode-check-screen">
             <div class="header">
                 <h1>📦 CEK BARCODE</h1>
                 <p>Progress tersimpan otomatis</p>
             </div>
 
-            <!-- Reset button for barcode check -->
             <div class="card" style="text-align: center;">
                 <button class="action-btn reset-btn" id="barcode-reset-btn">
                     🗑️ MULAI ULANG
@@ -799,7 +792,6 @@
                 </div>
             </div>
 
-            <!-- Barcode Check Results -->
             <div id="barcode-results-container" class="hidden">
                 <div class="navigation" id="barcode-results-nav">
                     <button class="nav-btn" id="barcode-prev-result" disabled>
@@ -816,7 +808,6 @@
         </div>
     </div>
 
-    <!-- PLU Input Popup -->
     <div class="popup-overlay" id="plu-popup-overlay">
         <div class="popup plu-popup">
             <button class="popup-close" id="plu-popup-close">×</button>
@@ -829,7 +820,6 @@
         </div>
     </div>
 
-    <!-- Search Keyword Popup -->
     <div class="popup-overlay" id="search-popup-overlay">
         <div class="popup search-popup">
             <button class="popup-close" id="search-popup-close">×</button>
@@ -842,7 +832,6 @@
         </div>
     </div>
 
-    <!-- Scanner Popup -->
     <div class="popup-overlay" id="scanner-popup-overlay">
         <div class="popup scanner-popup">
             <button class="popup-close" id="scanner-popup-close">×</button>
@@ -856,7 +845,6 @@
         </div>
     </div>
 
-    <!-- Not Found Popup -->
     <div class="popup-overlay" id="not-found-popup-overlay">
         <div class="popup not-found-popup">
             <button class="popup-close" id="not-found-popup-close">×</button>
@@ -870,13 +858,11 @@
         </div>
     </div>
 
-    <!-- Loading Overlay -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text" id="loading-text">Memproses...</div>
     </div>
 
-    <!-- Status Message -->
     <div class="status-message" id="status-message"></div>
 
     <script>
@@ -1691,6 +1677,11 @@
                 try {
                     this.hideScannerPopup();
                     this.showLoading('Memproses barcode...');
+
+                    // FIX: Reset results if in price check mode
+                    if (this.currentSearchMode === 'price') {
+                        this.priceResults = [];
+                    }
                     
                     const product = this.barcodeIndex[barcode];
                     
@@ -1878,4 +1869,4 @@
         });
     </script>
 </body>
-    </html>
+</html>
