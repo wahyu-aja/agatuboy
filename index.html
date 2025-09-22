@@ -7,21 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
     <style>
-        :root {
-            --primary-glow: #64ffda;
-            --background-start: #1a1a2e;
-            --background-mid: #16213e;
-            --background-end: #0f3460;
-            --card-gradient-start: #253447;
-            --card-gradient-end: #1e2a3a;
-            --border-color: #3a4a5c;
-            --text-color: #e0e6ed;
-            --success-color: #4CAF50;
-            --warning-color: #FF9800;
-            --info-color: #2196F3;
-            --danger-color: #ff6b6b;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -30,10 +15,9 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--background-start) 0%, var(--background-mid) 50%, var(--background-end) 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
-            color: var(--text-color);
-            -webkit-tap-highlight-color: transparent;
+            color: #e0e6ed;
         }
 
         .container {
@@ -45,14 +29,14 @@
 
         .header {
             text-align: center;
-            color: var(--primary-glow);
+            color: #64ffda;
             margin-bottom: 30px;
             text-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
         }
 
         .card {
-            background: linear-gradient(145deg, var(--card-gradient-start), var(--card-gradient-end));
-            border: 1px solid var(--border-color);
+            background: linear-gradient(145deg, #253447, #1e2a3a);
+            border: 1px solid #3a4a5c;
             border-radius: 15px;
             padding: 25px;
             box-shadow: 
@@ -89,9 +73,20 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
 
-        .btn-plu { background: linear-gradient(135deg, var(--success-color), #45a049); color: white; }
-        .btn-search { background: linear-gradient(135deg, var(--warning-color), #F57C00); color: white; }
-        .btn-scanner { background: linear-gradient(135deg, var(--info-color), #1976D2); color: white; }
+        .btn-plu {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+
+        .btn-scanner {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
 
         /* Popup Overlay */
         .popup-overlay {
@@ -117,12 +112,11 @@
         }
 
         .popup {
-            background: linear-gradient(145deg, var(--card-gradient-start), var(--card-gradient-end));
-            border: 2px solid var(--border-color);
+            background: linear-gradient(145deg, #253447, #1e2a3a);
+            border: 2px solid #3a4a5c;
             border-radius: 20px;
             padding: 30px;
-            width: 90vw;
-            max-width: 500px;
+            max-width: 90vw;
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
@@ -142,7 +136,7 @@
             background: none;
             border: none;
             font-size: 30px;
-            color: var(--danger-color);
+            color: #ff6b6b;
             cursor: pointer;
             padding: 5px;
             border-radius: 50%;
@@ -151,37 +145,79 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10;
         }
 
         .popup-close:hover {
             background: rgba(255, 107, 107, 0.2);
         }
 
-        /* Generic Popup Content */
+        /* PLU Input Popup */
+        .plu-popup {
+            width: 450px;
+        }
+
+        /* Search Input Popup */
+        .search-popup {
+            width: 450px;
+        }
+
         .plu-input, .search-input {
             width: 100%;
             padding: 15px;
-            border: 2px solid var(--border-color);
+            border: 2px solid #3a4a5c;
             border-radius: 10px;
             font-size: 16px;
             min-height: 120px;
             resize: vertical;
-            background: var(--card-gradient-end);
-            color: var(--text-color);
+            background: #1e2a3a;
+            color: #e0e6ed;
             margin-bottom: 20px;
         }
 
-        .plu-input:focus { border-color: var(--success-color); outline: none; }
-        .search-input:focus { border-color: var(--warning-color); outline: none; }
+        .plu-input:focus, .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
 
-        .popup-actions { display: flex; gap: 10px; }
-        .popup-btn { flex: 1; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
-        .btn-search-action { background: linear-gradient(135deg, var(--success-color), #45a049); color: white; }
-        .btn-search-keyword { background: linear-gradient(135deg, var(--warning-color), #F57C00); color: white; }
-        .btn-cancel { background: linear-gradient(135deg, var(--danger-color), #ee5a52); color: white; }
+        .search-input:focus {
+            border-color: #FF9800;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .popup-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .btn-search-action {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-search-keyword {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
 
         /* Scanner Popup */
+        .scanner-popup {
+            width: 500px;
+        }
+
         .scanner-container {
             position: relative;
             background: #000;
@@ -190,192 +226,412 @@
             margin-bottom: 20px;
         }
 
-        #scanner { width: 100%; height: 300px; border-radius: 15px; }
+        #scanner {
+            width: 100%;
+            height: 300px;
+            border-radius: 15px;
+        }
+
         .scanner-overlay {
-            position: absolute; top: 50%; left: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            width: 250px; height: 100px;
+            width: 250px;
+            height: 100px;
             border: 3px solid #00ff00;
             border-radius: 10px;
             box-shadow: 0 0 0 99999px rgba(0,0,0,0.3);
             pointer-events: none;
             z-index: 10;
         }
+
         .scanner-overlay::before {
-            content: ''; position: absolute;
-            top: -3px; left: -3px; right: -3px; bottom: -3px;
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
             border: 2px solid rgba(0,255,0,0.5);
             border-radius: 10px;
             animation: pulse 2s infinite;
         }
+
         .scanning-line {
-            position: absolute; top: 50%; left: 10%; right: 10%;
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
             height: 2px;
             background: linear-gradient(90deg, transparent, #00ff00, transparent);
             animation: scanning 2s linear infinite;
             z-index: 15;
         }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        @keyframes scanning { 0% { transform: translateY(-50px); } 100% { transform: translateY(50px); } }
 
-        .scanner-status { text-align: center; font-weight: bold; margin-bottom: 15px; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes scanning {
+            0% { transform: translateY(-50px); }
+            100% { transform: translateY(50px); }
+        }
+
+        .scanner-status {
+            text-align: center;
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
 
         /* Loading Animation */
         .loading-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(26, 26, 46, 0.95);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             z-index: 2000;
-            opacity: 0; visibility: hidden;
+            opacity: 0;
+            visibility: hidden;
             transition: all 0.3s ease;
         }
-        .loading-overlay.show { opacity: 1; visibility: visible; }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .loading-spinner {
-            width: 60px; height: 60px;
+            width: 60px;
+            height: 60px;
             border: 4px solid rgba(100, 255, 218, 0.2);
-            border-top: 4px solid var(--primary-glow);
+            border-top: 4px solid #64ffda;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
         }
-        .loading-text { color: var(--primary-glow); font-size: 18px; font-weight: bold; text-align: center; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Product Results Popup */
-        .results-popup {
-            padding: 10px;
-            overflow: hidden; /* Hide overflowing slider */
+        .loading-text {
+            color: #64ffda;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
         }
-        .product-slider-wrapper {
-            overflow: hidden;
-            position: relative;
-            border-radius: 15px;
-            margin-bottom: 15px;
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        .product-slider {
-            display: flex;
-            transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
+
+        /* Product Display - MODIFIED FOR COMPACT VIEW */
         .product-card {
-            flex: 0 0 100%;
-            width: 100%;
             background: linear-gradient(145deg, #ffffff, #f5f5f5);
             border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             text-align: center;
+            border-left: 4px solid #4CAF50;
             color: #333;
+            animation: slideIn 0.5s ease-out;
+            max-height: 90vh;
             overflow-y: auto;
-            max-height: calc(90vh - 120px);
         }
-        
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .plu { font-size: 24px; font-weight: bold; color: var(--success-color); margin-bottom: 10px; }
-        .product-name { font-size: 20px; color: #333; margin-bottom: 15px; line-height: 1.4; font-weight: 600; }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .plu {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 8px;
+        }
+
+        .product-name {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 12px;
+            line-height: 1.2;
+            font-weight: 600;
+        }
+
         .product-image {
-            width: 220px;
-            height: 220px;
-            object-fit: contain;
-            border-radius: 15px;
-            margin: 15px 0;
-            border: 3px solid #eee;
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 8px 0;
+            border: 2px solid #eee;
         }
-        .barcode-container { background: #f8f9fa; padding: 20px; border-radius: 15px; margin-top: 15px; }
-        .barcode-canvas { max-width: 100%; height: auto; border: 2px solid #eee; border-radius: 8px; }
-        .barcode-fallback { text-align: center; padding: 25px; background: #f8f9fa; border-radius: 10px; border: 2px dashed #ccc; }
 
-        /* Price Display & Animations */
-        @keyframes price-pop-in {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        .barcode-container {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
         }
-        @keyframes promo-pulse {
-            0% { transform: scale(1); box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3); }
-            50% { transform: scale(1.03); box-shadow: 0 10px 30px rgba(255, 107, 107, 0.5); }
-            100% { transform: scale(1); box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3); }
+
+        .barcode-canvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
         }
-        
-        .price-container { margin: 15px 0 0 0; }
-        .price-promo, .regular-price { animation: price-pop-in 0.5s ease-out forwards; }
+
+        .barcode-fallback {
+            text-align: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 2px dashed #ccc;
+        }
+
+        /* Price Display - MODIFIED FOR COMPACT VIEW */
+        .price-container {
+            margin: 12px 0;
+            text-align: center;
+        }
+
         .price-promo {
-            background: linear-gradient(135deg, var(--danger-color), #ee5a52);
-            color: white; padding: 20px; border-radius: 15px;
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
-            animation: promo-pulse 2s infinite, price-pop-in 0.5s ease-out forwards;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
         }
-        .original-price { font-size: 18px; text-decoration: line-through; color: #ffcccb; margin-bottom: 8px; }
-        .final-price { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
-        .discount-badge { background: var(--success-color); color: white; padding: 6px 15px; border-radius: 25px; font-size: 14px; font-weight: bold; display: inline-block; }
-        
+
+        .original-price {
+            font-size: 12px;
+            text-decoration: line-through;
+            color: #ffcccb;
+            margin-bottom: 4px;
+        }
+
+        .final-price {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .discount-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
         .regular-price {
             background: linear-gradient(135deg, #74b9ff, #0984e3);
-            color: white; padding: 20px; border-radius: 15px;
-            box-shadow: 0 6px 20px rgba(116, 185, 255, 0.3);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(116, 185, 255, 0.3);
         }
-        .regular-price .price { font-size: 28px; font-weight: bold; }
-        .price-not-found, .price-error { background: #f8f9fa; color: #666; padding: 15px; border-radius: 10px; border: 2px dashed #ddd; font-size: 16px; }
+
+        .regular-price .price {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .price-not-found,
+        .price-error {
+            background: #f8f9fa;
+            color: #666;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+            font-size: 12px;
+        }
 
         /* Not Found Popup */
-        .not-found-popup { width: 90vw; max-width: 400px; text-align: center; }
-        .not-found-icon { font-size: 60px; margin-bottom: 20px; }
-        .not-found-title { font-size: 24px; color: var(--danger-color); font-weight: bold; margin-bottom: 15px; }
-        .not-found-message { font-size: 16px; color: var(--text-color); margin-bottom: 20px; line-height: 1.5; }
-        .not-found-details { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; font-family: 'Courier New', monospace; font-size: 18px; color: var(--primary-glow); word-break: break-all; }
+        .not-found-popup {
+            width: 400px;
+            text-align: center;
+        }
+
+        .not-found-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .not-found-title {
+            font-size: 24px;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .not-found-message {
+            font-size: 16px;
+            color: #e0e6ed;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .not-found-details {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #64ffda;
+        }
 
         /* Navigation */
-        .navigation { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px 20px 20px; }
-        .nav-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
-            color: white; border: none; border-radius: 25px;
-            cursor: pointer; font-weight: bold;
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
         }
-        .nav-btn:disabled { background: #666; cursor: not-allowed; }
-        .page-info { font-weight: bold; color: var(--text-color); font-size: 16px; }
+
+        .nav-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .nav-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-weight: bold;
+            color: #e0e6ed;
+            font-size: 16px;
+        }
 
         /* Status Message */
         .status-message {
-            position: fixed; top: 20px; left: 50%;
+            position: fixed;
+            top: 20px;
+            left: 50%;
             transform: translateX(-50%);
-            padding: 15px 25px; border-radius: 25px;
-            font-weight: bold; z-index: 3000;
-            opacity: 0; visibility: hidden;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
             transition: all 0.3s ease;
         }
-        .status-message.show { opacity: 1; visibility: visible; }
-        .status-message.success { background: linear-gradient(135deg, var(--success-color), #45a049); color: white; }
-        .status-message.error { background: linear-gradient(135deg, var(--danger-color), #ee5a52); color: white; }
 
-        .hidden { display: none !important; }
+        .status-message.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .status-message.success {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .status-message.error {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .hidden {
+            display: none !important;
+        }
 
         @media (max-width: 480px) {
-            .container { padding: 15px; }
-            .popup { padding: 20px 10px 10px 10px; }
-            .action-btn { font-size: 16px; padding: 18px; }
+            .container {
+                padding: 15px;
+            }
+            
+            .popup {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .plu-popup, .search-popup, .scanner-popup, .not-found-popup {
+                width: calc(100vw - 40px);
+            }
+            
+            .action-btn {
+                font-size: 16px;
+                padding: 18px;
+            }
+            
+            .product-image {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .plu {
+                font-size: 18px;
+            }
+            
+            .product-name {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📱 CEK HARGA by W.A.H.Y.U</h1>
-            <p>Hanya mempermudah,Source Asli sepenuhnya milik KlikIndomaret.ENJOY...</p>
+            <h1>📱 Product Scanner by W.A.H.Y.U</h1>
+            <p>Scan barcode, masukkan PLU, atau cari produk berdasarkan keyword</p>
         </div>
 
         <!-- Main Actions -->
         <div class="card">
             <div class="main-actions">
-                <button class="action-btn btn-plu" id="input-plu-btn">🔍 INPUT PLU</button>
-                <button class="action-btn btn-search" id="search-keyword-btn">🔎 CARI PRODUK</button>
-                <button class="action-btn btn-scanner" id="scan-barcode-btn">📷 SCAN BARCODE PRODUK</button>
+                <button class="action-btn btn-plu" id="input-plu-btn">
+                    🔍 INPUT PLU
+                </button>
+                <button class="action-btn btn-search" id="search-keyword-btn">
+                    🔎 CARI PRODUK
+                </button>
+                <button class="action-btn btn-scanner" id="scan-barcode-btn">
+                    📷 SCAN BARCODE PRODUK
+                </button>
             </div>
         </div>
-        
-        <div class="card" style="text-align: center; margin-top: 20px;">
-            <button class="action-btn" id="reset-search-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px 30px; font-size: 16px;">
-                🗑️ RESET PENCARIAN
-            </button>
+
+        <!-- Results Section -->
+        <div id="results-container" class="hidden">
+            <div class="navigation" id="results-nav">
+                <button class="nav-btn" id="prev-result" disabled>‹ Sebelumnya</button>
+                <span class="page-info" id="result-info">0 / 0</span>
+                <button class="nav-btn" id="next-result" disabled>Selanjutnya ›</button>
+            </div>
+            
+            <div class="single-product-container" id="single-product-display"></div>
+            
+            <div class="card" style="text-align: center; margin-top: 20px;">
+                <button class="action-btn" id="reset-search-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px 30px; font-size: 16px;">
+                    🗑️ RESET PENCARIAN
+                </button>
+            </div>
         </div>
     </div>
 
@@ -383,8 +639,8 @@
     <div class="popup-overlay" id="plu-popup-overlay">
         <div class="popup plu-popup">
             <button class="popup-close" id="plu-popup-close">×</button>
-            <h3 style="margin-bottom: 20px; color: var(--primary-glow); text-align: center;">🔍 Masukkan PLU</h3>
-            <textarea id="plu-input" class="plu-input" placeholder="Masukkan PLU (pisahkan dengan koma, spasi, atau baris baru)&#10;Contoh: 20088719, 10000019"></textarea>
+            <h3 style="margin-bottom: 20px; color: #64ffda; text-align: center;">🔍 Masukkan PLU</h3>
+            <textarea id="plu-input" class="plu-input" placeholder="Masukkan PLU (pisahkan dengan koma, spasi, atau baris baru)&#10;Contoh: 20088719, 10000019&#10;atau:&#10;20088719&#10;10000019"></textarea>
             <div class="popup-actions">
                 <button class="popup-btn btn-search-action" id="search-plu">🔍 Cari PLU</button>
                 <button class="popup-btn btn-cancel" id="cancel-plu">❌ Batal</button>
@@ -396,8 +652,8 @@
     <div class="popup-overlay" id="search-popup-overlay">
         <div class="popup search-popup">
             <button class="popup-close" id="search-popup-close">×</button>
-            <h3 style="margin-bottom: 20px; color: var(--primary-glow); text-align: center;">🔎 Cari Produk</h3>
-            <textarea id="search-input" class="search-input" placeholder="Masukkan keyword (pisahkan dengan baris baru untuk pencarian ganda)&#10;Contoh:&#10;daia&#10;indomilk"></textarea>
+            <h3 style="margin-bottom: 20px; color: #64ffda; text-align: center;">🔎 Cari Produk</h3>
+            <textarea id="search-input" class="search-input" placeholder="Masukkan keyword untuk mencari produk (pisahkan dengan baris baru untuk multiple search)&#10;Contoh: daia&#10;atau:&#10;daia&#10;indomilk&#10;rinso"></textarea>
             <div class="popup-actions">
                 <button class="popup-btn btn-search-keyword" id="search-keyword">🔎 Cari Produk</button>
                 <button class="popup-btn btn-cancel" id="cancel-search">❌ Batal</button>
@@ -405,33 +661,19 @@
         </div>
     </div>
 
-    <!-- Scanner Popup -->
+    <!-- Scanner Popup - MODIFIED: Auto-start scanner -->
     <div class="popup-overlay" id="scanner-popup-overlay">
         <div class="popup scanner-popup">
             <button class="popup-close" id="scanner-popup-close">×</button>
-            <h3 style="margin-bottom: 20px; color: var(--primary-glow); text-align: center;">📷 Arahkan Kamera ke Barcode</h3>
-            <div class="scanner-status" id="scanner-status">Mempersiapkan kamera...</div>
+            <h3 style="margin-bottom: 20px; color: #64ffda; text-align: center;">📷 Scan Barcode Produk</h3>
+            <div class="scanner-status" id="scanner-status">Memulai kamera...</div>
             <div class="scanner-container">
                 <div id="scanner"></div>
                 <div class="scanner-overlay"></div>
                 <div class="scanning-line"></div>
             </div>
-        </div>
-    </div>
-
-    <!-- Results Popup -->
-    <div class="popup-overlay" id="results-popup-overlay">
-        <div class="popup results-popup">
-            <button class="popup-close" id="results-popup-close">×</button>
-            <div class="product-slider-wrapper" id="product-slider-wrapper">
-                <div class="product-slider" id="product-slider">
-                    <!-- Product cards will be inserted here -->
-                </div>
-            </div>
-            <div class="navigation" id="results-nav">
-                <button class="nav-btn" id="prev-result" disabled>‹</button>
-                <span class="page-info" id="result-info">0 / 0</span>
-                <button class="nav-btn" id="next-result" disabled>›</button>
+            <div class="popup-actions">
+                <button class="popup-btn btn-cancel" id="stop-scanner">⏹️ Stop Scan</button>
             </div>
         </div>
     </div>
@@ -442,7 +684,7 @@
             <button class="popup-close" id="not-found-popup-close">×</button>
             <div class="not-found-icon">❌</div>
             <div class="not-found-title">Produk Tidak Ditemukan</div>
-            <div class="not-found-message" id="not-found-message">PLU atau Barcode tidak ditemukan.</div>
+            <div class="not-found-message" id="not-found-message">PLU atau Barcode tidak ditemukan dalam database</div>
             <div class="not-found-details" id="not-found-details"></div>
             <div class="popup-actions">
                 <button class="popup-btn btn-cancel" id="not-found-ok">OK</button>
@@ -468,17 +710,33 @@
                 this.html5QrcodeScanner = null;
                 this.scanCooldown = false;
                 
-                // Swipe functionality state
-                this.touchStartX = 0;
-                this.touchEndX = 0;
-                this.isSwiping = false;
-
                 // API configuration
                 this.API_URL = "https://ap-mc.klikindomaret.com/assets-klikidmsearch/api/get/catalog-xpress/api/webapp/search/result";
                 this.parameterSets = [
-                    { storeCode: "TMKS", latitude: "-4.5502257", longitude: "120.31591", mode: "DELIVERY", districtId: "142601813", isUserFiltered: "false" },
-                    { storeCode: "TYGA", latitude: "-7.42680566136574", longitude: "109.2391143315548", mode: "DELIVERY", districtId: "141308323", isUserFiltered: "false" },
-                    { storeCode: "TJKT", latitude: "-6.1763897", longitude: "106.82667", mode: "DELIVERY", districtId: "141100100", isUserFiltered: "false" }
+                    {
+                        storeCode: "TMKS",
+                        latitude: "-4.5502257",
+                        longitude: "120.31591",
+                        mode: "DELIVERY",
+                        districtId: "142601813",
+                        isUserFiltered: "false"
+                    },
+                    {
+                        storeCode: "TYGA",
+                        latitude: "-7.42680566136574", 
+                        longitude: "109.2391143315548", 
+                        mode: "DELIVERY",
+                        districtId: "141308323", 
+                        isUserFiltered: "false"
+                    },
+                    {
+                        storeCode: "TJKT",
+                        latitude: "-6.1763897",
+                        longitude: "106.82667",
+                        mode: "DELIVERY",
+                        districtId: "141100100",
+                        isUserFiltered: "false"
+                    }
                 ];
                 
                 this.products = [];
@@ -502,355 +760,577 @@
                 // Reset search button
                 document.getElementById('reset-search-btn').addEventListener('click', () => this.resetSearch());
                 
-                // Popups
+                // PLU popup events
                 document.getElementById('plu-popup-close').addEventListener('click', () => this.hidePLUPopup());
                 document.getElementById('cancel-plu').addEventListener('click', () => this.hidePLUPopup());
                 document.getElementById('search-plu').addEventListener('click', () => this.searchPLU());
-                document.getElementById('plu-input').addEventListener('keypress', (e) => { if (e.key === 'Enter' && e.ctrlKey) this.searchPLU(); });
-
+                document.getElementById('plu-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        this.searchPLU();
+                    }
+                });
+                
+                // Search popup events
                 document.getElementById('search-popup-close').addEventListener('click', () => this.hideSearchPopup());
                 document.getElementById('cancel-search').addEventListener('click', () => this.hideSearchPopup());
                 document.getElementById('search-keyword').addEventListener('click', () => this.searchKeyword());
-                document.getElementById('search-input').addEventListener('keypress', (e) => { if (e.key === 'Enter' && e.ctrlKey) this.searchKeyword(); });
-
-                document.getElementById('scanner-popup-close').addEventListener('click', () => this.hideScannerPopup());
+                document.getElementById('search-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        this.searchKeyword();
+                    }
+                });
                 
-                document.getElementById('results-popup-close').addEventListener('click', () => this.hideResultsPopup());
-
+                // Scanner popup events - MODIFIED: Auto-start functionality
+                document.getElementById('scanner-popup-close').addEventListener('click', () => this.hideScannerPopup());
+                document.getElementById('stop-scanner').addEventListener('click', () => this.stopScanner());
+                
+                // Not found popup events
                 document.getElementById('not-found-popup-close').addEventListener('click', () => this.hideNotFoundPopup());
                 document.getElementById('not-found-ok').addEventListener('click', () => this.hideNotFoundPopup());
                 
-                // Navigation
+                // Navigation events
                 document.getElementById('prev-result').addEventListener('click', () => this.prevResult());
                 document.getElementById('next-result').addEventListener('click', () => this.nextResult());
                 
-                // Swipe listeners for results
-                const sliderWrapper = document.getElementById('product-slider-wrapper');
-                sliderWrapper.addEventListener('touchstart', (e) => this.handleTouchStart(e));
-                sliderWrapper.addEventListener('touchmove', (e) => this.handleTouchMove(e));
-                sliderWrapper.addEventListener('touchend', () => this.handleTouchEnd());
-
-                // Close popups on overlay click
-                this.bindOverlayClose('plu-popup-overlay', () => this.hidePLUPopup());
-                this.bindOverlayClose('search-popup-overlay', () => this.hideSearchPopup());
-                this.bindOverlayClose('scanner-popup-overlay', () => this.hideScannerPopup());
-                this.bindOverlayClose('results-popup-overlay', () => this.hideResultsPopup());
-                this.bindOverlayClose('not-found-popup-overlay', () => this.hideNotFoundPopup());
-            }
-            
-            bindOverlayClose(overlayId, closeFunction) {
-                 document.getElementById(overlayId).addEventListener('click', (e) => {
-                    if (e.target.id === overlayId) closeFunction();
+                // Close popups when clicking overlay
+                document.getElementById('plu-popup-overlay').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) this.hidePLUPopup();
+                });
+                document.getElementById('search-popup-overlay').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) this.hideSearchPopup();
+                });
+                document.getElementById('scanner-popup-overlay').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) this.hideScannerPopup();
+                });
+                document.getElementById('not-found-popup-overlay').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) this.hideNotFoundPopup();
                 });
             }
 
-            // --- Popup Management ---
             showLoading(text = 'Memproses...') {
                 document.getElementById('loading-text').textContent = text;
                 document.getElementById('loading-overlay').classList.add('show');
             }
-            hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); }
-            showPLUPopup() { document.getElementById('plu-popup-overlay').classList.add('show'); document.getElementById('plu-input').focus(); }
-            hidePLUPopup() { document.getElementById('plu-popup-overlay').classList.remove('show'); document.getElementById('plu-input').value = ''; }
-            showSearchPopup() { document.getElementById('search-popup-overlay').classList.add('show'); document.getElementById('search-input').focus(); }
-            hideSearchPopup() { document.getElementById('search-popup-overlay').classList.remove('show'); document.getElementById('search-input').value = ''; }
+
+            hideLoading() {
+                document.getElementById('loading-overlay').classList.remove('show');
+            }
+
+            showPLUPopup() {
+                document.getElementById('plu-popup-overlay').classList.add('show');
+                document.getElementById('plu-input').focus();
+            }
+
+            hidePLUPopup() {
+                document.getElementById('plu-popup-overlay').classList.remove('show');
+                document.getElementById('plu-input').value = '';
+            }
+
+            showSearchPopup() {
+                document.getElementById('search-popup-overlay').classList.add('show');
+                document.getElementById('search-input').focus();
+            }
+
+            hideSearchPopup() {
+                document.getElementById('search-popup-overlay').classList.remove('show');
+                document.getElementById('search-input').value = '';
+            }
+
+            // MODIFIED: Auto-start scanner when popup opens
             showScannerPopup() {
                 document.getElementById('scanner-popup-overlay').classList.add('show');
-                this.startScanner(); // Activate scanner immediately
+                // Auto-start scanner after popup animation
+                setTimeout(() => {
+                    this.startScanner();
+                }, 300);
             }
+
             hideScannerPopup() {
                 document.getElementById('scanner-popup-overlay').classList.remove('show');
                 this.stopScanner();
             }
-            showResultsPopup() { document.getElementById('results-popup-overlay').classList.add('show'); }
-            hideResultsPopup() { document.getElementById('results-popup-overlay').classList.remove('show'); }
+
             showNotFoundPopup(message, details) {
                 document.getElementById('not-found-message').textContent = message;
                 document.getElementById('not-found-details').textContent = details;
                 document.getElementById('not-found-popup-overlay').classList.add('show');
             }
-            hideNotFoundPopup() { document.getElementById('not-found-popup-overlay').classList.remove('show'); }
 
-            // --- Data Loading & Parsing ---
+            hideNotFoundPopup() {
+                document.getElementById('not-found-popup-overlay').classList.remove('show');
+            }
+
             async loadProductData() {
                 try {
                     this.showLoading('Memuat data produk...');
+                    
                     const response = await fetch('./bcd.json');
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     
                     this.products = await response.json();
-                    if (!Array.isArray(this.products)) throw new Error('Format data JSON tidak valid');
                     
-                    this.products.forEach(p => {
-                        if (p.BARCODE) this.barcodeIndex[p.BARCODE] = p;
-                        if (p.PLU) this.pluIndex[p.PLU] = p;
+                    if (!Array.isArray(this.products)) {
+                        throw new Error('Format data JSON tidak valid');
+                    }
+                    
+                    this.barcodeIndex = {};
+                    this.pluIndex = {};
+                    
+                    this.products.forEach(product => {
+                        if (product.BARCODE) {
+                            this.barcodeIndex[product.BARCODE] = product;
+                        }
+                        if (product.PLU) {
+                            this.pluIndex[product.PLU] = product;
+                        }
                     });
                     
                     this.hideLoading();
                     this.showMessage(`Data produk berhasil dimuat: ${this.products.length} item`, 'success');
+                    console.log(`Loaded ${this.products.length} products from bcd.json`);
+                    
                 } catch (error) {
                     console.error('Error loading product data:', error);
                     this.hideLoading();
-                    this.showMessage('Gagal memuat bcd.json, gunakan data cadangan.', 'error');
+                    
                     // Fallback data
                     this.products = [
                         {"PLU": "10000019", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS PUTIH 370g KLG", "BARCODE": "8992702000018"},
-                        {"PLU": "10000020", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS CHOCOLATE 370g KLG", "BARCODE": "8992702000063"}
+                        {"PLU": "10000020", "NAMA_PRODUK": "INDOMILK,SUSU KENTAL MANIS CHOCOLATE 370g KLG", "BARCODE": "8992702000063"},
+                        {"PLU": "10000021", "NAMA_PRODUK": "CAP ENAK,KENTAL MANIS PUTIH 370g KLG", "BARCODE": "8992702000025"}
                     ];
-                    this.products.forEach(p => {
-                        if (p.BARCODE) this.barcodeIndex[p.BARCODE] = p;
-                        if (p.PLU) this.pluIndex[p.PLU] = p;
+                    
+                    this.barcodeIndex = {};
+                    this.pluIndex = {};
+                    
+                    this.products.forEach(product => {
+                        if (product.BARCODE) {
+                            this.barcodeIndex[product.BARCODE] = product;
+                        }
+                        if (product.PLU) {
+                            this.pluIndex[product.PLU] = product;
+                        }
                     });
+                    
+                    this.showMessage('Menggunakan data sample karena bcd.json tidak ditemukan', 'error');
                 }
             }
 
-            parseInput(input, separator) {
+            parsePLUs(input) {
                 if (!input.trim()) return [];
-                return input.trim().split(separator)
-                    .map(item => item.trim())
-                    .filter(item => item)
-                    .filter((item, index, arr) => arr.indexOf(item) === index);
-            }
-
-            // --- Search Logic ---
-            async searchPLU() {
-                const plusArray = this.parseInput(document.getElementById('plu-input').value, /[,\s\n\r]+/);
-                if (plusArray.length === 0) return this.showMessage('Masukkan PLU yang valid', 'error');
-                this.hidePLUPopup();
-                await this.performSearch(plusArray, this.findProductByPlu.bind(this), "PLU");
-            }
-
-            async searchKeyword() {
-                const keywordsArray = this.parseInput(document.getElementById('search-input').value, /\n/);
-                if (keywordsArray.length === 0) return this.showMessage('Masukkan keyword yang valid', 'error');
-                this.hideSearchPopup();
-                await this.performSearch(keywordsArray, this.searchProductsByKeyword.bind(this), "Keyword");
-            }
-
-            async performSearch(items, searchFunction, itemType) {
-                this.resetSearch(false);
-                this.showLoading(`Mencari ${items.length} ${itemType}...`);
                 
-                let foundItems = [];
-                let notFoundItems = [];
+                return input.trim()
+                    .split(/[,\s\n\r]+/)
+                    .map(plu => plu.trim())
+                    .filter(plu => plu && /^\d+$/.test(plu))
+                    .filter((plu, index, arr) => arr.indexOf(plu) === index);
+            }
 
-                for (const item of items) {
+            parseKeywords(input) {
+                if (!input.trim()) return [];
+                
+                return input.trim()
+                    .split(/\n/)
+                    .map(keyword => keyword.trim())
+                    .filter(keyword => keyword.length > 0)
+                    .filter((keyword, index, arr) => arr.indexOf(keyword) === index);
+            }
+
+            async searchPLU() {
+                const input = document.getElementById('plu-input').value;
+                const plusArray = this.parsePLUs(input);
+                
+                if (plusArray.length === 0) {
+                    this.showMessage('Masukkan PLU yang valid (hanya angka)', 'error');
+                    return;
+                }
+                
+                this.hidePLUPopup();
+                this.showLoading(`Mencari ${plusArray.length} produk...`);
+                
+                let foundCount = 0;
+                let notFoundPLUs = [];
+                
+                for (const plu of plusArray) {
                     try {
-                        const results = await searchFunction(item);
-                        if (results && results.length > 0) {
-                            foundItems.push(...results);
+                        const productData = await this.searchProductByPLU(plu);
+                        
+                        if (productData) {
+                            this.addToResults(productData);
+                            foundCount++;
                         } else {
-                            notFoundItems.push(item);
+                            // Cek di database lokal
+                            const localProduct = this.pluIndex[plu];
+                            if (localProduct) {
+                                const fallbackData = {
+                                    plu: localProduct.PLU,
+                                    productName: localProduct.NAMA_PRODUK,
+                                    originalPrice: null,
+                                    finalPrice: null,
+                                    discountText: null,
+                                    barcode: localProduct.BARCODE,
+                                    size: null,
+                                    fromLocal: true
+                                };
+                                this.addToResults(fallbackData);
+                                foundCount++;
+                            } else {
+                                notFoundPLUs.push(plu);
+                            }
                         }
                     } catch (error) {
-                        console.error(`Error searching ${itemType} ${item}:`, error);
-                        notFoundItems.push(item);
+                        console.error(`Error searching PLU ${plu}:`, error);
+                        notFoundPLUs.push(plu);
                     }
                 }
-
+                
                 this.hideLoading();
                 
-                if (foundItems.length > 0) {
-                    this.currentResults = foundItems;
+                if (foundCount > 0) {
                     this.showResults();
-                    this.showMessage(`Ditemukan ${foundItems.length} produk`, 'success');
+                    this.showMessage(`Ditemukan ${foundCount} produk`, 'success');
                 }
                 
-                if (notFoundItems.length > 0) {
+                if (notFoundPLUs.length > 0) {
                     this.showNotFoundPopup(
-                        `${notFoundItems.length} ${itemType} tidak ditemukan`,
-                        `${itemType}: ${notFoundItems.join(', ')}`
+                        `${notFoundPLUs.length} PLU tidak ditemukan`,
+                        `PLU: ${notFoundPLUs.join(', ')}`
                     );
                 }
             }
 
-            async findProductByPlu(plu) {
-                const apiProduct = await this.searchApiByPlu(plu);
-                if (apiProduct) return [apiProduct];
-
-                const localProduct = this.pluIndex[plu];
-                if (localProduct) {
-                    return [{
-                        plu: localProduct.PLU,
-                        productName: localProduct.NAMA_PRODUK,
-                        barcode: localProduct.BARCODE,
-                        fromLocal: true
-                    }];
+            async searchKeyword() {
+                const input = document.getElementById('search-input').value;
+                const keywordsArray = this.parseKeywords(input);
+                
+                if (keywordsArray.length === 0) {
+                    this.showMessage('Masukkan keyword yang valid', 'error');
+                    return;
                 }
-                return null;
-            }
-            
-            async makeApiRequest(queryParams) {
-                for (const params of this.parameterSets) {
-                     try {
-                        const fullParams = new URLSearchParams({ ...queryParams, ...params });
-                        const response = await fetch(`${this.API_URL}?${fullParams}`);
-                        if (!response.ok) continue;
-                        const data = await response.json();
-                        if (data && data.status === "00" && data.data?.content?.length > 0) {
-                            return data.data.content;
+                
+                this.hideSearchPopup();
+                this.showLoading(`Mencari produk dengan ${keywordsArray.length} keyword...`);
+                
+                let foundCount = 0;
+                let notFoundKeywords = [];
+                
+                for (const keyword of keywordsArray) {
+                    try {
+                        const products = await this.searchProductsByKeyword(keyword);
+                        
+                        if (products && products.length > 0) {
+                            products.forEach(productData => {
+                                this.addToResults(productData);
+                                foundCount++;
+                            });
+                        } else {
+                            notFoundKeywords.push(keyword);
                         }
                     } catch (error) {
-                        console.warn('API request failed for a parameter set:', error.message);
+                        console.error(`Error searching keyword ${keyword}:`, error);
+                        notFoundKeywords.push(keyword);
                     }
                 }
-                return null;
+                
+                this.hideLoading();
+                
+                if (foundCount > 0) {
+                    this.showResults();
+                    this.showMessage(`Ditemukan ${foundCount} produk`, 'success');
+                }
+                
+                if (notFoundKeywords.length > 0) {
+                    this.showNotFoundPopup(
+                        `${notFoundKeywords.length} keyword tidak ditemukan`,
+                        `Keyword: ${notFoundKeywords.join(', ')}`
+                    );
+                }
             }
 
-            formatApiProduct(product) {
-                const localProduct = this.pluIndex[product.plu];
-                return {
-                    plu: product.plu,
-                    productName: product.productName || 'Tidak diketahui',
-                    originalPrice: product.price || null,
-                    finalPrice: product.finalPrice || null,
-                    discountText: product.discountText || null,
-                    barcode: localProduct ? localProduct.BARCODE : `B${product.plu}0001`,
-                    fromAPI: true
-                };
-            }
-            
-            async searchApiByPlu(plu) {
-                const content = await this.makeApiRequest({ keyword: plu, page: 0, size: 3 });
-                if (content && content[0]?.plu === plu) {
-                    return this.formatApiProduct(content[0]);
+            async searchProductByPLU(plu) {
+                for (let paramIndex = 0; paramIndex < this.parameterSets.length; paramIndex++) {
+                    const params = this.parameterSets[paramIndex];
+                    
+                    try {
+                        const queryParams = new URLSearchParams({
+                            keyword: plu,
+                            page: 0,
+                            size: 3,
+                            ...params
+                        });
+                        
+                        const response = await fetch(`${this.API_URL}?${queryParams}`, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                                'Referer': 'https://www.klikindomaret.com/',
+                                'Origin': 'https://www.klikindomaret.com'
+                            },
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data && data.status === "00" && data.data && data.data.content && data.data.content.length > 0) {
+                            const product = data.data.content[0];
+                            
+                            const productPLU = product.plu || '';
+                            if (productPLU === plu) {
+                                const localProduct = this.pluIndex[plu];
+                                const barcode = localProduct ? localProduct.BARCODE : `B${plu}0001`;
+                                
+                                return {
+                                    plu: productPLU,
+                                    productName: product.productName || 'Tidak diketahui',
+                                    originalPrice: product.price || null,
+                                    finalPrice: product.finalPrice || null,
+                                    discountText: product.discountText || null,
+                                    barcode: barcode,
+                                    size: product.size || null,
+                                    fromAPI: true
+                                };
+                            }
+                        }
+                    } catch (error) {
+                        console.warn(`Parameter set ${paramIndex + 1} failed:`, error.message);
+                        continue;
+                    }
                 }
+                
                 return null;
             }
 
             async searchProductsByKeyword(keyword) {
-                const content = await this.makeApiRequest({ keyword: keyword, page: 0, size: 16 });
-                return content ? content.map(p => this.formatApiProduct(p)) : null;
+                const results = [];
+                
+                for (let paramIndex = 0; paramIndex < this.parameterSets.length; paramIndex++) {
+                    const params = this.parameterSets[paramIndex];
+                    
+                    try {
+                        const queryParams = new URLSearchParams({
+                            keyword: keyword,
+                            page: 0,
+                            size: 16,
+                            ...params
+                        });
+                        
+                        const response = await fetch(`${this.API_URL}?${queryParams}`, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                                'Referer': 'https://www.klikindomaret.com/',
+                                'Origin': 'https://www.klikindomaret.com'
+                            },
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data && data.status === "00" && data.data && data.data.content && data.data.content.length > 0) {
+                            for (const product of data.data.content) {
+                                const productPLU = product.plu || '';
+                                const localProduct = this.pluIndex[productPLU];
+                                const barcode = localProduct ? localProduct.BARCODE : `B${productPLU}0001`;
+                                
+                                const productData = {
+                                    plu: productPLU,
+                                    productName: product.productName || 'Tidak diketahui',
+                                    originalPrice: product.price || null,
+                                    finalPrice: product.finalPrice || null,
+                                    discountText: product.discountText || null,
+                                    barcode: barcode,
+                                    size: product.size || null,
+                                    fromAPI: true
+                                };
+                                
+                                results.push(productData);
+                            }
+                            
+                            // Berhasil mendapat data, keluar dari loop
+                            break;
+                        }
+                    } catch (error) {
+                        console.warn(`Parameter set ${paramIndex + 1} failed for keyword ${keyword}:`, error.message);
+                        continue;
+                    }
+                }
+                
+                return results;
             }
 
-            // --- Results Display & Navigation ---
+            addToResults(productData) {
+                this.currentResults.push(productData);
+            }
+
             showResults() {
                 if (this.currentResults.length === 0) return;
-                this.currentResultPage = 0;
-                this.buildResultsSlider();
-                this.updateNavControls();
-                this.showResultsPopup();
-                this.slideToPage(0, 'auto');
+                
+                document.getElementById('results-container').classList.remove('hidden');
+                this.currentResultPage = 0; // Mulai dari slide pertama
+                this.updateResultsDisplay();
+                
+                // Scroll to results
+                setTimeout(() => {
+                    document.getElementById('results-container').scrollIntoView({ behavior: 'smooth' });
+                }, 100);
             }
 
-            buildResultsSlider() {
-                const slider = document.getElementById('product-slider');
-                slider.innerHTML = ''; // Clear previous results
-                this.currentResults.forEach(result => {
-                    const card = this.createProductCard(result);
-                    slider.appendChild(card);
-                });
-            }
-
-            updateNavControls() {
-                const info = document.getElementById('result-info');
+            updateResultsDisplay() {
+                const container = document.getElementById('single-product-display');
+                const navInfo = document.getElementById('result-info');
                 const prevBtn = document.getElementById('prev-result');
                 const nextBtn = document.getElementById('next-result');
-                const nav = document.getElementById('results-nav');
-
-                const total = this.currentResults.length;
-                info.textContent = `${this.currentResultPage + 1} / ${total}`;
-                prevBtn.disabled = this.currentResultPage === 0;
-                nextBtn.disabled = this.currentResultPage >= total - 1;
-                nav.style.display = total > 1 ? 'flex' : 'none';
-            }
-            
-            slideToPage(pageIndex, behavior = 'smooth') {
-                const slider = document.getElementById('product-slider');
-                const offset = pageIndex * -100;
-                slider.style.transition = behavior === 'smooth' ? 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)' : 'none';
-                slider.style.transform = `translateX(${offset}%)`;
-                this.currentResultPage = pageIndex;
-                this.updateNavControls();
-            }
-
-            prevResult() { if (this.currentResultPage > 0) this.slideToPage(this.currentResultPage - 1); }
-            nextResult() { if (this.currentResultPage < this.currentResults.length - 1) this.slideToPage(this.currentResultPage + 1); }
-
-            handleTouchStart(e) { this.touchStartX = e.touches[0].clientX; this.isSwiping = true; }
-            handleTouchMove(e) { if(this.isSwiping) this.touchEndX = e.touches[0].clientX; }
-            handleTouchEnd() {
-                if (!this.isSwiping) return;
-                const swipeThreshold = 50; // min pixels to swipe
-                if (this.touchStartX - this.touchEndX > swipeThreshold) {
-                    this.nextResult(); // Swiped left
-                } else if (this.touchEndX - this.touchStartX > swipeThreshold) {
-                    this.prevResult(); // Swiped right
+                
+                if (this.currentResults.length === 0) {
+                    container.innerHTML = '';
+                    navInfo.textContent = '0 / 0';
+                    prevBtn.disabled = true;
+                    nextBtn.disabled = true;
+                    return;
                 }
-                this.isSwiping = false;
+                
+                const currentResult = this.currentResults[this.currentResultPage];
+                const productCard = this.createProductCard(currentResult);
+                container.innerHTML = '';
+                container.appendChild(productCard);
+                
+                navInfo.textContent = `${this.currentResultPage + 1} / ${this.currentResults.length}`;
+                prevBtn.disabled = this.currentResultPage === 0;
+                nextBtn.disabled = this.currentResultPage === this.currentResults.length - 1;
+                
+                // Show navigation if more than one result
+                document.getElementById('results-nav').style.display = 
+                    this.currentResults.length > 1 ? 'flex' : 'none';
             }
 
-            // --- Card Creation ---
+            prevResult() {
+                if (this.currentResultPage > 0) {
+                    this.currentResultPage--;
+                    this.updateResultsDisplay();
+                }
+            }
+
+            nextResult() {
+                if (this.currentResultPage < this.currentResults.length - 1) {
+                    this.currentResultPage++;
+                    this.updateResultsDisplay();
+                }
+            }
+
             createProductCard(productData) {
                 const card = document.createElement('div');
                 card.className = 'product-card';
+                
                 const imageUrl = `https://cdn-klik.klikindomaret.com/klik-catalog/product/${productData.plu}_1.jpg`;
-                const barcodeId = `barcode-${productData.plu}-${Math.random()}`;
+                const barcodeId = `barcode-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                 
                 card.innerHTML = `
                     <div class="plu">PLU: ${productData.plu}</div>
                     <div class="product-name">${productData.productName}</div>
                     <img class="product-image" src="${imageUrl}" alt="${productData.productName}" onerror="this.style.display='none'">
-                    <div class="price-container">${this.createPriceDisplay(productData)}</div>
+                    <div class="price-container">
+                        ${this.createPriceDisplay(productData)}
+                    </div>
                     <div class="barcode-container">
                         <canvas id="${barcodeId}" class="barcode-canvas"></canvas>
                         <div class="barcode-fallback" id="fallback-${barcodeId}" style="display: none;">
-                            <div style="font-family: 'Courier New', monospace; font-size: 18px; letter-spacing: 1px; padding: 10px; background: #f0f0f0;">
+                            <div style="font-family: 'Courier New', monospace; font-size: 18px; letter-spacing: 1px; margin: 10px 0; padding: 8px; background: #f0f0f0; border: 1px solid #ccc;">
                                 ${productData.barcode}
                             </div>
+                            <div style="font-size: 12px; color: #666;">Barcode: ${productData.barcode}</div>
                         </div>
                     </div>
                 `;
-                setTimeout(() => this.generateBarcode(barcodeId, productData.barcode), 100);
+                
+                setTimeout(() => {
+                    this.generateBarcode(barcodeId, productData.barcode);
+                }, 100);
+                
                 return card;
             }
 
-            createPriceDisplay({ fromLocal, originalPrice, finalPrice, discountText }) {
-                if (fromLocal) return '<div class="price-not-found">Harga tidak tersedia (data lokal)</div>';
+            createPriceDisplay(productData) {
+                if (productData.fromLocal) {
+                    return '<div class="price-not-found">Harga tidak tersedia (dari database lokal)</div>';
+                }
+                
+                const { originalPrice, finalPrice, discountText } = productData;
                 const hasDiscount = finalPrice && originalPrice && finalPrice < originalPrice;
+                
                 if (hasDiscount) {
                     return `
                         <div class="price-promo">
                             <div class="original-price">Rp${this.formatPrice(originalPrice)}</div>
                             <div class="final-price">Rp${this.formatPrice(finalPrice)}</div>
                             ${discountText ? `<div class="discount-badge">${discountText}</div>` : ''}
-                        </div>`;
+                        </div>
+                    `;
                 } else if (originalPrice) {
-                    return `<div class="regular-price"><div class="price">Rp${this.formatPrice(originalPrice)}</div></div>`;
+                    return `
+                        <div class="regular-price">
+                            <div class="price">Rp${this.formatPrice(originalPrice)}</div>
+                        </div>
+                    `;
+                } else {
+                    return '<div class="price-not-found">Harga tidak tersedia</div>';
                 }
-                return '<div class="price-not-found">Harga tidak tersedia</div>';
             }
 
-            // --- Scanner ---
+            // MODIFIED: Auto-start scanner functionality
             async startScanner() {
                 try {
-                    const statusEl = document.getElementById('scanner-status');
-                    statusEl.textContent = 'Memulai kamera...';
+                    document.getElementById('scanner-status').textContent = 'Memulai kamera...';
+                    document.getElementById('stop-scanner').disabled = false;
                     
-                    if (this.html5QrcodeScanner && this.isScanning) return;
+                    if (this.html5QrcodeScanner) {
+                        await this.html5QrcodeScanner.stop();
+                        this.html5QrcodeScanner.clear();
+                    }
 
                     this.html5QrcodeScanner = new Html5Qrcode("scanner");
                     
                     const config = {
-                        fps: 20,
-                        qrbox: { width: 250, height: 100 },
+                        fps: 30,
+                        qrbox: { width: 300, height: 150 },
+                        aspectRatio: 1.5,
+                        showTorchButtonIfSupported: true,
+                        showZoomSliderIfSupported: true,
+                        defaultZoomValueIfSupported: 2,
+                        disableFlip: false,
                         rememberLastUsedCamera: true
                     };
 
                     await this.html5QrcodeScanner.start(
-                        { facingMode: "environment" }, config,
-                        (decodedText) => this.onBarcodeDetected(decodedText),
-                        (errorMessage) => {} // ignore errors
+                        { facingMode: "environment" },
+                        config,
+                        (decodedText, decodedResult) => {
+                            this.onBarcodeDetected(decodedText);
+                        },
+                        (errorMessage) => {
+                            // Handle scan errors silently
+                        }
                     );
 
                     this.isScanning = true;
-                    statusEl.textContent = 'Scanner aktif';
-                    statusEl.style.color = '#4CAF50';
+                    document.getElementById('scanner-status').textContent = 'Scanner aktif - Arahkan kamera ke barcode';
+                    document.getElementById('scanner-status').style.color = '#4CAF50';
+                    
                 } catch (error) {
                     console.error('Error starting scanner:', error);
-                    const statusEl = document.getElementById('scanner-status');
-                    statusEl.textContent = 'Gagal memulai kamera. Izin diperlukan.';
-                    statusEl.style.color = '#ff6b6b';
+                    document.getElementById('scanner-status').textContent = 'Gagal memulai kamera - Pastikan izin kamera diberikan';
+                    document.getElementById('scanner-status').style.color = '#ff6b6b';
                 }
             }
 
@@ -858,92 +1338,217 @@
                 if (this.html5QrcodeScanner && this.isScanning) {
                     try {
                         await this.html5QrcodeScanner.stop();
+                        this.html5QrcodeScanner.clear();
                         this.html5QrcodeScanner = null;
-                    } catch (err) {
-                        console.error('Error stopping scanner:', err);
+                    } catch (error) {
+                        console.error('Error stopping scanner:', error);
                     }
+                    
                     this.isScanning = false;
-                    const statusEl = document.getElementById('scanner-status');
-                    statusEl.textContent = 'Scanner berhenti';
-                    statusEl.style.color = '#666';
+                    document.getElementById('stop-scanner').disabled = true;
+                    document.getElementById('scanner-status').textContent = 'Scanner berhenti';
+                    document.getElementById('scanner-status').style.color = '#666';
                 }
             }
 
             onBarcodeDetected(barcode) {
                 if (this.scanCooldown) return;
+                
                 this.scanCooldown = true;
+                setTimeout(() => {
+                    this.scanCooldown = false;
+                }, 2000);
+                
                 this.processScannedBarcode(barcode);
-                setTimeout(() => { this.scanCooldown = false; }, 2000);
             }
 
             async processScannedBarcode(barcode) {
-                this.hideScannerPopup();
-                this.playBeep();
-                this.resetSearch(false);
-                
-                const localProduct = this.barcodeIndex[barcode];
-                if (localProduct) {
-                    await this.performSearch([localProduct.PLU], this.findProductByPlu.bind(this), "PLU");
-                } else {
-                    this.showNotFoundPopup('Barcode tidak ditemukan di database lokal', `Barcode: ${barcode}`);
+                try {
+                    this.hideScannerPopup();
+                    this.showLoading('Memproses barcode...');
+                    
+                    const product = this.barcodeIndex[barcode];
+                    
+                    if (product) {
+                        const productData = await this.searchProductByPLU(product.PLU);
+                        
+                        if (productData) {
+                            this.addToResults(productData);
+                        } else {
+                            const fallbackData = {
+                                plu: product.PLU,
+                                productName: product.NAMA_PRODUK,
+                                originalPrice: null,
+                                finalPrice: null,
+                                discountText: null,
+                                barcode: product.BARCODE,
+                                size: null,
+                                fromLocal: true
+                            };
+                            this.addToResults(fallbackData);
+                        }
+                        
+                        this.hideLoading();
+                        this.showResults();
+                        this.showMessage('Barcode berhasil diproses', 'success');
+                        
+                        if ('vibrate' in navigator) {
+                            navigator.vibrate(200);
+                        }
+                        this.playBeep();
+                    } else {
+                        this.hideLoading();
+                        this.showNotFoundPopup(
+                            'Barcode tidak ditemukan',
+                            `Barcode: ${barcode}`
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error processing barcode:', error);
+                    this.hideLoading();
+                    this.showMessage(`Error: ${error.message}`, 'error');
                 }
             }
 
-            // --- Utilities ---
-            formatPrice(price) { return price ? price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0'; }
+            formatPrice(price) {
+                if (!price) return '0';
+                return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
 
             generateBarcode(canvasId, barcode) {
-                const canvas = document.getElementById(canvasId);
-                const fallback = document.getElementById(`fallback-${canvasId}`);
-                if (!canvas) return;
                 try {
-                    JsBarcode(canvas, barcode, {
-                        width: 2, height: 80, displayValue: true, fontSize: 16,
-                        margin: 10, background: "#ffffff", lineColor: "#000000"
-                    });
-                    canvas.style.display = 'block';
-                    fallback.style.display = 'none';
-                } catch (e) {
-                    console.error("Barcode generation failed:", e);
+                    const canvas = document.getElementById(canvasId);
+                    const fallback = document.getElementById(`fallback-${canvasId}`);
+                    
+                    if (!canvas) {
+                        console.error('Canvas element not found:', canvasId);
+                        return;
+                    }
+
+                    try {
+                        JsBarcode(canvas, barcode, {
+                            format: "EAN13",
+                            width: 1.2,
+                            height: 50,
+                            displayValue: true,
+                            fontSize: 12,
+                            margin: 6,
+                            background: "#ffffff",
+                            lineColor: "#000000"
+                        });
+                        canvas.style.display = 'block';
+                        if (fallback) fallback.style.display = 'none';
+                        return;
+                    } catch (error) {
+                        console.log('EAN13 failed, trying CODE128:', error);
+                    }
+
+                    try {
+                        JsBarcode(canvas, barcode, {
+                            format: "CODE128",
+                            width: 1.2,
+                            height: 50,
+                            displayValue: true,
+                            fontSize: 12,
+                            margin: 6,
+                            background: "#ffffff",
+                            lineColor: "#000000"
+                        });
+                        canvas.style.display = 'block';
+                        if (fallback) fallback.style.display = 'none';
+                        return;
+                    } catch (error) {
+                        console.log('CODE128 failed, trying AUTO:', error);
+                    }
+
+                    try {
+                        JsBarcode(canvas, barcode, {
+                            width: 1.2,
+                            height: 50,
+                            displayValue: true,
+                            fontSize: 12,
+                            margin: 6,
+                            background: "#ffffff",
+                            lineColor: "#000000"
+                        });
+                        canvas.style.display = 'block';
+                        if (fallback) fallback.style.display = 'none';
+                        return;
+                    } catch (error) {
+                        console.log('All barcode formats failed, showing fallback:', error);
+                    }
+
                     canvas.style.display = 'none';
-                    fallback.style.display = 'block';
+                    if (fallback) {
+                        fallback.style.display = 'block';
+                    }
+
+                } catch (error) {
+                    console.error('Error generating barcode:', error);
+                    const fallback = document.getElementById(`fallback-${canvasId}`);
+                    if (fallback) {
+                        fallback.style.display = 'block';
+                    }
                 }
             }
-            
+
             playBeep() {
                 try {
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     const oscillator = audioContext.createOscillator();
                     const gainNode = audioContext.createGain();
+                    
                     oscillator.connect(gainNode);
                     gainNode.connect(audioContext.destination);
+                    
                     oscillator.frequency.value = 800;
                     oscillator.type = 'square';
+                    
                     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
                     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    
                     oscillator.start(audioContext.currentTime);
                     oscillator.stop(audioContext.currentTime + 0.1);
-                } catch (e) {}
+                } catch (error) {
+                    // Audio not supported or allowed
+                }
             }
 
             showMessage(message, type) {
                 const statusElement = document.getElementById('status-message');
                 statusElement.textContent = message;
                 statusElement.className = `status-message ${type} show`;
-                setTimeout(() => statusElement.classList.remove('show'), 3000);
+                
+                setTimeout(() => {
+                    statusElement.classList.remove('show');
+                }, 3000);
             }
 
-            resetSearch(showMsg = true) {
+            resetSearch() {
+                // Reset all results and state
                 this.currentResults = [];
                 this.currentResultPage = 0;
-                document.getElementById('product-slider').innerHTML = '';
-                if (showMsg) {
-                    this.showMessage('Pencarian telah direset', 'success');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
+                
+                // Hide results container
+                document.getElementById('results-container').classList.add('hidden');
+                
+                // Clear the display
+                document.getElementById('single-product-display').innerHTML = '';
+                
+                // Reset navigation info
+                document.getElementById('result-info').textContent = '0 / 0';
+                document.getElementById('prev-result').disabled = true;
+                document.getElementById('next-result').disabled = true;
+                
+                // Show success message
+                this.showMessage('Pencarian telah direset', 'success');
+                
+                // Scroll back to top
+                document.querySelector('.header').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
+        // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             new ProductScanner();
         });
