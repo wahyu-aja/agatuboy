@@ -568,27 +568,46 @@
             border: 3px solid #eee;
         }
 
-        .barcode-container {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            margin: 20px 0;
-        }
+.barcode-container {
+    background: #4a90e2; /* Warna biru seperti canvas harga */
+    padding: 15px 25px;
+    border-radius: 25px; /* Rounded corners seperti canvas harga */
+    margin: 20px 0;
+    width: 280px; /* Lebar yang sesuai dengan canvas harga */
+    height: 70px; /* Tinggi yang proporsional dengan canvas harga */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+}
 
-        .barcode-canvas {
-            max-width: 100%;
-            height: auto;
-            border: 2px solid #eee;
-            border-radius: 8px;
-        }
+.barcode-canvas {
+    max-width: 250px; /* Sesuaikan dengan lebar container */
+    max-height: 50px; /* Batasi tinggi barcode */
+    width: auto;
+    height: auto;
+    border: none; /* Hilangkan border agar clean */
+    border-radius: 5px;
+    background: white; /* Background putih untuk barcode */
+    padding: 5px;
+}
 
-        .barcode-fallback {
-            text-align: center;
-            padding: 25px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 2px dashed #ccc;
-        }
+.barcode-fallback {
+    text-align: center;
+    padding: 15px 25px;
+    background: #4a90e2;
+    color: white;
+    border-radius: 25px;
+    border: none;
+    width: 280px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+}
 
         /* Price Display */
         .price-container {
