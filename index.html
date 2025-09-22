@@ -438,17 +438,14 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        /* --- PERUBAHAN DIMULAI DI SINI: Product Display & Navigation --- */
-
+        
         .single-product-container {
             position: relative;
             flex-grow: 1;
-            min-width: 0; /* Mencegah flex item meluap */
-            overflow: hidden; /* Menyembunyikan animasi yang keluar dari kotak */
+            min-width: 0; 
+            overflow: hidden; 
         }
         
-        /* Kartu Produk */
         .product-card {
             background: linear-gradient(145deg, #ffffff, #f5f5f5);
             border-radius: 20px;
@@ -459,7 +456,6 @@
             color: #333;
         }
         
-        /* Animasi Transisi Kartu Produk */
         .product-slide-in {
             animation: slideIn 0.3s ease-out forwards;
         }
@@ -490,7 +486,6 @@
             }
         }
         
-        /* Tata Letak Navigasi Baru */
         .product-navigation-wrapper {
             display: flex;
             align-items: center;
@@ -541,8 +536,6 @@
             color: #e0e6ed;
             font-size: 16px;
         }
-        
-        /* --- PERUBAHAN SELESAI DI SINI --- */
 
         .plu {
             font-size: 28px;
@@ -568,46 +561,26 @@
             border: 3px solid #eee;
         }
 
-.barcode-container {
-    background: #4a90e2; /* Warna biru seperti canvas harga */
-    padding: 15px 25px;
-    border-radius: 25px; /* Rounded corners seperti canvas harga */
-    margin: 20px 0;
-    width: 280px; /* Lebar yang sesuai dengan canvas harga */
-    height: 70px; /* Tinggi yang proporsional dengan canvas harga */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
-}
+        .barcode-container {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
 
-.barcode-canvas {
-    max-width: 250px; /* Sesuaikan dengan lebar container */
-    max-height: 50px; /* Batasi tinggi barcode */
-    width: auto;
-    height: auto;
-    border: none; /* Hilangkan border agar clean */
-    border-radius: 5px;
-    background: white; /* Background putih untuk barcode */
-    padding: 5px;
-}
+        .barcode-canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
 
-.barcode-fallback {
-    text-align: center;
-    padding: 15px 25px;
-    background: #4a90e2;
-    color: white;
-    border-radius: 25px;
-    border: none;
-    width: 280px;
-    height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 14px;
-    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
-}
+        .barcode-fallback {
+            text-align: center;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #ccc;
+        }
 
         /* Price Display */
         .price-container {
@@ -814,7 +787,6 @@
                 </div>
             </div>
 
-            <!-- STRUKTUR NAVIGASI BARU -->
             <div id="price-results-container" class="hidden">
                 <div class="product-navigation-wrapper">
                     <button class="nav-btn-side" id="price-prev-result" disabled>&lt;</button>
@@ -853,7 +825,6 @@
                 </div>
             </div>
 
-            <!-- STRUKTUR NAVIGASI BARU -->
             <div id="barcode-results-container" class="hidden">
                 <div class="product-navigation-wrapper">
                     <button class="nav-btn-side" id="barcode-prev-result" disabled>&lt;</button>
@@ -1546,7 +1517,7 @@
                 
                 const currentResult = this.priceResults[this.currentPriceResultPage];
                 const productCard = this.createProductCard(currentResult, true); // Show price
-                productCard.classList.add('product-slide-in'); // Tambahkan animasi masuk
+                productCard.classList.add('product-slide-in'); 
                 
                 container.innerHTML = '';
                 container.appendChild(productCard);
@@ -1572,7 +1543,7 @@
                 
                 const currentResult = this.barcodeResults[this.currentBarcodeResultPage];
                 const productCard = this.createProductCard(currentResult, false); // Don't show price
-                productCard.classList.add('product-slide-in'); // Tambahkan animasi masuk
+                productCard.classList.add('product-slide-in');
 
                 container.innerHTML = '';
                 container.appendChild(productCard);
@@ -1581,8 +1552,6 @@
                 prevBtn.disabled = this.currentBarcodeResultPage === 0;
                 nextBtn.disabled = this.currentBarcodeResultPage === this.barcodeResults.length - 1;
             }
-
-            // --- PERUBAHAN FUNGSI NAVIGASI UNTUK TRANSISI ---
             
             prevPriceResult() {
                 if (this.currentPriceResultPage > 0) {
@@ -1595,7 +1564,7 @@
                     setTimeout(() => {
                         this.currentPriceResultPage--;
                         this.updatePriceResultsDisplay();
-                    }, 200); // Sesuaikan dengan durasi animasi di CSS
+                    }, 200); 
                 }
             }
 
@@ -1610,7 +1579,7 @@
                     setTimeout(() => {
                         this.currentPriceResultPage++;
                         this.updatePriceResultsDisplay();
-                    }, 200); // Sesuaikan dengan durasi animasi di CSS
+                    }, 200);
                 }
             }
 
@@ -1643,8 +1612,6 @@
                     }, 200);
                 }
             }
-            
-            // --- AKHIR PERUBAHAN ---
 
             createProductCard(productData, showPrice = true) {
                 const card = document.createElement('div');
@@ -1777,7 +1744,6 @@
                     this.hideScannerPopup();
                     this.showLoading('Memproses barcode...');
 
-                    // FIX: Reset results if in price check mode
                     if (this.currentSearchMode === 'price') {
                         this.priceResults = [];
                     }
@@ -1829,7 +1795,8 @@
                 if (!price) return '0';
                 return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             }
-
+            
+            // --- PERUBAHAN FUNGSI BARCODE DIMULAI DI SINI ---
             generateBarcode(canvasId, barcode) {
                 try {
                     const canvas = document.getElementById(canvasId);
@@ -1839,18 +1806,20 @@
                         console.error('Canvas element not found:', canvasId);
                         return;
                     }
+                    
+                    // Opsi baru yang lebih besar
+                    const options = {
+                        width: 3,         // Lebar bar lebih tebal (sebelumnya 2)
+                        height: 120,      // Tinggi barcode lebih besar (sebelumnya 80)
+                        displayValue: true,
+                        fontSize: 20,     // Ukuran font lebih besar (sebelumnya 16)
+                        margin: 15,       // Margin lebih besar agar tidak terlalu mepet
+                        background: "#ffffff",
+                        lineColor: "#000000"
+                    };
 
                     try {
-                        JsBarcode(canvas, barcode, {
-                            format: "EAN13",
-                            width: 2,
-                            height: 80,
-                            displayValue: true,
-                            fontSize: 16,
-                            margin: 10,
-                            background: "#ffffff",
-                            lineColor: "#000000"
-                        });
+                        JsBarcode(canvas, barcode, { ...options, format: "EAN13" });
                         canvas.style.display = 'block';
                         if (fallback) fallback.style.display = 'none';
                         return;
@@ -1859,16 +1828,7 @@
                     }
 
                     try {
-                        JsBarcode(canvas, barcode, {
-                            format: "CODE128",
-                            width: 2,
-                            height: 80,
-                            displayValue: true,
-                            fontSize: 16,
-                            margin: 10,
-                            background: "#ffffff",
-                            lineColor: "#000000"
-                        });
+                        JsBarcode(canvas, barcode, { ...options, format: "CODE128" });
                         canvas.style.display = 'block';
                         if (fallback) fallback.style.display = 'none';
                         return;
@@ -1877,15 +1837,7 @@
                     }
 
                     try {
-                        JsBarcode(canvas, barcode, {
-                            width: 2,
-                            height: 80,
-                            displayValue: true,
-                            fontSize: 16,
-                            margin: 10,
-                            background: "#ffffff",
-                            lineColor: "#000000"
-                        });
+                        JsBarcode(canvas, barcode, options); // Coba format otomatis
                         canvas.style.display = 'block';
                         if (fallback) fallback.style.display = 'none';
                         return;
@@ -1906,6 +1858,8 @@
                     }
                 }
             }
+            // --- PERUBAHAN FUNGSI BARCODE SELESAI DI SINI ---
+
 
             playBeep() {
                 try {
@@ -1969,4 +1923,5 @@
     </script>
 </body>
 </html>
+
 
