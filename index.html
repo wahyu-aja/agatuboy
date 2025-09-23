@@ -336,7 +336,7 @@
 
         #scanner {
             width: 100%;
-            height: 300px;
+            height: 400px;
             border-radius: 15px;
         }
 
@@ -346,9 +346,9 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 250px;
-            height: 100px;
+            height: 150px;
             border: 3px solid #00ff00;
-            border-radius: 10px;
+            border-radius: 15px;
             box-shadow: 0 0 0 99999px rgba(0,0,0,0.3);
             pointer-events: none;
             z-index: 10;
@@ -362,15 +362,16 @@
             right: -3px;
             bottom: -3px;
             border: 2px solid rgba(0,255,0,0.5);
-            border-radius: 10px;
+            border-radius: 15px;
             animation: pulse 2s infinite;
         }
 
         .scanning-line {
             position: absolute;
             top: 50%;
-            left: 10%;
-            right: 10%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 220px;
             height: 2px;
             background: linear-gradient(90deg, transparent, #00ff00, transparent);
             animation: scanning 2s linear infinite;
@@ -383,8 +384,8 @@
         }
 
         @keyframes scanning {
-            0% { transform: translateY(-50px); }
-            100% { transform: translateY(50px); }
+            0% { transform: translate(-50%, -50%) translateY(-60px); }
+            100% { transform: translate(-50%, -50%) translateY(60px); }
         }
 
         .scanner-status {
@@ -392,6 +393,14 @@
             color: #4CAF50;
             font-weight: bold;
             margin-bottom: 15px;
+        }
+
+        .scanner-help {
+            text-align: center;
+            color: #e0e6ed;
+            font-size: 14px;
+            margin-top: 10px;
+            line-height: 1.4;
         }
 
         /* Loading Animation */
@@ -740,6 +749,19 @@
                 height: 40px;
                 font-size: 20px;
             }
+
+            #scanner {
+                height: 300px;
+            }
+
+            .scanner-overlay {
+                width: 200px;
+                height: 120px;
+            }
+
+            .scanning-line {
+                width: 170px;
+            }
         }
     </style>
 </head>
@@ -871,6 +893,11 @@
                 <div id="scanner"></div>
                 <div class="scanner-overlay"></div>
                 <div class="scanning-line"></div>
+            </div>
+            <div class="scanner-help">
+                Pastikan barcode berada dalam frame hijau.<br>
+                Jaga jarak sekitar 10-20cm dari kamera.<br>
+                Pastikan pencahayaan cukup terang.
             </div>
         </div>
     </div>
@@ -1670,43 +1697,84 @@
                 }
             }
             
-            // --- PERUBAHAN FUNGSI SCANNER UNTUK iOS DIMULAI DI SINI ---
+            // PERBAIKAN FUNGSI SCANNER UNTUK iOS
             async startScanner() {
                 if (this.isScanning) return;
                 
                 try {
                     document.getElementById('scanner-status').textContent = 'Memulai kamera...';
+                    document.getElementById('scanner-status').style.color = '#FFA500';
                     
                     this.html5QrcodeScanner = new Html5Qrcode("scanner");
                     
-                    // Konfigurasi umum
+                    // Konfigurasi yang dioptimalkan untuk iOS
                     const config = {
                         fps: 10,
-                        qrbox: { width: 250, height: 100 },
-                        // Fitur eksperimental untuk memaksa penggunaan library JS murni
+                        qrbox: { width: 250, height: 150 },
+                        aspectRatio: 1.777778, // 16:9 ratio
+                        disableFlip: false,
+                        // Fitur eksperimental dinonaktifkan untuk iOS
                         experimentalFeatures: {
                             useBarCodeDetectorIfSupported: false
-                        }
-                    };
-
-                    // Konfigurasi kamera yang lebih spesifik untuk iOS
-                    const videoConstraints = {
-                        facingMode: "environment",
-                        focusMode: "continuous", // Meminta autofocus berkelanjutan
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    };
-
-                    await this.html5QrcodeScanner.start(
-                        { video: videoConstraints }, // Gunakan constraints yang lebih detail
-                        config,
-                        (decodedText, decodedResult) => {
-                            this.onBarcodeDetected(decodedText);
                         },
-                        (errorMessage) => {
-                            // Handle scan errors silently
+                        // Mengaktifkan semua format barcode yang didukung
+                        formatsToSupport: [
+                            Html5QrcodeSupportedFormats.QR_CODE,
+                            Html5QrcodeSupportedFormats.CODE_128,
+                            Html5QrcodeSupportedFormats.CODE_39,
+                            Html5QrcodeSupportedFormats.EAN_13,
+                            Html5QrcodeSupportedFormats.EAN_8,
+                            Html5QrcodeSupportedFormats.UPC_A,
+                            Html5QrcodeSupportedFormats.UPC_E,
+                            Html5QrcodeSupportedFormats.CODE_93,
+                            Html5QrcodeSupportedFormats.CODABAR
+                        ]
+                    };
+
+                    // Konfigurasi kamera yang lebih kompatibel dengan iOS
+                    const cameraConfig = {
+                        // Menggunakan environment camera (kamera belakang)
+                        facingMode: { exact: "environment" }
+                    };
+
+                    // Fallback configuration jika environment camera tidak tersedia
+                    const fallbackCameraConfig = {
+                        facingMode: "environment"
+                    };
+
+                    try {
+                        // Coba dengan konfigurasi strict environment camera
+                        await this.html5QrcodeScanner.start(
+                            cameraConfig,
+                            config,
+                            (decodedText, decodedResult) => {
+                                this.onBarcodeDetected(decodedText, decodedResult);
+                            },
+                            (errorMessage) => {
+                                // Handle scan errors silently untuk mengurangi noise
+                                console.debug('Scan error:', errorMessage);
+                            }
+                        );
+                    } catch (error) {
+                        console.warn('Strict camera config failed, trying fallback:', error);
+                        
+                        // Stop scanner jika ada error
+                        if (this.html5QrcodeScanner) {
+                            await this.html5QrcodeScanner.stop();
                         }
-                    );
+                        
+                        // Coba dengan konfigurasi fallback
+                        await this.html5QrcodeScanner.start(
+                            fallbackCameraConfig,
+                            config,
+                            (decodedText, decodedResult) => {
+                                this.onBarcodeDetected(decodedText, decodedResult);
+                            },
+                            (errorMessage) => {
+                                console.debug('Scan error:', errorMessage);
+                            }
+                        );
+                    }
 
                     this.isScanning = true;
                     document.getElementById('scanner-status').textContent = 'Scanner aktif - Arahkan kamera ke barcode';
@@ -1714,12 +1782,25 @@
                     
                 } catch (error) {
                     console.error('Error starting scanner:', error);
-                    document.getElementById('scanner-status').textContent = 'Gagal memulai kamera. Pastikan izin diberikan & akses via HTTPS.';
+                    let errorMessage = 'Gagal memulai kamera. ';
+                    
+                    if (error.name === 'NotAllowedError' || error.message.includes('Permission')) {
+                        errorMessage += 'Izin kamera ditolak. Mohon berikan izin akses kamera.';
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage += 'Kamera tidak ditemukan pada perangkat.';
+                    } else if (error.name === 'NotSupportedError') {
+                        errorMessage += 'Browser tidak mendukung akses kamera.';
+                    } else if (error.name === 'NotReadableError') {
+                        errorMessage += 'Kamera sedang digunakan aplikasi lain.';
+                    } else {
+                        errorMessage += 'Pastikan mengakses via HTTPS dan izin kamera diberikan.';
+                    }
+                    
+                    document.getElementById('scanner-status').textContent = errorMessage;
                     document.getElementById('scanner-status').style.color = '#ff6b6b';
                     this.isScanning = false;
                 }
             }
-            // --- PERUBAHAN FUNGSI SCANNER SELESAI DI SINI ---
 
             async stopScanner() {
                 if (this.html5QrcodeScanner && this.isScanning) {
@@ -1730,6 +1811,9 @@
                         this.isScanning = false;
                     } catch (error) {
                         console.error('Error stopping scanner:', error);
+                        // Force reset scanner state
+                        this.html5QrcodeScanner = null;
+                        this.isScanning = false;
                     }
                     
                     document.getElementById('scanner-status').textContent = 'Scanner berhenti';
@@ -1737,15 +1821,31 @@
                 }
             }
 
-            onBarcodeDetected(barcode) {
+            onBarcodeDetected(barcode, decodedResult) {
                 if (this.scanCooldown) return;
                 
+                // Set cooldown untuk mencegah multiple detection
                 this.scanCooldown = true;
                 setTimeout(() => {
                     this.scanCooldown = false;
-                }, 2000);
+                }, 2000); // 2 detik cooldown
                 
-                this.processScannedBarcode(barcode);
+                console.log('Barcode detected:', barcode, decodedResult);
+                
+                // Berikan feedback visual dan audio
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([200, 100, 200]);
+                }
+                this.playBeep();
+                
+                // Update status
+                document.getElementById('scanner-status').textContent = 'Barcode terdeteksi! Memproses...';
+                document.getElementById('scanner-status').style.color = '#00ff00';
+                
+                // Proses barcode
+                setTimeout(() => {
+                    this.processScannedBarcode(barcode);
+                }, 500); // Delay kecil untuk UI feedback
             }
 
             async processScannedBarcode(barcode) {
@@ -1781,11 +1881,6 @@
                         this.hideLoading();
                         this.showResults();
                         this.showMessage('Barcode berhasil diproses', 'success');
-                        
-                        if ('vibrate' in navigator) {
-                            navigator.vibrate(200);
-                        }
-                        this.playBeep();
                     } else {
                         this.hideLoading();
                         this.showNotFoundPopup(
@@ -1868,6 +1963,7 @@
 
             playBeep() {
                 try {
+                    // Gunakan Web Audio API untuk suara beep
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     const oscillator = audioContext.createOscillator();
                     const gainNode = audioContext.createGain();
@@ -1879,12 +1975,13 @@
                     oscillator.type = 'square';
                     
                     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
                     
                     oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.1);
+                    oscillator.stop(audioContext.currentTime + 0.2);
                 } catch (error) {
-                    // Audio not supported or allowed
+                    // Fallback untuk browser yang tidak mendukung Web Audio API
+                    console.log('Audio not supported:', error);
                 }
             }
 
@@ -1927,4 +2024,4 @@
         });
     </script>
 </body>
-</html>
+                        </html>
