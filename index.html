@@ -18,36 +18,15 @@
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             color: #e0e6ed;
+            padding-bottom: 100px; /* Space for bottom navigation */
         }
 
         .container {
             max-width: 500px;
             margin: 0 auto;
             padding: 20px;
-            min-height: 100vh;
+            min-height: calc(100vh - 100px);
             position: relative;
-        }
-
-        /* Home button */
-        .home-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            z-index: 1001;
-            transition: all 0.3s ease;
-        }
-
-        .home-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
         }
 
         /* Real-time clock */
@@ -62,6 +41,23 @@
             font-family: 'Courier New', monospace;
             font-size: 14px;
             font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 255, 218, 0.3);
+        }
+
+        /* Mode indicator */
+        .mode-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #64ffda;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             z-index: 1001;
             backdrop-filter: blur(10px);
@@ -87,6 +83,179 @@
             margin-bottom: 20px;
         }
 
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(30, 42, 58, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #3a4a5c;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            z-index: 1000;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .nav-btn {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-label {
+            font-size: 10px;
+            color: #e0e6ed;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Input PLU button */
+        .btn-input-plu {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+
+        /* Scan button - larger in center */
+        .nav-item.center .nav-btn {
+            width: 70px;
+            height: 70px;
+            font-size: 30px;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            position: relative;
+            top: -10px;
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .nav-item.center .nav-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.5);
+        }
+
+        /* Search and Mode buttons */
+        .btn-search-product {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+        }
+
+        .btn-mode-switch {
+            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+        }
+
+        /* Reset button for barcode mode */
+        .reset-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 15px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+        }
+
+        /* PLU Input Box */
+        .plu-input-box {
+            background: rgba(30, 42, 58, 0.95);
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .plu-input-box.show {
+            display: block;
+        }
+
+        .plu-input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #3a4a5c;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #1e2a3a;
+            color: #e0e6ed;
+            margin-bottom: 10px;
+        }
+
+        .plu-input-field:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .plu-input-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .plu-input-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-plu-search {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-plu-cancel {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Main Menu - Initial Screen */
         .main-menu {
             display: block;
@@ -96,45 +265,6 @@
             display: none !important;
         }
 
-        /* Mode Selection Buttons */
-        .mode-selection {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .mode-btn {
-            padding: 20px;
-            border: none;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .mode-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
-
-        .btn-price-check {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .btn-barcode-check {
-            background: linear-gradient(135deg, #FF9800, #F57C00);
-            color: white;
-        }
-
         /* Function Screens */
         .function-screen {
             display: none;
@@ -142,58 +272,6 @@
 
         .function-screen.active {
             display: block;
-        }
-
-        /* Main Action Buttons */
-        .main-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .action-btn {
-            padding: 20px;
-            border: none;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
-
-        .btn-plu {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .btn-search {
-            background: linear-gradient(135deg, #FF9800, #F57C00);
-            color: white;
-        }
-
-        .btn-scanner {
-            background: linear-gradient(135deg, #2196F3, #1976D2);
-            color: white;
-        }
-
-        /* Reset Button */
-        .reset-btn {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-            padding: 15px 30px;
-            font-size: 16px;
-            margin-bottom: 20px;
         }
 
         /* Popup Overlay */
@@ -259,17 +337,12 @@
             background: rgba(255, 107, 107, 0.2);
         }
 
-        /* PLU Input Popup */
-        .plu-popup {
-            width: 450px;
-        }
-
         /* Search Input Popup */
         .search-popup {
             width: 450px;
         }
 
-        .plu-input, .search-input {
+        .search-input {
             width: 100%;
             padding: 15px;
             border: 2px solid #3a4a5c;
@@ -282,12 +355,8 @@
             margin-bottom: 20px;
         }
 
-        .plu-input:focus, .search-input:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
-
         .search-input:focus {
+            outline: none;
             border-color: #FF9800;
         }
 
@@ -304,11 +373,6 @@
             cursor: pointer;
             font-weight: bold;
             font-size: 16px;
-        }
-
-        .btn-search-action {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
         }
 
         .btn-search-keyword {
@@ -756,13 +820,8 @@
                 margin: 10px;
             }
             
-            .plu-popup, .search-popup, .scanner-popup, .not-found-popup {
+            .search-popup, .scanner-popup, .not-found-popup {
                 width: calc(100vw - 40px);
-            }
-            
-            .action-btn, .mode-btn {
-                font-size: 16px;
-                padding: 18px;
             }
             
             .realtime-clock {
@@ -779,30 +838,41 @@
             .scanner-container {
                 min-height: 300px;
             }
+
+            .bottom-nav {
+                padding: 10px 15px;
+            }
+
+            .nav-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+
+            .nav-item.center .nav-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 26px;
+            }
+
+            .nav-label {
+                font-size: 9px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="realtime-clock" id="realtime-clock"></div>
-    
-    <button class="home-button" id="home-btn" style="display: none;">🏠</button>
+    <div class="mode-indicator" id="mode-indicator">CEK HARGA</div>
 
     <div class="container">
         <div class="main-menu" id="main-menu">
             <div class="header">
                 <h1>📱 CEK HARGA DAN BARCODE =WZ®</h1>
                 <p>Berdasarkan Harga KlikIndomaret...</p>
-            </div>
-
-            <div class="card">
-                <div class="mode-selection">
-                    <button class="mode-btn btn-price-check" id="price-check-mode">
-                        💰 CEK HARGA
-                    </button>
-                    <button class="mode-btn btn-barcode-check" id="barcode-check-mode">
-                        📦 CEK BARCODE
-                    </button>
-                </div>
+                <p style="margin-top: 15px; font-size: 14px; opacity: 0.8;">
+                    Gunakan navigasi di bawah untuk mengoperasikan aplikasi
+                </p>
             </div>
         </div>
 
@@ -812,17 +882,12 @@
                 <p>Input baru akan mereset hasil sebelumnya</p>
             </div>
 
-            <div class="card">
-                <div class="main-actions">
-                    <button class="action-btn btn-plu" id="price-input-plu-btn">
-                        🔍 INPUT PLU
-                    </button>
-                    <button class="action-btn btn-search" id="price-search-keyword-btn">
-                        🔎 CARI PRODUK
-                    </button>
-                    <button class="action-btn btn-scanner" id="price-scan-barcode-btn">
-                        📷 SCAN BARCODE PRODUK
-                    </button>
+            <!-- PLU Input Box -->
+            <div class="plu-input-box" id="plu-input-box">
+                <input type="number" class="plu-input-field" id="plu-input-field" placeholder="Masukkan PLU (contoh: 20088719)" inputmode="numeric">
+                <div class="plu-input-actions">
+                    <button class="plu-input-btn btn-plu-search" id="plu-search-btn">🔍 Cari</button>
+                    <button class="plu-input-btn btn-plu-cancel" id="plu-cancel-btn">❌ Batal</button>
                 </div>
             </div>
 
@@ -844,23 +909,18 @@
                 <p>Progress tersimpan otomatis</p>
             </div>
 
-            <div class="card" style="text-align: center;">
-                <button class="action-btn reset-btn" id="barcode-reset-btn">
+            <div class="reset-section" id="barcode-reset-section" style="display: none;">
+                <button class="reset-btn" id="barcode-reset-btn">
                     🗑️ MULAI ULANG
                 </button>
             </div>
 
-            <div class="card">
-                <div class="main-actions">
-                    <button class="action-btn btn-plu" id="barcode-input-plu-btn">
-                        🔍 INPUT PLU
-                    </button>
-                    <button class="action-btn btn-search" id="barcode-search-keyword-btn">
-                        🔎 CARI PRODUK
-                    </button>
-                    <button class="action-btn btn-scanner" id="barcode-scan-barcode-btn">
-                        📷 SCAN BARCODE PRODUK
-                    </button>
+            <!-- PLU Input Box for Barcode Mode -->
+            <div class="plu-input-box" id="plu-input-box-barcode">
+                <input type="number" class="plu-input-field" id="plu-input-field-barcode" placeholder="Masukkan PLU (contoh: 20088719)" inputmode="numeric">
+                <div class="plu-input-actions">
+                    <button class="plu-input-btn btn-plu-search" id="plu-search-btn-barcode">🔍 Cari</button>
+                    <button class="plu-input-btn btn-plu-cancel" id="plu-cancel-btn-barcode">❌ Batal</button>
                 </div>
             </div>
 
@@ -877,15 +937,26 @@
         </div>
     </div>
 
-    <div class="popup-overlay" id="plu-popup-overlay">
-        <div class="popup plu-popup">
-            <button class="popup-close" id="plu-popup-close">×</button>
-            <h3 style="margin-bottom: 20px; color: #64ffda; text-align: center;">🔍 Masukkan PLU</h3>
-            <textarea id="plu-input" class="plu-input" placeholder="Masukkan PLU (pisahkan dengan koma, spasi, atau baris baru)&#10;Contoh: 20088719, 10000019&#10;atau:&#10;20088719&#10;10000019"></textarea>
-            <div class="popup-actions">
-                <button class="popup-btn btn-search-action" id="search-plu">🔍 Cari PLU</button>
-                <button class="popup-btn btn-cancel" id="cancel-plu">❌ Batal</button>
-            </div>
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item">
+            <button class="nav-btn btn-input-plu" id="nav-input-plu">📝</button>
+            <span class="nav-label">Input PLU</span>
+        </div>
+        
+        <div class="nav-item center">
+            <button class="nav-btn btn-scan" id="nav-scan">📷</button>
+            <span class="nav-label">Scan</span>
+        </div>
+        
+        <div class="nav-item">
+            <button class="nav-btn btn-search-product" id="nav-search-product">🔎</button>
+            <span class="nav-label">Cari Produk</span>
+        </div>
+        
+        <div class="nav-item">
+            <button class="nav-btn btn-mode-switch" id="nav-mode-switch">🔄</button>
+            <span class="nav-label">Ganti Mode</span>
         </div>
     </div>
 
@@ -941,7 +1012,7 @@
     <script>
         class ProductScanner {
             constructor() {
-                this.currentMode = 'main'; // 'main', 'price-check', 'barcode-check'
+                this.currentMode = 'price-check'; // Start with price check mode
                 this.priceResults = [];
                 this.barcodeResults = JSON.parse(localStorage.getItem('barcodeResults') || '[]');
                 this.currentPriceResultPage = 0;
@@ -989,9 +1060,12 @@
                 this.loadProductData();
                 this.startClock();
                 
-                // Load barcode results if exists
+                // Start with price check mode
+                this.showPriceCheckMode();
+                
+                // Load barcode results if exists and show reset button if there are results
                 if (this.barcodeResults.length > 0) {
-                    this.showBarcodeResults();
+                    document.getElementById('barcode-reset-section').style.display = 'block';
                 }
             }
 
@@ -1041,35 +1115,32 @@
             }
 
             bindEvents() {
-                // Home button
-                document.getElementById('home-btn').addEventListener('click', () => this.goHome());
+                // Bottom navigation events
+                document.getElementById('nav-input-plu').addEventListener('click', () => this.togglePLUInput());
+                document.getElementById('nav-scan').addEventListener('click', () => this.showScannerPopup());
+                document.getElementById('nav-search-product').addEventListener('click', () => this.showSearchPopup());
+                document.getElementById('nav-mode-switch').addEventListener('click', () => this.switchMode());
                 
-                // Mode selection
-                document.getElementById('price-check-mode').addEventListener('click', () => this.showPriceCheckMode());
-                document.getElementById('barcode-check-mode').addEventListener('click', () => this.showBarcodeCheckMode());
-                
-                // Price check actions
-                document.getElementById('price-input-plu-btn').addEventListener('click', () => this.showPLUPopup('price'));
-                document.getElementById('price-search-keyword-btn').addEventListener('click', () => this.showSearchPopup('price'));
-                document.getElementById('price-scan-barcode-btn').addEventListener('click', () => this.showScannerPopup('price'));
-                
-                // Barcode check actions
-                document.getElementById('barcode-input-plu-btn').addEventListener('click', () => this.showPLUPopup('barcode'));
-                document.getElementById('barcode-search-keyword-btn').addEventListener('click', () => this.showSearchPopup('barcode'));
-                document.getElementById('barcode-scan-barcode-btn').addEventListener('click', () => this.showScannerPopup('barcode'));
-                
-                // Barcode reset button
-                document.getElementById('barcode-reset-btn').addEventListener('click', () => this.resetBarcodeProgress());
-                
-                // PLU popup events
-                document.getElementById('plu-popup-close').addEventListener('click', () => this.hidePLUPopup());
-                document.getElementById('cancel-plu').addEventListener('click', () => this.hidePLUPopup());
-                document.getElementById('search-plu').addEventListener('click', () => this.searchPLU());
-                document.getElementById('plu-input').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
+                // PLU input box events - Price mode
+                document.getElementById('plu-search-btn').addEventListener('click', () => this.searchPLU());
+                document.getElementById('plu-cancel-btn').addEventListener('click', () => this.hidePLUInput());
+                document.getElementById('plu-input-field').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
                         this.searchPLU();
                     }
                 });
+                
+                // PLU input box events - Barcode mode
+                document.getElementById('plu-search-btn-barcode').addEventListener('click', () => this.searchPLU());
+                document.getElementById('plu-cancel-btn-barcode').addEventListener('click', () => this.hidePLUInput());
+                document.getElementById('plu-input-field-barcode').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.searchPLU();
+                    }
+                });
+                
+                // Barcode reset button
+                document.getElementById('barcode-reset-btn').addEventListener('click', () => this.resetBarcodeProgress());
                 
                 // Search popup events
                 document.getElementById('search-popup-close').addEventListener('click', () => this.hideSearchPopup());
@@ -1099,9 +1170,6 @@
                 document.getElementById('barcode-next-result').addEventListener('click', () => this.nextBarcodeResult());
                 
                 // Close popups when clicking overlay
-                document.getElementById('plu-popup-overlay').addEventListener('click', (e) => {
-                    if (e.target === e.currentTarget) this.hidePLUPopup();
-                });
                 document.getElementById('search-popup-overlay').addEventListener('click', (e) => {
                     if (e.target === e.currentTarget) this.hideSearchPopup();
                 });
@@ -1113,40 +1181,80 @@
                 });
             }
 
-            goHome() {
-                this.currentMode = 'main';
-                document.getElementById('main-menu').classList.remove('hidden');
-                document.getElementById('price-check-screen').classList.remove('active');
-                document.getElementById('barcode-check-screen').classList.remove('active');
-                document.getElementById('home-btn').style.display = 'none';
-                
-                // Hide all results
-                document.getElementById('price-results-container').classList.add('hidden');
-                document.getElementById('barcode-results-container').classList.add('hidden');
+            switchMode() {
+                if (this.currentMode === 'price-check') {
+                    this.showBarcodeCheckMode();
+                } else {
+                    this.showPriceCheckMode();
+                }
             }
 
             showPriceCheckMode() {
                 this.currentMode = 'price-check';
                 document.getElementById('main-menu').classList.add('hidden');
                 document.getElementById('price-check-screen').classList.add('active');
-                document.getElementById('home-btn').style.display = 'block';
+                document.getElementById('barcode-check-screen').classList.remove('active');
+                document.getElementById('mode-indicator').textContent = 'CEK HARGA';
                 
                 // Reset price results when entering price check mode
                 this.priceResults = [];
                 this.currentPriceResultPage = 0;
                 document.getElementById('price-results-container').classList.add('hidden');
+                this.hidePLUInput();
             }
 
             showBarcodeCheckMode() {
                 this.currentMode = 'barcode-check';
                 document.getElementById('main-menu').classList.add('hidden');
+                document.getElementById('price-check-screen').classList.remove('active');
                 document.getElementById('barcode-check-screen').classList.add('active');
-                document.getElementById('home-btn').style.display = 'block';
+                document.getElementById('mode-indicator').textContent = 'CEK BARCODE';
                 
                 // Show barcode results if they exist
                 if (this.barcodeResults.length > 0) {
                     this.showBarcodeResults();
+                    document.getElementById('barcode-reset-section').style.display = 'block';
                 }
+                this.hidePLUInput();
+            }
+
+            togglePLUInput() {
+                const currentInputBox = this.currentMode === 'price-check' ? 
+                    document.getElementById('plu-input-box') : 
+                    document.getElementById('plu-input-box-barcode');
+                
+                if (currentInputBox.classList.contains('show')) {
+                    this.hidePLUInput();
+                } else {
+                    this.showPLUInput();
+                }
+            }
+
+            showPLUInput() {
+                // Hide all PLU input boxes first
+                document.getElementById('plu-input-box').classList.remove('show');
+                document.getElementById('plu-input-box-barcode').classList.remove('show');
+                
+                const currentInputBox = this.currentMode === 'price-check' ? 
+                    document.getElementById('plu-input-box') : 
+                    document.getElementById('plu-input-box-barcode');
+                const currentInputField = this.currentMode === 'price-check' ? 
+                    document.getElementById('plu-input-field') : 
+                    document.getElementById('plu-input-field-barcode');
+                
+                currentInputBox.classList.add('show');
+                setTimeout(() => {
+                    currentInputField.focus();
+                }, 300);
+            }
+
+            hidePLUInput() {
+                document.getElementById('plu-input-box').classList.remove('show');
+                document.getElementById('plu-input-box-barcode').classList.remove('show');
+                
+                // Clear input fields
+                document.getElementById('plu-input-field').value = '';
+                document.getElementById('plu-input-field-barcode').value = '';
             }
 
             showLoading(text = 'Memproses...') {
@@ -1158,19 +1266,7 @@
                 document.getElementById('loading-overlay').classList.remove('show');
             }
 
-            showPLUPopup(mode) {
-                this.currentSearchMode = mode;
-                document.getElementById('plu-popup-overlay').classList.add('show');
-                document.getElementById('plu-input').focus();
-            }
-
-            hidePLUPopup() {
-                document.getElementById('plu-popup-overlay').classList.remove('show');
-                document.getElementById('plu-input').value = '';
-            }
-
-            showSearchPopup(mode) {
-                this.currentSearchMode = mode;
+            showSearchPopup() {
                 document.getElementById('search-popup-overlay').classList.add('show');
                 document.getElementById('search-input').focus();
             }
@@ -1180,8 +1276,7 @@
                 document.getElementById('search-input').value = '';
             }
 
-            showScannerPopup(mode) {
-                this.currentSearchMode = mode;
+            showScannerPopup() {
                 document.getElementById('scanner-popup-overlay').classList.add('show');
                 this.startScanner();
             }
@@ -1362,7 +1457,7 @@
                     this.hideScannerPopup();
                     this.showLoading('Memproses barcode...');
 
-                    if (this.currentSearchMode === 'price') {
+                    if (this.currentMode === 'price-check') {
                         this.priceResults = [];
                     }
                     
@@ -1409,14 +1504,65 @@
                 }
             }
 
-            parsePLUs(input) {
-                if (!input.trim()) return [];
+            async searchPLU() {
+                const currentInputField = this.currentMode === 'price-check' ? 
+                    document.getElementById('plu-input-field') : 
+                    document.getElementById('plu-input-field-barcode');
                 
-                return input.trim()
-                    .split(/[,\s\n\r]+/)
-                    .map(plu => plu.trim())
-                    .filter(plu => plu && /^\d+$/.test(plu))
-                    .filter((plu, index, arr) => arr.indexOf(plu) === index);
+                const plu = currentInputField.value.trim();
+                
+                if (!plu || !/^\d+$/.test(plu)) {
+                    this.showMessage('Masukkan PLU yang valid (hanya angka)', 'error');
+                    return;
+                }
+                
+                this.hidePLUInput();
+                this.showLoading('Mencari produk...');
+                
+                // Reset results if in price check mode
+                if (this.currentMode === 'price-check') {
+                    this.priceResults = [];
+                }
+                
+                try {
+                    const productData = await this.searchProductByPLU(plu);
+                    
+                    if (productData) {
+                        this.addToResults(productData);
+                        this.hideLoading();
+                        this.showResults();
+                        this.showMessage('Produk ditemukan', 'success');
+                    } else {
+                        // Cek di database lokal
+                        const localProduct = this.pluIndex[plu];
+                        if (localProduct) {
+                            const fallbackData = {
+                                plu: localProduct.PLU,
+                                productName: localProduct.NAMA_PRODUK,
+                                originalPrice: null,
+                                finalPrice: null,
+                                discountText: null,
+                                barcode: localProduct.BARCODE,
+                                size: null,
+                                fromLocal: true
+                            };
+                            this.addToResults(fallbackData);
+                            this.hideLoading();
+                            this.showResults();
+                            this.showMessage('Produk ditemukan (dari database lokal)', 'success');
+                        } else {
+                            this.hideLoading();
+                            this.showNotFoundPopup(
+                                'PLU tidak ditemukan',
+                                `PLU: ${plu}`
+                            );
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error searching PLU ${plu}:`, error);
+                    this.hideLoading();
+                    this.showMessage(`Error: ${error.message}`, 'error');
+                }
             }
 
             parseKeywords(input) {
@@ -1427,74 +1573,6 @@
                     .map(keyword => keyword.trim())
                     .filter(keyword => keyword.length > 0)
                     .filter((keyword, index, arr) => arr.indexOf(keyword) === index);
-            }
-
-            async searchPLU() {
-                const input = document.getElementById('plu-input').value;
-                const plusArray = this.parsePLUs(input);
-                
-                if (plusArray.length === 0) {
-                    this.showMessage('Masukkan PLU yang valid (hanya angka)', 'error');
-                    return;
-                }
-                
-                this.hidePLUPopup();
-                this.showLoading(`Mencari ${plusArray.length} produk...`);
-                
-                // Reset results if in price check mode
-                if (this.currentSearchMode === 'price') {
-                    this.priceResults = [];
-                }
-                
-                let foundCount = 0;
-                let notFoundPLUs = [];
-                
-                for (const plu of plusArray) {
-                    try {
-                        const productData = await this.searchProductByPLU(plu);
-                        
-                        if (productData) {
-                            this.addToResults(productData);
-                            foundCount++;
-                        } else {
-                            // Cek di database lokal
-                            const localProduct = this.pluIndex[plu];
-                            if (localProduct) {
-                                const fallbackData = {
-                                    plu: localProduct.PLU,
-                                    productName: localProduct.NAMA_PRODUK,
-                                    originalPrice: null,
-                                    finalPrice: null,
-                                    discountText: null,
-                                    barcode: localProduct.BARCODE,
-                                    size: null,
-                                    fromLocal: true
-                                };
-                                this.addToResults(fallbackData);
-                                foundCount++;
-                            } else {
-                                notFoundPLUs.push(plu);
-                            }
-                        }
-                    } catch (error) {
-                        console.error(`Error searching PLU ${plu}:`, error);
-                        notFoundPLUs.push(plu);
-                    }
-                }
-                
-                this.hideLoading();
-                
-                if (foundCount > 0) {
-                    this.showResults();
-                    this.showMessage(`Ditemukan ${foundCount} produk`, 'success');
-                }
-                
-                if (notFoundPLUs.length > 0) {
-                    this.showNotFoundPopup(
-                        `${notFoundPLUs.length} PLU tidak ditemukan`,
-                        `PLU: ${notFoundPLUs.join(', ')}`
-                    );
-                }
             }
 
             async searchKeyword() {
@@ -1510,7 +1588,7 @@
                 this.showLoading(`Mencari produk dengan ${keywordsArray.length} keyword...`);
                 
                 // Reset results if in price check mode
-                if (this.currentSearchMode === 'price') {
+                if (this.currentMode === 'price-check') {
                     this.priceResults = [];
                 }
                 
@@ -1672,16 +1750,17 @@
             }
 
             addToResults(productData) {
-                if (this.currentSearchMode === 'price') {
+                if (this.currentMode === 'price-check') {
                     this.priceResults.push(productData);
                 } else {
                     this.barcodeResults.push(productData);
                     this.saveBarcodeResults();
+                    document.getElementById('barcode-reset-section').style.display = 'block';
                 }
             }
 
             showResults() {
-                if (this.currentSearchMode === 'price') {
+                if (this.currentMode === 'price-check') {
                     this.showPriceResults();
                 } else {
                     this.showBarcodeResults();
@@ -1995,6 +2074,7 @@
                 document.getElementById('barcode-result-info').textContent = '0 / 0';
                 document.getElementById('barcode-prev-result').disabled = true;
                 document.getElementById('barcode-next-result').disabled = true;
+                document.getElementById('barcode-reset-section').style.display = 'none';
                 
                 this.showMessage('Progress barcode telah direset', 'success');
             }
